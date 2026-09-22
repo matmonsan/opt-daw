@@ -1,5 +1,3 @@
- # Programación Web Avanzada
-
 ## Índice
 
 - [Introducción a la programación web del lado del servidor](introduccion.md)
