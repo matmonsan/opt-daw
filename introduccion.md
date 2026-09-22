@@ -105,6 +105,8 @@ Las tecnologías del lado del servidor, también conocidas como tecnologías **b
 
 ### 3.1. Lenguajes de programación
 
+![Lenguajes de programación](/assets/img/unnamed.png)
+
 - **Java:** orientado a objetos, robusto y multiplataforma. Se utiliza en aplicaciones empresariales y sistemas de gran escala.
 - **Python:** sencillo y legible, con una sintaxis clara. Es popular en ciencia de datos y desarrollo web mediante frameworks como Django y Flask.
 - **PHP:** cuenta con un amplio soporte en la web. Se utiliza en sistemas de gestión de contenidos como WordPress y en frameworks como Laravel.
