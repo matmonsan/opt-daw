@@ -1,5 +1,3 @@
-# Introducción a la programación web del lado del servidor
-
 [⌂ Volver al inicio](index.md)
 
 ## Índice
