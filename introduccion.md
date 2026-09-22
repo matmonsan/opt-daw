@@ -1,10 +1,3 @@
-# Introducción a la programación web del lado del servidor
-
-**Módulo:** Desarrollo web en entorno servidor
-
-## Resultados de aprendizaje y criterios de evaluación
-
-
 ## Índice
 
 1. [Introducción a la programación web](#1-introducción-a-la-programación-web)
