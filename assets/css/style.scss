@@ -5,3 +5,9 @@
 .page-header .btn {
   display: none !important;
 }
+
+.markdown-body img, .page-content img {
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+}
