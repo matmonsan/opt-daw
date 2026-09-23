@@ -34,6 +34,8 @@ La arquitectura de una aplicación web define su estructura y cómo sus componen
 
 ### 2.1. Arquitectura cliente-servidor
 
+![Esquema cliente-servidor](https://upload.wikimedia.org/wikipedia/commons/thumb/c/c9/Client-server-model.svg/960px-Client-server-model.svg.png)
+
 En esta arquitectura, el cliente, generalmente un navegador web, solicita recursos o servicios al servidor, que procesa la solicitud y devuelve una respuesta.
 
 #### Características
@@ -51,6 +53,8 @@ En esta arquitectura, el cliente, generalmente un navegador web, solicita recurs
 - El modelo cliente-servidor y el protocolo HTTP condicionan el desarrollo de aplicaciones web.
 
 ### 2.2. Arquitectura de tres capas
+
+![Esquema de arquitectura de tres capas](https://upload.wikimedia.org/wikipedia/commons/6/66/Overview_of_a_three-tier_application.png)
 
 La arquitectura a tres capas es una ampliación del modelo cliente-servidor.
 
@@ -83,6 +87,8 @@ En aplicaciones web:
 - Facilitar el mantenimiento y la ampliación de las aplicaciones.
 
 ### 2.3. Arquitectura de microservicios
+
+![Esquema de arquitectura de microservicios](https://upload.wikimedia.org/wikipedia/commons/5/57/Microservices_app_example_v0.4.png)
 
 Consiste en desarrollar la aplicación como un conjunto de servicios pequeños e independientes que se comunican entre sí.
 
@@ -118,7 +124,7 @@ Un **framework**, o marco de trabajo, es un conjunto de herramientas, biblioteca
 
 Al utilizar un framework se acelera el proceso de desarrollo, se estandarizan las prácticas, se promueve la reutilización de código y se mejora la calidad y escalabilidad del software. Los frameworks proporcionan una estructura estándar para desarrollar aplicaciones web, facilitan tareas comunes y permiten centrarse en la lógica de negocio.
 
-#### Spring Boot (Java)
+#### <img src="https://simpleicons.org/icons/springboot.svg" alt="Spring Boot" width="24" height="24"> Spring Boot (Java)
 
 Spring Boot simplifica la creación de aplicaciones Java basadas en Spring, facilitando la configuración y el despliegue.
 
@@ -127,7 +133,7 @@ Spring Boot simplifica la creación de aplicaciones Java basadas en Spring, faci
 - **Ecosistema amplio:** se integra con proyectos Spring como Spring Data y Spring Security.
 - **Ideal para microservicios:** permite crear fácilmente microservicios independientes.
 
-#### Django (Python)
+#### <img src="https://simpleicons.org/icons/django.svg" alt="Django" width="24" height="24"> Django (Python)
 
 Django es un framework de alto nivel que promueve el desarrollo rápido y el diseño limpio, siguiendo el principio de «No te repitas» (DRY).
 
@@ -136,7 +142,7 @@ Django es un framework de alto nivel que promueve el desarrollo rápido y el dis
 - **Seguridad incorporada:** protege contra ataques comunes como la inyección SQL y el cross-site scripting.
 - **Escalabilidad y versatilidad:** es adecuado para proyectos pequeños y grandes aplicaciones.
 
-#### Express.js (Node.js)
+#### <img src="https://simpleicons.org/icons/express.svg" alt="Express.js" width="24" height="24"> Express.js (Node.js)
 
 Express.js es un framework minimalista para Node.js que facilita la creación de aplicaciones web y APIs robustas.
 
@@ -145,7 +151,7 @@ Express.js es un framework minimalista para Node.js que facilita la creación de
 - **Gran comunidad:** dispone de un amplio conjunto de paquetes y recursos.
 - **Adecuado para aplicaciones en tiempo real:** resulta útil para aplicaciones que requieren comunicación bidireccional.
 
-#### Laravel (PHP)
+#### <img src="https://simpleicons.org/icons/laravel.svg" alt="Laravel" width="24" height="24"> Laravel (PHP)
 
 Laravel es un framework web moderno para PHP que sigue el patrón MVC y proporciona una sintaxis elegante y expresiva.
 
@@ -158,9 +164,9 @@ Laravel es un framework web moderno para PHP que sigue el patrón MVC y proporci
 
 #### Bases de datos relacionales (SQL)
 
-- **MySQL:** sistema de gestión de bases de datos relacional de código abierto, ampliamente utilizado en aplicaciones web.
-- **PostgreSQL:** base de datos relacional avanzada con extensiones como el soporte para JSON y XML.
-- **Oracle:** base de datos comercial robusta con características avanzadas para grandes volúmenes de datos.
+- **<img src="https://simpleicons.org/icons/mysql.svg" alt="MySQL" width="20" height="20"> MySQL:** sistema de gestión de bases de datos relacional de código abierto, ampliamente utilizado en aplicaciones web.
+- **<img src="https://simpleicons.org/icons/postgresql.svg" alt="PostgreSQL" width="20" height="20"> PostgreSQL:** base de datos relacional avanzada con extensiones como el soporte para JSON y XML.
+- **<img src="https://upload.wikimedia.org/wikipedia/commons/5/50/Oracle_logo.svg" alt="Oracle" width="40" height="20"> Oracle:** base de datos comercial robusta con características avanzadas para grandes volúmenes de datos.
 
 #### Características de las bases de datos relacionales
 
@@ -170,9 +176,9 @@ Laravel es un framework web moderno para PHP que sigue el patrón MVC y proporci
 
 #### Bases de datos NoSQL
 
-- **MongoDB:** base de datos orientada a documentos que almacena datos en formato BSON, similar a JSON.
-- **Cassandra:** diseñada para manejar grandes cantidades de datos en múltiples servidores y altamente escalable.
-- **Redis:** almacén de datos en memoria utilizado para almacenamiento en caché y sistemas en tiempo real.
+- **<img src="https://simpleicons.org/icons/mongodb.svg" alt="MongoDB" width="20" height="20"> MongoDB:** base de datos orientada a documentos que almacena datos en formato BSON, similar a JSON.
+- **<img src="https://simpleicons.org/icons/apachecassandra.svg" alt="Cassandra" width="20" height="20"> Cassandra:** diseñada para manejar grandes cantidades de datos en múltiples servidores y altamente escalable.
+- **<img src="https://simpleicons.org/icons/redis.svg" alt="Redis" width="20" height="20"> Redis:** almacén de datos en memoria utilizado para almacenamiento en caché y sistemas en tiempo real.
 
 #### Características de las bases de datos NoSQL
 
@@ -197,19 +203,45 @@ En la web, un protocolo es un conjunto estandarizado de reglas que define cómo 
 
 ### 4.1. HTTP y HTTPS
 
+HTTP y HTTPS son los protocolos que hacen posible la comunicación entre el navegador (cliente) y el servidor web. Definen cómo se pide un recurso, cómo se envían los datos y cómo se interpreta la respuesta, siguiendo siempre el mismo ciclo: **petición del cliente → procesamiento en el servidor → respuesta del servidor**.
+
+![Ejemplo de petición y respuesta HTTP](https://upload.wikimedia.org/wikipedia/commons/f/f9/HTTP-Anfrage.svg)
+
 #### HTTP (HyperText Transfer Protocol)
 
 Es el protocolo base de la web y define cómo se formatean y transmiten los mensajes entre el cliente y el servidor.
 
 - **Puerto predeterminado:** 80.
-- **Comunicación en texto plano:** no cifrada.
+- **Comunicación en texto plano:** no cifrada, por lo que cualquier intermediario en la red podría leer los datos enviados.
+- **Sin estado (*stateless*):** cada petición es independiente; el servidor no recuerda peticiones anteriores por sí mismo (para eso se usan cookies, sesiones o tokens).
+
+**Estructura de una petición HTTP:**
+
+1. **Línea de petición:** método, ruta del recurso y versión del protocolo (por ejemplo, `GET /usuarios HTTP/1.1`).
+2. **Cabeceras (*headers*):** metadatos como el tipo de contenido, el host o la autenticación.
+3. **Cuerpo (*body*):** opcional, contiene los datos enviados (por ejemplo, un formulario o un JSON en una petición POST).
+
+**Estructura de una respuesta HTTP:**
+
+1. **Línea de estado:** versión del protocolo y código de estado (por ejemplo, `HTTP/1.1 200 OK`).
+2. **Cabeceras:** información sobre la respuesta (tipo de contenido, tamaño, caché, etc.).
+3. **Cuerpo:** el contenido devuelto (HTML, JSON, una imagen, etc.).
+
+**Códigos de estado más habituales:**
+
+- **2xx (éxito):** `200 OK`, `201 Created`.
+- **3xx (redirección):** `301 Moved Permanently`, `302 Found`.
+- **4xx (error del cliente):** `400 Bad Request`, `404 Not Found`.
+- **5xx (error del servidor):** `500 Internal Server Error`.
 
 #### HTTPS (HTTP Secure)
 
-Es la versión segura de HTTP, que utiliza SSL/TLS para cifrar la comunicación.
+Es la versión segura de HTTP: utiliza el mismo formato de mensajes, pero la comunicación viaja cifrada gracias a SSL/TLS.
 
 - **Puerto predeterminado:** 443.
-- **Comunicación cifrada:** protege la integridad y confidencialidad de los datos.
+- **Comunicación cifrada:** protege la integridad y confidencialidad de los datos, evitando que un tercero pueda leerlos o modificarlos.
+- **Certificado digital:** el servidor presenta un certificado (emitido por una autoridad de certificación) que el navegador valida para confirmar que se está hablando con el servidor legítimo.
+- **Handshake TLS:** antes de enviar cualquier dato, cliente y servidor negocian una clave de cifrado compartida mediante un intercambio inicial (*handshake*); a partir de ahí toda la comunicación va cifrada.
 
 #### Métodos HTTP comunes
 
