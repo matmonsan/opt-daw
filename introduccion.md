@@ -240,6 +240,48 @@ Cuando un usuario accede a un sitio web, el navegador, que actúa como cliente, 
 
 La API RESTful se conecta a la base de datos, recupera la información y la envía de vuelta en un formato que el navegador puede mostrar, creando una aplicación web interactiva.
 
+#### Ejemplo de petición y respuesta a una API
+
+Usando Postman contra una API de pruebas pública como [JSONPlaceholder](https://jsonplaceholder.typicode.com/):
+
+- **Petición GET** → `GET https://jsonplaceholder.typicode.com/posts/1`
+
+  Respuesta (código `200 OK`):
+
+  ```json
+  {
+    "userId": 1,
+    "id": 1,
+    "title": "sunt aut facere repellat",
+    "body": "quia et suscipit suscipit recusandae"
+  }
+  ```
+
+- **Petición POST** → `POST https://jsonplaceholder.typicode.com/posts`
+
+  Cuerpo enviado:
+
+  ```json
+  {
+    "title": "Prueba desde Postman",
+    "body": "Contenido de demostración",
+    "userId": 7
+  }
+  ```
+
+  Respuesta (código `201 Created`, el servidor añade el `id`):
+
+  ```json
+  {
+    "title": "Prueba desde Postman",
+    "body": "Contenido de demostración",
+    "userId": 7,
+    "id": 101
+  }
+  ```
+
+> Más información y capturas paso a paso con Postman: [tutorialesprogramacionya.com](https://www.tutorialesprogramacionya.com/herramientas/postman/tema2.html).
+
 ## 5. Tendencias actuales en la programación web
 
 - **Aplicaciones de una sola página (SPA):** utilizan frameworks como React, Angular o Vue.js para ofrecer experiencias más fluidas.
@@ -282,5 +324,13 @@ Investiga qué es Postman y cuál es su función principal en el desarrollo de s
 - Describe las características más importantes de esta herramienta.
 - Explica por qué es útil para programadores y testers.
 - Elabora un informe breve donde presentes tus hallazgos.
-- Incluye ejemplos de situaciones en las que se puede usar Postman.
 - Incluye las webs y vídeos donde hayas encontrado la información.
+
+Sobre la API pública que elegiste en la Actividad 3, instala Postman y comprueba su funcionamiento en la práctica:
+
+1. Añade al menos tres peticiones a distintos endpoints de esa API (usa los métodos HTTP que soporte: GET, POST, etc.), guardando cada una con un nombre descriptivo.
+2. Para cada petición, comprueba y anota:
+   - El código de estado de la respuesta (`200`, `404`, etc.).
+   - El contenido devuelto en la pestaña **Body** (JSON, XML...).
+   - Los parámetros o cabeceras necesarios para que la petición funcione (por ejemplo, una API key).
+
