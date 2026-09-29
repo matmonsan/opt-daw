@@ -747,37 +747,7 @@ Creamos nuestro formulario y lo ubicamos en la carpeta `/templates`:
 </html>
 ```
 
-Creamos el controlador:
-
-```java
-package com.example.formulario.controller;
-
-import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
-
-@Controller
-public class FormController {
-
-    @GetMapping("/formulario")
-    public String mostrarFormulario() {
-        return "formulario";
-    }
-
-    @PostMapping("/procesar")
-    @ResponseBody
-    public String procesarFormulario(
-            @RequestParam("nombre") String nombre,
-            @RequestParam("edad") int edad) {
-
-        return "Nombre: " + nombre + ", edad: " + edad;
-    }
-}
-```
-
-Probamos el funcionamiento. Al darle a enviar rellenando datos:
+Creamos el controlador y probamos el funcionamiento. Al darle a enviar rellenando datos:
 
 ```text
 Nombre: Matías, edad: 17
@@ -814,7 +784,7 @@ Al enviar el formulario:
 - Mostrar una página de confirmación que muestre el nombre completo del usuario, su correo electrónico y su contraseña en caso de que se haya generado automáticamente, si el usuario introdujo contraseña no se mostrará.
 - La confirmación se enviará directamente al cuerpo de la respuesta, sin plantilla.
 
-Añade Spring Web y Thymeleaf. Guarda el formulario en `src/main/resources/templates/`; el atributo `name` de cada campo debe coincidir con el dato que recojas en el controlador. Para devolver el formulario, utiliza un método GET que resuelva su plantilla. En el POST, recoge los campos y agrúpalos en un objeto Java: `@ModelAttribute` enlaza los campos del formulario con propiedades del objeto que tengan el mismo nombre; también puedes construir el objeto a partir de parámetros. Comprueba en el servidor que nombre y correo no estén vacíos, ya que la validación del formulario en el navegador se puede omitir. Usa `@ResponseBody` para enviar la confirmación como cuerpo de la respuesta, sin resolver otra plantilla. Para la contraseña generada, produce un número entre 0 y 999999 y conserva los ceros iniciales al mostrarlo, de modo que siempre tenga seis dígitos. La contraseña solo se incluye en la confirmación cuando se generó automáticamente.
+El método GET de `/registro` debe devolver directamente el HTML del formulario en el cuerpo de la respuesta, indicando el tipo de contenido `text/html`. El formulario enviará sus datos mediante POST a `/registro`; los atributos `name` de los campos deben coincidir con los datos que recojas en el controlador. En el POST, agrúpalos en un objeto Java: `@ModelAttribute` enlaza los campos con propiedades del objeto que tengan el mismo nombre; también puedes construir el objeto a partir de parámetros. Comprueba en el servidor que nombre y correo no estén vacíos, ya que la validación del formulario en el navegador se puede omitir. Devuelve directamente en el cuerpo la confirmación, sin resolver una vista. Para la contraseña generada, produce un número entre 0 y 999999 y conserva los ceros iniciales al mostrarlo, de modo que siempre tenga seis dígitos. La contraseña solo se incluye en la confirmación cuando se generó automáticamente.
 
 ### Actividad 7
 
