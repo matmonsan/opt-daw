@@ -1,6 +1,6 @@
 ---
 title: Introducción a la programación web del lado del servidor
-description: "<strong>Profesor:</strong> Matías Montávez Sánchez"
+description: "<strong>Módulo: </strong>Programación Web Avanzada <br> <strong>Profesor:</strong> Matías Montávez Sánchez"
 ---
 
 [⌂ Volver al inicio](index.md)

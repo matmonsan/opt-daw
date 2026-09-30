@@ -1,6 +1,6 @@
 ---
 title: "Arquitecturas y tecnologías en la programación Web"
-description: "<strong>Profesor:</strong> Matías Montávez Sánchez"
+description: "<strong>Módulo: </strong>Programación Web Avanzada <br> <strong>Profesor:</strong> Matías Montávez Sánchez"
 ---
 
 [⌂ Volver al inicio](index.md)
