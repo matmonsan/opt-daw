@@ -543,11 +543,7 @@ Cambia el puerto de la aplicación a 9090 y verifica que la aplicación responde
 
 Si creamos un archivo `banner.txt` con el contenido que deseemos automáticamente aparecerá al iniciar Spring Boot.
 
-La propiedad `spring.banner.location` la utilizaremos cuando queremos cambiar la ruta por defecto. Por ejemplo:
-
-```properties
-spring.banner.location=file:/opt/banners/mi-banner.txt
-```
+El banner predeterminado se carga desde `src/main/resources/banner.txt`; por tanto, `spring.banner.location` solo hace falta si eliges otra ruta o nombre. Para un recurso incluido en `resources`, Spring Boot permite indicar la ubicación con el prefijo `classpath:`. La propiedad para configurar el puerto del servidor se explica en el apartado 3.3.
 
 - **Creación de un controlador simple.**
   - Crea una clase `ControladorSaludo` en el paquete `com.ejemplo.demo`.
@@ -571,6 +567,8 @@ public class ControladorSaludo {
 }
 ```
 
+Para interpretar las anotaciones del ejemplo, consulta las definiciones de `@RestController` y `@GetMapping` en los apartados 5.1 y 8.1.
+
 ### Actividad 2
 
 Crea un proyecto Spring Boot con el nombre `actividad2` utilizando Spring Initializr.
@@ -579,6 +577,8 @@ El proyecto debe incluir un único controlador que exponga dos endpoints diferen
 
 - **inicio** debe devolver un mensaje en HTML que muestre un título con el texto "Bienvenido a la aplicación" y un párrafo breve de presentación.
 - **contacto** debe devolver un mensaje en HTML que muestre un título con el texto "Página de contacto" y un párrafo con información ficticia de contacto (por ejemplo, un correo electrónico o un número de teléfono).
+
+Utiliza Spring Web. Las rutas serán `/inicio` y `/contacto`; por ejemplo, abre <http://localhost:8080/inicio>. La respuesta debe indicar el tipo de contenido HTML (`text/html`), no texto plano. Coloca el controlador dentro del paquete de `DemoApplication` o de uno de sus subpaquetes para que Spring lo detecte. Para generar el HTML, puedes devolver una cadena desde el controlador y construir en ella la estructura mínima de un documento HTML.
 
 #### Actividad guiada: recogida de parámetros
 
@@ -635,6 +635,8 @@ Crea un proyecto Spring Boot con el nombre `actividad3` utilizando Spring Initia
 > return "redirect:/pagina";
 > ```
 
+Guarda las cuatro páginas en `src/main/resources/static/`. Para concretar la URL, utiliza una ruta de selección como `/elegir?idioma=spanish`; el controlador debe recoger el parámetro `idioma` y redirigir al archivo estático correspondiente (por ejemplo, `redirect:/spanish.html`). Al faltar el parámetro, la página de destino debe ser `english.html`. Decide también qué hacer si se recibe un valor distinto de los cuatro idiomas. Usa un controlador MVC (`@Controller`) para que Spring interprete `redirect:` como una redirección; `@RestController` devolvería ese texto como contenido de la respuesta.
+
 ### Actividad 4
 
 Crea una aplicación en Spring Boot que exponga un endpoint GET para generar dinámicamente una tabla HTML en función de los parámetros introducidos por el usuario con nombre `actividad4`.
@@ -661,6 +663,8 @@ Ejemplo de petición:
 - La respuesta debe ser código HTML válido con una tabla.
 - Debe incluir un encabezado con las columnas numeradas.
 - Cada celda del cuerpo debe mostrar el texto: Fila X, Columna Y, donde X e Y son los números correspondientes.
+
+Consulta el apartado 5.1 para `@RequestParam`. Como las consultas llegan como texto, puedes convertirlas a enteros con `Integer.parseInt`; captura `NumberFormatException` para tratar las entradas no numéricas. Permite que falten los parámetros y decide el valor de sustitución (por ejemplo, 1); limita cada dimensión al intervalo 1–20. Genera la tabla con bucles anidados y devuelve contenido HTML. Comprueba `/tabla`, `/tabla?filas=abc&columnas=3` y `/tabla?filas=25&columnas=0`, además del ejemplo válido.
 
 ### Actividad 5
 
@@ -717,6 +721,8 @@ Ejemplo de salida:
 }
 ```
 
+Como guía de implementación, crea clases Java que representen el pedido, el cliente, cada producto y la respuesta. El pedido contiene un cliente y una lista de productos; `@RequestBody` permite que Spring convierta el JSON recibido en esos objetos. Para el cálculo, suma `cantidad × precioUnitario` de cada producto y suma también las cantidades para obtener `totalProductos` (4 en el ejemplo, no 3). Para importes monetarios es preferible usar `BigDecimal`. Prueba el endpoint POST desde Postman con **Body > raw > JSON** y el `Content-Type: application/json`.
+
 #### POST - Formulario
 
 Creamos nuestro formulario y lo ubicamos en la carpeta `/templates`:
@@ -741,37 +747,7 @@ Creamos nuestro formulario y lo ubicamos en la carpeta `/templates`:
 </html>
 ```
 
-Creamos el controlador:
-
-```java
-package com.example.formulario.controller;
-
-import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
-
-@Controller
-public class FormController {
-
-    @GetMapping("/formulario")
-    public String mostrarFormulario() {
-        return "formulario";
-    }
-
-    @PostMapping("/procesar")
-    @ResponseBody
-    public String procesarFormulario(
-            @RequestParam("nombre") String nombre,
-            @RequestParam("edad") int edad) {
-
-        return "Nombre: " + nombre + ", edad: " + edad;
-    }
-}
-```
-
-Probamos el funcionamiento. Al darle a enviar rellenando datos:
+Creamos el controlador y probamos el funcionamiento. Al darle a enviar rellenando datos:
 
 ```text
 Nombre: Matías, edad: 17
@@ -808,6 +784,8 @@ Al enviar el formulario:
 - Mostrar una página de confirmación que muestre el nombre completo del usuario, su correo electrónico y su contraseña en caso de que se haya generado automáticamente, si el usuario introdujo contraseña no se mostrará.
 - La confirmación se enviará directamente al cuerpo de la respuesta, sin plantilla.
 
+El método GET de `/registro` debe devolver directamente el HTML del formulario en el cuerpo de la respuesta, indicando el tipo de contenido `text/html`. El formulario enviará sus datos mediante POST a `/registro`; los atributos `name` de los campos deben coincidir con los datos que recojas en el controlador. En el POST, agrúpalos en un objeto Java: `@ModelAttribute` enlaza los campos con propiedades del objeto que tengan el mismo nombre; también puedes construir el objeto a partir de parámetros. Comprueba en el servidor que nombre y correo no estén vacíos, ya que la validación del formulario en el navegador se puede omitir. Devuelve directamente en el cuerpo la confirmación, sin resolver una vista. Para la contraseña generada, produce un número entre 0 y 999999 y conserva los ceros iniciales al mostrarlo, de modo que siempre tenga seis dígitos. La contraseña solo se incluye en la confirmación cuando se generó automáticamente.
+
 ### Actividad 7
 
 En la actividad 6 hemos creado un formulario de registro y hemos recogido los datos en un modelo, pues bien, continuando en este sentido vamos a completarla haciendo un formulario de login, para ello:
@@ -817,3 +795,5 @@ En la actividad 6 hemos creado un formulario de registro y hemos recogido los da
 - Devolveremos el mensaje correspondiente (usuario logado, usuario no existe, contraseña incorrecta etc.) al cuerpo de la respuesta, sin plantilla.
 
 Para ello, como no estamos trabajando con bases de datos, deberíamos tener creada alguna colección en memoria donde almacenemos unos cuantos usuarios de prueba.
+
+Para mantener el ejercicio independiente de una base de datos, puedes usar un `Map` en memoria que asocie cada nombre de usuario con su contraseña. Decide y anota al menos dos credenciales de prueba. El usuario puede ser el correo electrónico del registro de la actividad 6. Comprueba tres situaciones: usuario y contraseña correctos, usuario inexistente y contraseña incorrecta. La colección se pierde al detener la aplicación. El almacenamiento de contraseñas en texto claro solo es aceptable en este ejercicio; no debe usarse en una aplicación real.
