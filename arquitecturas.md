@@ -580,7 +580,7 @@ El proyecto debe incluir un único controlador que exponga dos endpoints diferen
 
 Utiliza Spring Web. Las rutas serán `/inicio` y `/contacto`; por ejemplo, abre <http://localhost:8080/inicio>. La respuesta debe indicar el tipo de contenido HTML (`text/html`), no texto plano. Coloca el controlador dentro del paquete de `DemoApplication` o de uno de sus subpaquetes para que Spring lo detecte. Para generar el HTML, puedes devolver una cadena desde el controlador y construir en ella la estructura mínima de un documento HTML.
 
-#### Actividad guiada: recogida de parámetros
+### Actividad guiada: recogida de parámetros
 
 Pongamos que queremos hacer un controlador que salude al usuario por su nombre, para ello el usuario nos debe indicar cómo se llama.
 
