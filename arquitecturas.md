@@ -381,7 +381,7 @@ Cliente / navegador                         Servidor Spring
   | GET /hola?name=Ana                       |
   |----------------------------------------->|
   |                                          |
-  | 200 OK + "Hola Ana"                     |
+  | 200 OK + "Hola Ana"                      |
   |<-----------------------------------------|
 ```
 
@@ -440,14 +440,14 @@ Cliente / Postman                           Servidor Spring
   |                                          |
   | POST /usuario                            |
   | Content-Type: application/json           |
-  | Cuerpo: {"nombre":"Ana","edad":30}    |
+  | Cuerpo: {"nombre":"Ana","edad":30}       |
   |----------------------------------------->|
   |                                          |
   | 200 OK + "Usuario creado: Ana, edad: 30" |
   |<-----------------------------------------|
 ```
 
-Esquema basado en la documentación de [MDN sobre POST](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Methods/POST), que explica el envío de datos en el cuerpo de la petición.
+Esquema basado en la documentación de [MDN sobre POST](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Methods/POST).
 
 El método POST se usa para enviar datos al servidor, generalmente para crear o modificar recursos. A diferencia de GET, POST envía información en el cuerpo de la solicitud (no en la URL) y puede cambiar el estado del servidor.
 
