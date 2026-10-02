@@ -14,7 +14,7 @@ description: "<strong>Módulo: </strong>Programación Web Avanzada <br> <strong>
 2. [Spring Boot](#2-spring)
    - [2.1. ¿Qué es?](#21-qué-es-spring-boot)
    - [2.2. Ventajas](#ventajas-de-usar-spring-boot)
-   - [2.3. Primer proyecto](#23-primer-proyecto)
+    - [2.3. Primer proyecto](#23-primer-proyecto)
 3. [Anatomía de una Aplicación Spring Boot](#3-anatomía-de-una-aplicación-spring-boot)
    - [3.1. Ficheros Importantes en un Proyecto Spring Boot](#31-ficheros-importantes)
    - [3.2. Clase principal](#32-clase-principal)
@@ -33,8 +33,7 @@ description: "<strong>Módulo: </strong>Programación Web Avanzada <br> <strong>
    - [8.1. Método GET](#81-método-get)
    - [8.2. Método POST](#82-método-post)
 9. [JSON](#9-json)
-10. [Ejecutando la aplicación](#ejecutando-la-aplicación)
-11. [Actividades](#actividades)
+10. [Actividades](#actividades)
 
 ## 1. Entorno de trabajo
 
@@ -366,9 +365,27 @@ Un controlador en Spring Boot es una clase que maneja las solicitudes HTTP entra
 - Ejecutar lógica o llamar a servicios.
 - Devolver una respuesta adecuada (página web, JSON, redirección, etc.).
 
+#### Diferencia entre `@Controller` y `@RestController`
+
+`@Controller` se utiliza habitualmente en aplicaciones Spring MVC que devuelven vistas. En ese caso, el método suele devolver el nombre de una plantilla, como una vista de Thymeleaf, y Spring la procesa para generar la página HTML. Si se quiere que un método de una clase `@Controller` devuelva directamente un dato en el cuerpo de la respuesta, se puede anotar ese método con `@ResponseBody`.
+
+`@RestController` está pensado para endpoints que devuelven directamente el contenido de la respuesta, como texto, JSON o XML, en lugar de resolver el valor devuelto como el nombre de una vista. Técnicamente, combina `@Controller` y `@ResponseBody`, por lo que aplica ese comportamiento a todos los métodos de la clase. Es una opción habitual al crear APIs REST.
+
 ## 8. Métodos HTTP en Spring Boot
 
 ### 8.1. Método GET
+
+```text
+Cliente / navegador                         Servidor Spring
+  |                                          |
+  | GET /hola?name=Ana                       |
+  |----------------------------------------->|
+  |                                          |
+  | 200 OK + "Hola Ana"                     |
+  |<-----------------------------------------|
+```
+
+Esquema basado en la documentación de [MDN sobre GET](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Methods/GET).
 
 El método GET se usa para solicitar datos al servidor sin modificar nada. En Spring Boot, se mapea a métodos del controlador para manejar esas solicitudes.
 
@@ -392,7 +409,45 @@ public class HolaControlador {
 }
 ```
 
+#### Recogida de parámetros con `@RequestParam`
+
+Una petición HTTP puede incluir datos en la URL. Por ejemplo, en:
+
+<http://localhost:8080/hola?name=Ana>
+
+`/hola` es la ruta solicitada y `?name=Ana` es la cadena de consulta (*query string*). En ella, `name` es el nombre del parámetro y `Ana` es su valor. Si se envían varios parámetros, se separan con `&`, por ejemplo: `/hola?name=Ana&saludo=Buenos%20días`.
+
+En Spring, la anotación `@RequestParam` enlaza un parámetro de la cadena de consulta con un argumento del método del controlador. El nombre indicado en la anotación debe coincidir con el de la URL:
+
+```java
+@RestController
+public class SaludoController {
+
+  @GetMapping("/hola")
+  public String saludar(
+      @RequestParam(name = "name", defaultValue = "Desconocido") String name) {
+    return "Hola " + name;
+  }
+}
+```
+
+Cuando se visita `/hola?name=Ana`, Spring asigna `Ana` al argumento `name` y el método responde con `Hola Ana`. Si se visita `/hola` sin indicar el parámetro, se utiliza `Desconocido`. `defaultValue` también hace que el parámetro sea opcional; sin un valor predeterminado, `@RequestParam` es obligatorio por defecto y Spring responde con un error si no se envía.
+
 ### 8.2. Método POST
+
+```text
+Cliente / Postman                           Servidor Spring
+  |                                          |
+  | POST /usuario                            |
+  | Content-Type: application/json           |
+  | Cuerpo: {"nombre":"Ana","edad":30}    |
+  |----------------------------------------->|
+  |                                          |
+  | 200 OK + "Usuario creado: Ana, edad: 30" |
+  |<-----------------------------------------|
+```
+
+Esquema basado en la documentación de [MDN sobre POST](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Methods/POST), que explica el envío de datos en el cuerpo de la petición.
 
 El método POST se usa para enviar datos al servidor, generalmente para crear o modificar recursos. A diferencia de GET, POST envía información en el cuerpo de la solicitud (no en la URL) y puede cambiar el estado del servidor.
 
@@ -404,6 +459,8 @@ El método POST se usa para enviar datos al servidor, generalmente para crear o 
 - Se usa la anotación `@PostMapping` para manejar solicitudes POST.
 
 El cliente envía un POST a `/usuario` con el nombre en el cuerpo y el servidor responde confirmando la creación con el nombre recibido:
+
+Este primer ejemplo recibe el cuerpo como texto. Cuando se envía un objeto JSON con varias propiedades, conviene representarlo con una clase Java cuyos atributos correspondan a las propiedades del JSON.
 
 ```java
 @RestController
@@ -418,7 +475,16 @@ public class UsuarioControlador {
 
 **Ejemplo recibiendo un objeto completo en JSON**
 
-Queremos recibir los datos de un usuario en JSON mediante POST y guardarlos en un objeto. Lo primero sería definir nuestra clase `Usuario`:
+Si el cuerpo JSON contiene `nombre` y `edad`, la clase debe tener propiedades equivalentes y tipos compatibles. Por ejemplo, una cadena JSON se representa con `String` y un número entero con `int`:
+
+| Propiedad JSON | Atributo Java |
+| --- | --- |
+| `nombre` | `String nombre` |
+| `edad` | `int edad` |
+
+Los nombres deben corresponder para que Jackson, la biblioteca que Spring Boot utiliza habitualmente, pueda asociar cada valor con su propiedad. En una clase Java convencional se incluyen un constructor sin argumentos y getters y setters para que Jackson pueda crear y rellenar el objeto.
+
+Definimos la clase `Usuario`:
 
 ```java
 public class Usuario {
@@ -437,7 +503,7 @@ public class Usuario {
 }
 ```
 
-A continuación definimos el controlador y la ruta que recogerá los datos:
+A continuación, el controlador declara el parámetro como `Usuario` y lo anota con `@RequestBody`. Spring lee el JSON del cuerpo y lo convierte en una instancia de esa clase antes de ejecutar el método:
 
 ```java
 @RestController
@@ -523,6 +589,14 @@ Está compuesto por pares clave-valor. Utiliza dos estructuras principales:
 }
 ```
 
+### Para practicar
+
+1. **Perfil de usuario.** Crea un objeto JSON con el nombre y la ciudad de una persona, su edad, si tiene cuenta activa y sus tres aficiones favoritas en una lista.
+2. **Libro.** Crea un objeto JSON para un libro con título, autor, número de páginas y disponibilidad. Añade una lista de géneros y un objeto `editorial` con su nombre y país.
+3. **Pedido sencillo.** Representa un pedido con un número identificador, el nombre del cliente y una lista de dos productos. Para cada producto, incluye nombre, cantidad y precio.
+4. **Reserva de viaje.** Crea un objeto JSON para una reserva con un código y un objeto `cliente` que incluya nombre y correo. Añade una lista `pasajeros` con dos objetos, cada uno con nombre, edad y una lista de necesidades especiales. Incluye también un objeto `vuelo` con origen, destino y fecha, y una propiedad booleana que indique si está confirmado.
+5. **Factura completa.** Representa una factura con número y fecha, un objeto `cliente` con nombre y dirección (calle, ciudad y código postal), una lista `lineas` con al menos dos objetos de producto (descripción, cantidad, precio unitario y etiquetas), y un objeto `pago` con método, importe abonado y estado. Añade el total de la factura y una propiedad `observaciones` cuyo valor sea `null` si no hay ninguna.
+
 ## Actividades
 
 ### Actividad 1
@@ -579,45 +653,6 @@ El proyecto debe incluir un único controlador que exponga dos endpoints diferen
 - **contacto** debe devolver un mensaje en HTML que muestre un título con el texto "Página de contacto" y un párrafo con información ficticia de contacto (por ejemplo, un correo electrónico o un número de teléfono).
 
 Utiliza Spring Web. Las rutas serán `/inicio` y `/contacto`; por ejemplo, abre <http://localhost:8080/inicio>. La respuesta debe indicar el tipo de contenido HTML (`text/html`), no texto plano. Coloca el controlador dentro del paquete de `DemoApplication` o de uno de sus subpaquetes para que Spring lo detecte. Para generar el HTML, puedes devolver una cadena desde el controlador y construir en ella la estructura mínima de un documento HTML.
-
-### Actividad guiada: recogida de parámetros
-
-Pongamos que queremos hacer un controlador que salude al usuario por su nombre, para ello el usuario nos debe indicar cómo se llama.
-
-Mediante GET el usuario en la URL puede indicar parámetros con el siguiente formato:
-
-<http://localhost:8080/hola?name=Ana>
-
-En el controlador se debe de recoger el valor Ana para así saludar al usuario y devolver: "Hola Ana".
-
-Para recoger parámetros se utiliza la anotación `@RequestParam` en la que debemos indicar el nombre del parámetro. Tiene el siguiente formato:
-
-```java
-@RestController
-public class demoController {
-
-    @GetMapping("/hola")
-    public String hello(@RequestParam(name = "name", required = false) String name) {
-        if (name == null || name.isEmpty()) {
-            name = "Desconocido";
-        }
-        return "Hola " + name;
-    }
-}
-```
-
-#### Diferencia entre @RestController y @Controller
-
-**@Controller**
-
-- Es la anotación clásica de Spring MVC para controladores que manejan vistas web (HTML, JSP, Thymeleaf, etc.)
-- Los métodos típicamente retornan el nombre de una vista y Spring se encarga de resolverla.
-- No devuelven automáticamente datos (JSON, XML, etc.)
-
-**@RestController**
-
-- Devuelve datos directamente en el cuerpo de la página web.
-- Ideal para APIs REST: todos los métodos retornan datos (JSON, XML, texto), no vistas.
 
 ### Actividad 3
 
