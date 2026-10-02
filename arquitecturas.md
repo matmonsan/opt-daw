@@ -534,6 +534,8 @@ El formato del JSON enviado para que esto funcione será:
 
 **¿Cómo enviar JSON en el cuerpo de una petición POST usando Postman?**
 
+![Postman](./assets/img/postman.png)
+
 - Selecciona método POST.
 - Ingresa la URL, por ejemplo: `http://localhost:8080/usuario`.
 - Ve a la pestaña Body.
