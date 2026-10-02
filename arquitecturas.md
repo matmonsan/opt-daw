@@ -632,10 +632,144 @@ Crea un proyecto Spring Boot con el nombre `actividad3` utilizando Spring Initia
 > PISTA:
 >
 > ```java
-> return "redirect:/pagina";
+> return "redirect:/pagina.html";
 > ```
 
-Guarda las cuatro páginas en `src/main/resources/static/`. Para concretar la URL, utiliza una ruta de selección como `/elegir?idioma=spanish`; el controlador debe recoger el parámetro `idioma` y redirigir al archivo estático correspondiente (por ejemplo, `redirect:/spanish.html`). Al faltar el parámetro, la página de destino debe ser `english.html`. Decide también qué hacer si se recibe un valor distinto de los cuatro idiomas. Usa un controlador MVC (`@Controller`) para que Spring interprete `redirect:` como una redirección; `@RestController` devolvería ese texto como contenido de la respuesta.
+Guarda las cuatro páginas en `src/main/resources/static/`. Para concretar la URL, utiliza una ruta de selección como `/elegir?idioma=spanish`; el controlador debe recoger el parámetro `idioma` y redirigir al archivo estático correspondiente (por ejemplo, `redirect:/spanish.html`). 
+
+Al faltar el parámetro, o escribir un idioma distinto a los 4 asignados, la página de destino debe ser `english.html`. 
+
+Usa un controlador MVC para que Spring interprete `redirect:` como una redirección y no lo devuelva como texto.
+
+#### Propuesta para la página principal
+
+Crea `index.html`. Diseña la página de bienvenida con tu propio texto y estructura. Debe incluir:
+
+- Un título que dé la bienvenida.
+- Una breve explicación de que se puede consultar la página en cuatro idiomas.
+- Un enlace para cada idioma. Configura sus direcciones para que envíen el parámetro `idioma` a la ruta `/elegir`.
+- Una indicación de qué idioma se mostrará si se omite el parámetro o se escribe uno no reconocido.
+
+La estructura visual puede ser tan sencilla o elaborada como quieras. Como referencia, el navegador podría mostrar algo parecido a esto:
+
+```text
+             Bienvenido
+
+Elige el idioma en el que quieres ver la página:
+[Español] [Français] [English] [Deutsch]
+
+Si no eliges un idioma, se mostrará la página en inglés.
+```
+
+Crea ahora los cuatro archivos siguientes en la carpeta correspondiente. Cada página muestra el título y un breve mensaje en su idioma:
+
+**`spanish.html`**
+
+```html
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Español</title>
+</head>
+<body>
+  <h1>¡Hola!</h1>
+  <p>Esta página está en español.</p>
+  <p>Bienvenido a nuestra aplicación. Esperamos que disfrutes de la visita.</p>
+  <a href="/">Volver al inicio</a>
+</body>
+</html>
+```
+
+Vista aproximada:
+
+```text
+¡Hola!
+Esta página está en español.
+Bienvenido a nuestra aplicación. Esperamos que disfrutes de la visita.
+Volver al inicio
+```
+
+**`french.html`**
+
+```html
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Français</title>
+</head>
+<body>
+  <h1>Bonjour !</h1>
+  <p>Cette page est en français.</p>
+  <p>Bienvenue dans notre application. Nous espérons que votre visite vous plaira.</p>
+  <a href="/">Retour à l'accueil</a>
+</body>
+</html>
+```
+
+Vista aproximada:
+
+```text
+Bonjour !
+Cette page est en français.
+Bienvenue dans notre application. Nous espérons que votre visite vous plaira.
+Retour à l'accueil
+```
+
+**`english.html`**
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>English</title>
+</head>
+<body>
+  <h1>Hello!</h1>
+  <p>This page is in English.</p>
+  <p>Welcome to our application. We hope you enjoy your visit.</p>
+  <a href="/">Back to home</a>
+</body>
+</html>
+```
+
+Vista aproximada:
+
+```text
+Hello!
+This page is in English.
+Welcome to our application. We hope you enjoy your visit.
+Back to home
+```
+
+**`german.html`**
+
+```html
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <title>Deutsch</title>
+</head>
+<body>
+  <h1>Hallo!</h1>
+  <p>Diese Seite ist auf Deutsch.</p>
+  <p>Willkommen in unserer Anwendung. Wir hoffen, dass Ihnen der Besuch gefällt.</p>
+  <a href="/">Zurück zur Startseite</a>
+</body>
+</html>
+```
+
+Vista aproximada:
+
+```text
+Hallo!
+Diese Seite ist auf Deutsch.
+Willkommen in unserer Anwendung. Wir hoffen, dass Ihnen der Besuch gefällt.
+Zurück zur Startseite
+```
 
 ### Actividad 4
 
