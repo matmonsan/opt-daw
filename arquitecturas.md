@@ -896,21 +896,26 @@ Como guía de implementación, crea clases Java que representen el pedido, el cl
 
 #### POST - Formulario
 
-Creamos nuestro formulario y lo ubicamos en la carpeta `/templates`:
+Un formulario HTML puede enviar los datos al servidor mediante una petición HTTP `POST`. A diferencia de `GET`, los valores no se añaden a la URL: el navegador los envía en el cuerpo de la petición. En este ejemplo enviaremos un nombre y una edad a Spring Boot.
+
+**1. Añade Thymeleaf al proyecto.** Lo utilizaremos para que Spring Boot encuentre y muestre el formulario como una plantilla. Si usas Spring Initializr, selecciona la dependencia **Thymeleaf**; si gestionas las dependencias manualmente, añade `spring-boot-starter-thymeleaf`.
+
+**2. Crea la plantilla** `src/main/resources/templates/formulario.html`:
 
 ```html
 <!DOCTYPE html>
 <html>
 <head>
+    <meta charset="UTF-8">
     <title>Formulario</title>
 </head>
 <body>
     <form action="/procesar" method="post">
-        <label>Nombre:</label>
-        <input type="text" name="nombre" /><br/>
+        <label for="nombre">Nombre:</label>
+        <input type="text" id="nombre" name="nombre" required><br>
 
-        <label>Edad:</label>
-        <input type="number" name="edad" /><br/>
+        <label for="edad">Edad:</label>
+        <input type="number" id="edad" name="edad" required><br>
 
         <button type="submit">Enviar</button>
     </form>
@@ -918,19 +923,87 @@ Creamos nuestro formulario y lo ubicamos en la carpeta `/templates`:
 </html>
 ```
 
-Creamos el controlador y probamos el funcionamiento. Al darle a enviar rellenando datos:
+`action="/procesar"` indica la ruta que recibirá los datos y `method="post"` especifica el método HTTP. El atributo `name` de cada campo es el nombre con el que Spring podrá recuperar su valor. `required` hace que el navegador solicite completar el campo antes de enviarlo.
+
+**3. Crea el controlador** para mostrar el formulario y recibir el envío:
+
+```java
+@Controller
+public class FormularioController {
+
+    @GetMapping("/formulario")
+    public String mostrarFormulario() {
+        return "formulario";
+    }
+
+    @PostMapping("/procesar")
+    @ResponseBody
+    public String procesarFormulario(
+            @RequestParam("nombre") String nombre,
+            @RequestParam("edad") int edad) {
+        return "Formulario recibido. Nombre: " + nombre + ", edad: " + edad;
+    }
+}
+```
+
+El método GET de `/formulario` devuelve el nombre de la plantilla que Thymeleaf debe mostrar (sin la extensión `.html`). Al pulsar **Enviar**, el navegador realiza una petición POST a `/procesar`. En el ejemplo, `@RequestParam` recoge cada campo por separado; también puedes agruparlos en un objeto con `@ModelAttribute`.
+
+Otra forma sería usando la anotación `@ModelAttribute`, y para ello crea una clase cuyos atributos coincidan con los `name` del formulario:
+
+```java
+public class Formulario {
+    private String nombre;
+    private int edad;
+
+    public Formulario() {
+    }
+
+    public String getNombre() {
+        return nombre;
+    }
+
+    public void setNombre(String nombre) {
+        this.nombre = nombre;
+    }
+
+    public int getEdad() {
+        return edad;
+    }
+
+    public void setEdad(int edad) {
+        this.edad = edad;
+    }
+}
+```
+
+Después, sustituye el método POST anterior por este:
+
+```java
+@PostMapping("/procesar")
+@ResponseBody
+public String procesarFormulario(@ModelAttribute Formulario formulario) {
+    return "Formulario recibido. Nombre: " + formulario.getNombre()
+            + ", edad: " + formulario.getEdad();
+}
+```
+
+Spring crea el objeto `Formulario` y asigna los valores enviados a sus propiedades correspondientes (`nombre` y `edad`), usando sus métodos *setters*. Por eso, los atributos de la clase deben coincidir con los `name` del HTML. Para un formulario sencillo, `@RequestParam` es directo; `@ModelAttribute` resulta útil cuando hay varios campos que quieres manejar juntos como un objeto. Ambos sirven para recibir los datos de este formulario HTML; `@RequestBody` se utiliza normalmente cuando el cuerpo de la petición contiene JSON.
+
+`@ResponseBody` hace que el texto devuelto por el método se envíe directamente en el cuerpo de la respuesta. Si se omite en un controlador anotado con `@Controller`, Spring interpreta el valor devuelto como el nombre de una vista y tratará de buscar una plantilla con ese nombre. En un controlador anotado con `@RestController`, el cuerpo de la respuesta ya es el comportamiento predeterminado.
+
+**4. Ejecuta y prueba la aplicación.** Abre `http://localhost:8080/formulario`, completa los campos y envía, por ejemplo:
 
 ```text
 Nombre: Matías, edad: 17
 ```
 
-**Detalles importantes:**
+La página mostrará:
 
-- Ya estamos trabajando con plantillas por lo que hay que añadir la dependencia Thymeleaf.
-- `@ResponseBody` significa que lo que retornes desde el método se envía directamente como texto en la respuesta HTTP, si no lo ponemos ¿qué pasa?
-- `@RequestParam("nombre")` → recoge el campo `<input name="nombre"/>`.
-- El nombre dentro de `@RequestParam("...")` debe coincidir con el atributo `name` del formulario.
-- Si el parámetro es opcional y/o tiene un valor por defecto puedes marcarlo así:
+```text
+Formulario recibido. Nombre: Matías, edad: 17
+```
+
+Si usas `@RequestParam`, el nombre indicado en `@RequestParam("...")` debe coincidir con el `name` del campo HTML. Para un parámetro que puede faltar, puedes hacerlo opcional y establecer un valor por defecto:
 
 ```java
 @RequestParam(value = "edad", required = false, defaultValue = "0") int edad
@@ -938,33 +1011,66 @@ Nombre: Matías, edad: 17
 
 ### Actividad 6
 
-**POST con formulario**
+**Registro y login con formularios**
 
-Desarrollar una aplicación web en Spring Boot que permita a los usuarios registrarse a un sistema mediante un formulario.
+Desarrolla una aplicación web en Spring Boot que permita registrar usuarios y, después, iniciar sesión. El objetivo es aplicar los conocimientos adquiridos en esta unidad: controladores, peticiones GET y POST, formularios HTML, plantillas, `@ModelAttribute`, `@RequestParam` y respuestas directas en el cuerpo HTTP.
 
-Mostrar un formulario HTML para ingresar los siguientes datos del usuario:
+#### Registro
+
+Muestra en `/registro` un formulario HTML con los siguientes campos:
 
 - **Nombre:** obligatorio.
-- **Apellidos:** opcional, si no se introduce valor por defecto cadena vacía.
+- **Apellidos:** si se deja vacío, usa una cadena vacía.
 - **Correo electrónico:** obligatorio.
-- **Contraseña:** opcional, si no se introduce crear una contraseña aleatoria de 6 dígitos numéricos (utilizar `Random`).
+- **Contraseña:** si se deja vacía, genera una contraseña aleatoria de seis dígitos numéricos con `Random`.
 
-Al enviar el formulario:
+Al enviar el formulario mediante `/registro`:
 
-- Capturar los datos en un objeto Java (modelo).
-- Mostrar una página de confirmación que muestre el nombre completo del usuario, su correo electrónico y su contraseña en caso de que se haya generado automáticamente, si el usuario introdujo contraseña no se mostrará.
-- La confirmación se enviará directamente al cuerpo de la respuesta, sin plantilla.
+- Recoge los datos en un objeto Java.
+- Comprueba en el servidor que el nombre y el correo no estén vacíos, la validación HTML del navegador se puede omitir.
+- Guarda el usuario y su contraseña en una colección en memoria para permitir que inicie sesión después. Por ejemplo un `Map` con usuario - contraseña.
+- Devuelve directamente en el cuerpo HTTP una confirmación. Muestra el nombre completo y el correo, incluye la contraseña solo si se generó automáticamente.
 
-El método GET de `/registro` debe devolver directamente el HTML del formulario en el cuerpo de la respuesta, indicando el tipo de contenido `text/html`. El formulario enviará sus datos mediante POST a `/registro`; los atributos `name` de los campos deben coincidir con los datos que recojas en el controlador. En el POST, agrúpalos en un objeto Java: `@ModelAttribute` enlaza los campos con propiedades del objeto que tengan el mismo nombre; también puedes construir el objeto a partir de parámetros. Comprueba en el servidor que nombre y correo no estén vacíos, ya que la validación del formulario en el navegador se puede omitir. Devuelve directamente en el cuerpo la confirmación, sin resolver una vista. Para la contraseña generada, produce un número entre 0 y 999999 y conserva los ceros iniciales al mostrarlo, de modo que siempre tenga seis dígitos. La contraseña solo se incluye en la confirmación cuando se generó automáticamente.
+El método GET debe devolver el HTML del formulario directamente en el cuerpo de la respuesta. 
 
-### Actividad 7
+Para la contraseña generada, produce un número entre 0 y 999999 y conserva los ceros iniciales para que siempre tenga seis dígitos.
 
-En la actividad 6 hemos creado un formulario de registro y hemos recogido los datos en un modelo, pues bien, continuando en este sentido vamos a completarla haciendo un formulario de login, para ello:
+#### Login
 
-- Crearemos un formulario con los campos usuario y contraseña.
-- Comprobaremos que el usuario existe y la contraseña está correcta.
-- Devolveremos el mensaje correspondiente (usuario logado, usuario no existe, contraseña incorrecta etc.) al cuerpo de la respuesta, sin plantilla.
+Crea `/login` para mostrar un formulario con los campos **usuario** y **contraseña**. El usuario puede ser el correo electrónico utilizado durante el registro. Envía los datos mediante otro `/login` y:
 
-Para ello, como no estamos trabajando con bases de datos, deberíamos tener creada alguna colección en memoria donde almacenemos unos cuantos usuarios de prueba.
+- Recoge y comprueba las credenciales usando los parámetros del formulario.
+- Devuelve directamente en el cuerpo de la respuesta un mensaje distinto para un inicio de sesión correcto, un usuario inexistente y una contraseña incorrecta.
+- Comprueba el login con un usuario registrado y también con credenciales incorrectas.
 
-Para mantener el ejercicio independiente de una base de datos, puedes usar un `Map` en memoria que asocie cada nombre de usuario con su contraseña. Decide y anota al menos dos credenciales de prueba. El usuario puede ser el correo electrónico del registro de la actividad 6. Comprueba tres situaciones: usuario y contraseña correctos, usuario inexistente y contraseña incorrecta. La colección se pierde al detener la aplicación. El almacenamiento de contraseñas en texto claro solo es aceptable en este ejercicio; no debe usarse en una aplicación real.
+Para no usar una base de datos, guarda los usuarios y sus contraseñas en un `Map` en memoria. Añade al menos dos usuarios de prueba además de los que se registren desde el formulario. La colección se pierde al detener la aplicación. Guardar contraseñas en texto claro solo es aceptable en este ejercicio didáctico, no lo hagas en una aplicación real.
+
+#### Ejemplos de ejecución
+
+Puedes usar estos datos de prueba para comprobar el funcionamiento:
+
+```text
+Map inicial:
+ana@example.com -> 246810
+luis@example.com -> clave123
+```
+
+**Registro con contraseña generada:** envía el formulario con nombre `Lucía`, apellidos `López` y correo `lucia@example.com`, dejando la contraseña vacía. Si la aplicación genera, por ejemplo, `042781`, la confirmación podría ser:
+
+```text
+Usuario registrado: Lucía López
+Correo: lucia@example.com
+Contraseña generada: 042781
+```
+
+El número generado será distinto en cada ejecución; debe mostrarse siempre con seis dígitos. Después, ese correo y esa contraseña deben permitir iniciar sesión.
+
+**Registro con contraseña introducida:** si registras a `Pablo Ruiz` con el correo `pablo@example.com` y la contraseña `miClave9`, la confirmación muestra el nombre y el correo, pero no la contraseña.
+
+**Pruebas de login:** con los datos iniciales del `Map`, comprueba estos casos:
+
+| Usuario | Contraseña | Resultado esperado |
+|---|---|---|
+| `ana@example.com` | `246810` | Inicio de sesión correcto. |
+| `ana@example.com` | `000000` | Contraseña incorrecta. |
+| `desconocido@example.com` | `246810` | Usuario inexistente. |
