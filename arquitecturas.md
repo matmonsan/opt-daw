@@ -34,6 +34,12 @@ description: "<strong>Módulo: </strong>Programación Web Avanzada <br> <strong>
    - [8.2. Método POST](#82-método-post)
 9. [JSON](#9-json)
 10. [Actividades](#actividades)
+    - [Actividad 1](#actividad-1)
+    - [Actividad 2](#actividad-2)
+    - [Actividad 3](#actividad-3)
+    - [Actividad 4](#actividad-4)
+    - [Actividad 5](#actividad-5)
+    - [Actividad 6](#actividad-6)
 
 ## 1. Entorno de trabajo
 
@@ -894,7 +900,7 @@ Ejemplo de salida:
 
 Como guía de implementación, crea clases Java que representen el pedido, el cliente, cada producto y la respuesta. El pedido contiene un cliente y una lista de productos; `@RequestBody` permite que Spring convierta el JSON recibido en esos objetos. Para el cálculo, suma `cantidad × precioUnitario` de cada producto y suma también las cantidades para obtener `totalProductos` (4 en el ejemplo, no 3). Para importes monetarios es preferible usar `BigDecimal`. Prueba el endpoint POST desde Postman con **Body > raw > JSON** y el `Content-Type: application/json`.
 
-## POST - Formulario
+## **POST - Formulario**
 
 Un formulario HTML puede enviar los datos al servidor mediante una petición HTTP `POST`. A diferencia de `GET`, los valores no se añaden a la URL: el navegador los envía en el cuerpo de la petición. En este ejemplo enviaremos un nombre y una edad a Spring Boot.
 
