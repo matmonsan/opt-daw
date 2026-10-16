@@ -40,6 +40,10 @@ description: "<strong>Módulo: </strong>Programación Web Avanzada <br> <strong>
     - [Actividad 4](#actividad-4)
     - [Actividad 5](#actividad-5)
     - [Actividad 6](#actividad-6)
+11. [Ampliación](#ampliación)
+    - [Reto 1: Taquilla Digital de Teatro](#reto-1-taquilla-digital-de-teatro)
+    - [Reto 2: Biblioteca Municipal](#reto-2-biblioteca-municipal)
+    - [Reto 3: Salón de Minijuegos](#reto-3-salón-de-minijuegos)
 
 ## 1. Entorno de trabajo
 
@@ -1080,3 +1084,283 @@ El número generado será distinto en cada ejecución; debe mostrarse siempre co
 | `ana@example.com` | `246810` | Inicio de sesión correcto. |
 | `ana@example.com` | `000000` | Contraseña incorrecta. |
 | `desconocido@example.com` | `246810` | Usuario inexistente. |
+
+## Ampliación
+
+Los siguientes retos integran todo lo visto en la unidad para que podáis practicar.
+
+### Reto 1: Taquilla Digital de Teatro
+
+#### ¿En qué consiste la actividad?
+
+Debes construir el sistema backend para la taquilla de un teatro. La aplicación debe almacenar una cartelera de obras en memoria, servir un formulario web en HTML para que los clientes compren sus entradas y procesar las solicitudes aplicando las normas de aforo y precios de la empresa.
+
+#### Componentes a desarrollar
+
+```text
+                        ┌───────────────────────────────┐
+                        │   Formulario HTML (Cliente)   │
+                        └──────────────┬────────────────┘
+                                       │
+                         1. Envía datos del formulario
+                                       │
+                                       ▼
+┌────────────────────────────────────────────────────────────────────────┐
+│                        Sistema de Taquilla                             │
+├────────────────────────────────────────────────────────────────────────┤
+│  2. Busca la obra en la Cartelera.                                     │
+│  3. Comprueba asientos disponibles.                                    │
+│  4. Aplica recargos por zona (General/VIP).                            │
+│  5. Aplica descuentos (por cantidad y cupón).                          │
+│  6. Actualiza las plazas libres y responde con el resultado.           │
+└────────────────────────────────────────────────────────────────────────┘
+```
+
+**1. La cartelera inicial (datos en memoria).** Al arrancar, el sistema debe contar con un listado predeterminado de obras. Cada obra tiene:
+
+- Identificador único (ejemplo: `101`, `102`).
+- Título (ejemplo: *"La Casa de Bernarda Alba"*).
+- Precio base de la entrada (ejemplo: `25.0`).
+- Asientos disponibles (ejemplo: `10`).
+
+Datos sugeridos:
+
+| id | Título | Precio base | Asientos libres |
+|---|---|---|---|
+| `101` | La Casa de Bernarda Alba | 25.0 | 10 |
+| `102` | Yerma | 32.0 | 5 |
+| `103` | El Tragaluz | 18.0 | 20 |
+
+**2. Formulario web de reserva (`reserva.html`).** Crea la página en los recursos estáticos de la aplicación, con un formulario que envíe los datos por POST a la ruta que procesa la compra. Campos:
+
+- Obra: campo de texto o desplegable con el identificador de la obra (`eventoId`).
+- Nombre del cliente: texto (`nombreCliente`).
+- Zona: selección entre `General` o `VIP` (`tipoEntrada`).
+- Número de entradas: campo numérico (`cantidad`).
+- Cupón de descuento: texto opcional (`codigoCupon`).
+- Botón "Reservar" para enviar el formulario.
+
+**3. Procesador de compras.** Al recibir el formulario, ejecuta las comprobaciones en este orden exacto:
+
+1. Verificación de aforo:
+   - Si la cantidad solicitada es mayor que los asientos disponibles, la reserva se rechaza y no se modifican las plazas.
+   - Si hay asientos suficientes, se restan del total disponible y se calcula el importe.
+2. Precio por entrada:
+   - `General`: el precio base de la obra.
+   - `VIP`: precio base con un 20 % de recargo.
+3. Descuentos acumulados:
+   - Volumen: con 4 o más entradas, se descuenta un 10 % del subtotal.
+   - Cupón: con el código `DESCUENTO15`, se resta un 15 % adicional sobre el importe resultante del paso anterior.
+
+**4. Buscador de obras.** Permite consultar la cartelera con filtros opcionales mediante parámetros en la URL (por ejemplo `/cartelera?precioMax=30&soloDisponibles=true`):
+
+- Precio máximo: devuelve solo las obras con precio base igual o inferior al valor indicado.
+- Disponibilidad: si es `true`, devuelve solo obras con `asientosLibres > 0`.
+
+Si no se indica ningún filtro, se devuelven todas las obras.
+
+#### Casos de uso y respuestas esperadas
+
+**Caso A: compra correcta con descuentos (vía formulario).** Un cliente compra 4 entradas VIP para la obra `101` (precio base 25.0) con el código `DESCUENTO15`.
+
+- Datos: `eventoId` = `101`, `nombreCliente` = `"Laura Gómez"`, `tipoEntrada` = `"VIP"`, `cantidad` = `4`, `codigoCupon` = `"DESCUENTO15"`.
+- Cálculos:
+  1. Precio entrada VIP: 25.0 × 1.20 = 30.0 €.
+  2. Subtotal (4 entradas): 30.0 × 4 = 120.0 €.
+  3. Descuento por 4 entradas (10 %): 120.0 − 12.0 = 108.0 €.
+  4. Descuento por cupón (15 % sobre 108): 108.0 − 16.2 = 91.8 €.
+- Respuesta:
+
+```json
+{
+  "estado": "CONFIRMADA",
+  "cliente": "Laura Gómez",
+  "entradas": 4,
+  "precioUnitario": 30.0,
+  "subtotal": 120.0,
+  "descuentoTotal": 28.2,
+  "totalAPagar": 91.8
+}
+```
+
+**Caso B: obra sin plazas suficientes.** Un cliente solicita 12 entradas para la obra `102`, que solo tiene 5 asientos libres.
+
+- Datos: `eventoId` = `102`, `nombreCliente` = `"Pedro Martínez"`, `cantidad` = `12`.
+- Respuesta:
+
+```json
+{
+  "estado": "RECHAZADA",
+  "motivo": "Aforo insuficiente. Asientos disponibles restantes: 5"
+}
+```
+
+**Caso C: búsqueda filtrada por URL.** Consulta con `precioMax = 30.0` y `soloDisponibles = true` (tras la compra del caso A, la obra `101` conserva 6 asientos):
+
+```json
+[
+  {
+    "id": 101,
+    "titulo": "La Casa de Bernarda Alba",
+    "precioBase": 25.0,
+    "asientosLibres": 6
+  },
+  {
+    "id": 103,
+    "titulo": "El Tragaluz",
+    "precioBase": 18.0,
+    "asientosLibres": 20
+  }
+]
+```
+
+### Reto 2: Biblioteca Municipal
+
+#### ¿En qué consiste la actividad?
+
+Crea una aplicación para gestionar los préstamos de una biblioteca. Los libros se guardan en memoria, se consultan mediante URL con filtros y los préstamos se realizan desde un formulario HTML.
+
+#### Componentes a desarrollar
+
+1. Catálogo inicial en memoria. Al menos 5 libros con `id`, `titulo`, `autor`, `categoria` y `ejemplaresDisponibles` (alguno con 0 ejemplares).
+2. Formulario estático (`prestamo.html`) con los campos `libroId`, `nombreSocio`, `diasPrestamo` (número) y `carnetPremium` (casilla opcional). Envía los datos por POST.
+3. Procesador de préstamos, con las comprobaciones en este orden:
+   1. Si el libro no existe, se rechaza con el motivo `"Libro no encontrado"`.
+   2. Si no quedan ejemplares, se rechaza con el motivo `"Sin ejemplares disponibles"`.
+   3. Si `diasPrestamo` es menor que 1 o mayor que 30, se rechaza con el motivo `"Duración no válida (1-30 días)"`.
+   4. Si todo es correcto, se resta un ejemplar y se calcula    la fecha de devolución (hoy + `diasPrestamo`, con `LocalDate`). Los socios con carnet premium reciben 7 días extra de forma gratuita.
+   4. Buscador de libros en `GET /libros` con filtros opcionales por URL: `categoria`, `autor` (sin distinguir mayúsculas) y `soloDisponibles`.
+   5. Consulta de un libro: `GET /libro` con el parámetro `id` devuelve el libro en JSON o un mensaje de error si no existe.
+
+#### Casos de uso y respuestas esperadas
+
+**Caso A: préstamo correcto.** `libroId` = `1`, `nombreSocio` = `"Marta Ruiz"`, `diasPrestamo` = `14`, `carnetPremium` marcado (fecha de ejemplo: 2026-10-16):
+
+```json
+{
+  "estado": "CONCEDIDO",
+  "socio": "Marta Ruiz",
+  "libro": "Don Quijote de la Mancha",
+  "diasTotales": 21,
+  "fechaDevolucion": "2026-11-06"
+}
+```
+
+**Caso B: libro sin ejemplares.**
+
+```json
+{
+  "estado": "RECHAZADO",
+  "motivo": "Sin ejemplares disponibles"
+}
+```
+
+**Caso C: búsqueda.** `GET /libros?categoria=novela&soloDisponibles=true` devuelve una lista JSON con los libros de esa categoría que tengan ejemplares.
+
+### Reto 3: Salón de Minijuegos
+
+#### ¿En qué consiste la actividad?
+
+Desarrolla una API REST para un pequeño salón de juegos. Cada petición es independiente y la aplicación responde con un texto que describe lo que ha pasado.
+
+#### Componentes a desarrollar
+
+1. Dados: `GET /juegos/dados` con los parámetros opcionales `cantidad` (por defecto `2`) y `caras` (por defecto `6`).
+   - La cantidad debe estar entre 1 y 10 y las caras deben ser 4, 6, 8, 10, 12 o 20. Si no, responde con un mensaje de error explicando el problema.
+   - Tira los dados y devuelve el resultado de cada uno y la suma. Si todos los dados sacan el mismo valor (con más de un dado), añade el mensaje `¡Dobles!`.
+2. Piedra, papel, tijera, lagarto, Spock: `POST /juegos/duelo` con el parámetro `jugada`.
+   - Las jugadas válidas son `piedra`, `papel`, `tijera`, `lagarto` y `spock` (sin distinguir mayúsculas). Con otra, responde con un mensaje de error que las enumere.
+   - La aplicación elige su jugada al azar y responde quién gana. Reglas: tijera corta papel, papel cubre piedra, piedra aplasta lagarto, lagarto envenena a Spock, Spock rompe tijera, tijera decapita lagarto, lagarto devora papel, papel desautoriza a Spock, Spock vaporiza piedra y piedra aplasta tijera.
+3. Ruleta: `POST /juegos/ruleta` con los parámetros `apuesta` y `valor` (opcional según el tipo de apuesta).
+   - La ruleta gira un número del 0 al 36. El 0 es verde, los números `1, 3, 5, 7, 9, 12, 14, 16, 18, 19, 21, 23, 25, 27, 30, 32, 34, 36` son rojos y el resto negros.
+   - Tipos de apuesta: `color` (valor `rojo` o `negro`), `paridad` (valor `par` o `impar`) y `pleno` (valor, un número del 0 al 36).
+   - El 0 hace perder todas las apuestas excepto el pleno al 0.
+   - Responde con el número, su color y si la apuesta ha ganado o perdido. Valida que el tipo y el valor sean correctos.
+4. Mensaje secreto: `POST /juegos/cesar` con los parámetros `texto`, `desplazamiento` y `modo` (`cifrar` o `descifrar`).
+   - Aplica el cifrado César: cada letra del alfabeto inglés se desplaza `desplazamiento` posiciones (entre 1 y 25), respetando mayúsculas y minúsculas. Los espacios, los números, los símbolos y las letras con tilde o la `ñ` se dejan sin cambios.
+   - Si el modo es `descifrar`, el desplazamiento se aplica en sentido contrario.
+   - Devuelve el texto resultante.
+5. Cara o cruz con trampa: `GET /juegos/moneda` con el parámetro `lanzamientos`, que indica cuántas veces se lanza una moneda (entre 1 y 100).
+   - Devuelve cuántas caras y cuántas cruces han salido y cuál ha sido la racha más larga de resultados iguales consecutivos.
+
+#### Casos de uso y respuestas esperadas
+
+Como el resultado depende del azar, los números concretos serán distintos en cada ejecución.
+
+**Caso A: dados.** `GET /juegos/dados?cantidad=3&caras=6`:
+
+```text
+Has tirado 3 dados de 6 caras: 4, 2, 5
+Suma total: 11
+```
+
+Con `GET /juegos/dados?cantidad=2&caras=6` puede salir:
+
+```text
+Has tirado 2 dados de 6 caras: 3, 3
+Suma total: 6
+¡Dobles!
+```
+
+Con `GET /juegos/dados?cantidad=2&caras=7`:
+
+```text
+Número de caras no válido. Usa 4, 6, 8, 10, 12 o 20
+```
+
+**Caso B: duelo.** `POST /juegos/duelo` con `jugada` = `spock` y la aplicación elige `tijera`:
+
+```text
+Tú: spock | Máquina: tijera
+Spock rompe tijera. ¡Has ganado!
+```
+
+Si la máquina elige lo mismo que tú:
+
+```text
+Tú: papel | Máquina: papel
+Empate
+```
+
+Con `jugada` = `fuego`:
+
+```text
+Jugada no válida. Opciones: piedra, papel, tijera, lagarto, spock
+```
+
+**Caso C: ruleta.** `POST /juegos/ruleta` con `apuesta` = `color` y `valor` = `rojo`; sale el 14:
+
+```text
+Ha salido el 14 (rojo). Apuesta ganada
+```
+
+Con `apuesta` = `paridad` y `valor` = `par`; sale el 0:
+
+```text
+Ha salido el 0 (verde). Apuesta perdida
+```
+
+**Caso D: mensaje secreto.** `POST /juegos/cesar` con `texto` = `Hola Mundo`, `desplazamiento` = `3` y `modo` = `cifrar`:
+
+```text
+Krod Pxqgr
+```
+
+Con `texto` = `Krod Pxqgr`, `desplazamiento` = `3` y `modo` = `descifrar`:
+
+```text
+Hola Mundo
+```
+
+**Caso E: moneda.** `GET /juegos/moneda?lanzamientos=10`:
+
+```text
+10 lanzamientos: 6 caras y 4 cruces
+Racha más larga: 3 caras seguidas
+```
+
+#### Para ampliar aún más
+
+- En los retos 1 y 2, muestra una página HTML de confirmación en lugar de JSON.
+- Añade un endpoint `DELETE` o `POST /cancelar` que devuelva las plazas, ejemplares o unidades al stock.
+- Organiza el código por capas (`controller`, `service`, `model`) como se explicó en el apartado 5.2.
