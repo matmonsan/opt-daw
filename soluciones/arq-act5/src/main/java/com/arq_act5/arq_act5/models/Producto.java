@@ -1,11 +1,15 @@
-package com.arq_act5.arq_act5;
-
-import java.math.BigDecimal;
+package com.arq_act5.arq_act5.models;
 
 public class Producto {
     private String nombre;
     private int cantidad;
-    private BigDecimal precioUnitario;
+    private Double precioUnitario;
+    
+    public Producto(String nombre, int cantidad, Double precioUnitario) {
+        this.nombre = nombre;
+        this.cantidad = cantidad;
+        this.precioUnitario = precioUnitario;
+    }
 
     public Producto() {
     }
@@ -26,11 +30,11 @@ public class Producto {
         this.cantidad = cantidad;
     }
 
-    public BigDecimal getPrecioUnitario() {
+    public Double getPrecioUnitario() {
         return precioUnitario;
     }
 
-    public void setPrecioUnitario(BigDecimal precioUnitario) {
+    public void setPrecioUnitario(Double precioUnitario) {
         this.precioUnitario = precioUnitario;
     }
 }

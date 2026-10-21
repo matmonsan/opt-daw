@@ -1,14 +1,12 @@
-package com.arq_act5.arq_act5;
-
-import java.math.BigDecimal;
+package com.arq_act5.arq_act5.models;
 
 public class RespuestaPedido {
     private String cliente;
     private int totalProductos;
-    private BigDecimal precioTotal;
+    private Double precioTotal;
     private String mensaje;
 
-    public RespuestaPedido(String cliente, int totalProductos, BigDecimal precioTotal, String mensaje) {
+    public RespuestaPedido(String cliente, int totalProductos, Double precioTotal, String mensaje) {
         this.cliente = cliente;
         this.totalProductos = totalProductos;
         this.precioTotal = precioTotal;
@@ -23,7 +21,7 @@ public class RespuestaPedido {
         return totalProductos;
     }
 
-    public BigDecimal getPrecioTotal() {
+    public Double getPrecioTotal() {
         return precioTotal;
     }
 

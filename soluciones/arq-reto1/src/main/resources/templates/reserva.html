@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Reserva de entradas</title>
+</head>
+<body>
+    <h2>Formulario de Reserva</h2>
+
+    <form action="/comprar" method="POST">
+        <p>
+            <label for="eventoId">Obra:</label><br>
+            <select id="eventoId" name="eventoId" required>
+                <option value="101">101 - La Casa de Bernarda Alba</option>
+                <option value="102">102 - Yerma</option>
+                <option value="103">103 - El Tragaluz</option>
+            </select>
+        </p>
+
+        <p>
+            <label for="nombreCliente">Nombre del cliente:</label><br>
+            <input type="text" id="nombreCliente" name="nombreCliente" required>
+        </p>
+
+        <p>
+            <label for="tipoEntrada">Zona:</label><br>
+            <select id="tipoEntrada" name="tipoEntrada" required>
+                <option value="General">General</option>
+                <option value="VIP">VIP</option>
+            </select>
+        </p>
+
+        <p>
+            <label for="cantidad">Número de entradas:</label><br>
+            <input type="number" id="cantidad" name="cantidad" min="1" required>
+        </p>
+
+        <p>
+            <label for="codigoCupon">Cupón de descuento:</label><br>
+            <input type="text" id="codigoCupon" name="codigoCupon" placeholder="Ej: DESCUENTO15">
+        </p>
+
+        <p>
+            <button type="submit">Reservar</button>
+        </p>
+    </form>
+</body>
+</html>

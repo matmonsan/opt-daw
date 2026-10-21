@@ -1,9 +1,16 @@
-package com.arq_act5.arq_act5;
+package com.arq_act5.arq_act5.models;
 
 public class Cliente {
     private String nombre;
     private String correo;
     private String telefono;
+
+    
+    public Cliente(String nombre, String correo, String telefono) {
+        this.nombre = nombre;
+        this.correo = correo;
+        this.telefono = telefono;
+    }
 
     public Cliente() {
     }

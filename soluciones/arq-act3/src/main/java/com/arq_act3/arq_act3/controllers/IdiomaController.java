@@ -1,4 +1,4 @@
-package com.arq_act3.arq_act3;
+package com.arq_act3.arq_act3.controllers;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;

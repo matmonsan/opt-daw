@@ -1,4 +1,4 @@
-package com.arq_act5.arq_act5;
+package com.arq_act5.arq_act5.models;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -6,6 +6,11 @@ import java.util.List;
 public class Pedido {
     private Cliente cliente;
     private List<Producto> productos = new ArrayList<>();
+    
+    public Pedido(Cliente cliente, List<Producto> productos) {
+        this.cliente = cliente;
+        this.productos = productos;
+    }
 
     public Pedido() {
     }
