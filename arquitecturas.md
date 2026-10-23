@@ -1229,7 +1229,7 @@ Crea una aplicación para gestionar los préstamos de una biblioteca. Los libros
    2. Si no quedan ejemplares, se rechaza con el motivo `"Sin ejemplares disponibles"`.
    3. Si `diasPrestamo` es menor que 1 o mayor que 30, se rechaza con el motivo `"Duración no válida (1-30 días)"`.
    4. Si todo es correcto, se resta un ejemplar y se calcula    la fecha de devolución (hoy + `diasPrestamo`, con `LocalDate`). Los socios con carnet premium reciben 7 días extra de forma gratuita.
-   4. Buscador de libros en `GET /libros` con filtros opcionales por URL: `categoria`, `autor` (sin distinguir mayúsculas) y `soloDisponibles`.
+   4. Buscador de libros en `GET /libros` con filtros opcionales por URL: `categoria`, `autor` (sin distinguir mayúsculas) y `soloDisponibles`. La página principal incluye un enlace que lanza esta petición.
    5. Consulta de un libro: `GET /libro` con el parámetro `id` devuelve el libro en JSON o un mensaje de error si no existe.
 
 #### Casos de uso y respuestas esperadas
