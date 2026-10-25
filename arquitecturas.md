@@ -41,8 +41,8 @@ description: "<strong>Módulo: </strong>Programación Web Avanzada <br> <strong>
     - [Actividad 5](#actividad-5) ([solución](soluciones/arq-act5.zip){:download})
     - [Actividad 6](#actividad-6) ([solución](soluciones/arq-act6.zip){:download})
 11. [Ampliación](#ampliación)
-    - [Reto 1: Taquilla Digital de Teatro](#reto-1-taquilla-digital-de-teatro)
-    - [Reto 2: Biblioteca Municipal](#reto-2-biblioteca-municipal)
+    - [Reto 1: Taquilla Digital de Teatro](#reto-1-taquilla-digital-de-teatro) ([solución](soluciones/arq-reto1.zip){:download})
+    - [Reto 2: Biblioteca Municipal](#reto-2-biblioteca-municipal) ([solución](soluciones/arq-reto2.zip){:download})
     - [Reto 3: Salón de Minijuegos](#reto-3-salón-de-minijuegos)
 
 ## 1. Entorno de trabajo

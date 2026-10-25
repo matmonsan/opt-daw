@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Préstamo de libros</title>
+</head>
+<body>
+    <h2>Formulario de préstamo</h2>
+
+    <form action="/prestar" method="POST">
+        <label>Libro:</label><br>
+        <select id="libroId" name="libroId" required>
+            <option value="1">1 - Don Quijote de la Mancha</option>
+            <option value="2">2 - La casa de Bernarda Alba</option>
+            <option value="3">3 - Cien años de soledad</option>
+            <option value="4">4 - El principito</option>
+            <option value="5">5 - La sombra del viento</option>
+        </select><br><br>
+
+        <label>Nombre del socio:</label><br>
+        <input type="text" id="nombreSocio" name="nombreSocio" required><br><br>
+
+        <label>Días de préstamo:</label><br>
+        <input type="number" id="diasPrestamo" name="diasPrestamo" min="1" max="30" required><br><br>
+
+        <label>Carnet premium:</label>
+        <input type="checkbox" id="carnetPremium" name="carnetPremium" value="true"><br><br>
+
+        <button type="submit">Solicitar préstamo</button>
+    </form>
+</body>
+</html>
