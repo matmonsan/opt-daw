@@ -10,16 +10,17 @@ description: "<strong>Módulo: </strong>Programación Web Avanzada <br> <strong>
 1. [Parámetros de ruta con PathVariable](#1-parámetros-de-ruta-con-pathvariable)
 2. [Actualizar y eliminar recursos](#2-actualizar-y-eliminar-recursos)
 3. [Servicios y organización por capas](#3-servicios-y-organización-por-capas)
-4. [Inyección de dependencias](#4-inyección-de-dependencias)
-5. [HTTP y ResponseEntity](#5-http-y-responseentity)
-6. [DTOs: datos de entrada y salida](#6-dtos-datos-de-entrada-y-salida)
-7. [Inicio de sesión con Firebase Authentication](#7-inicio-de-sesión-con-firebase-authentication)
+4. [Manejo de excepciones](#4-manejo-de-excepciones)
+5. [Inyección de dependencias](#5-inyección-de-dependencias)
+6. [HTTP y ResponseEntity](#6-http-y-responseentity)
+7. [DTOs: datos de entrada y salida](#7-dtos-datos-de-entrada-y-salida)
+8. [Inicio de sesión con Firebase Authentication](#8-inicio-de-sesión-con-firebase-authentication)
 
 {% comment %}
-8. [Práctica 1: reservas de una sala](#8-práctica-1-reservas-de-una-sala)
-9. [Práctica 2: estrategias de facturación](#9-práctica-2-estrategias-de-facturación)
-10. [Práctica 3: telemetría de un rover](#10-práctica-3-telemetría-de-un-rover)
-11. [Actividades de ampliación](#actividades-de-ampliación)
+9. [Práctica 1: reservas de una sala](#9-práctica-1-reservas-de-una-sala)
+10. [Práctica 2: estrategias de facturación](#10-práctica-2-estrategias-de-facturación)
+11. [Práctica 3: telemetría de un rover](#11-práctica-3-telemetría-de-un-rover)
+12. [Actividades de ampliación](#actividades-de-ampliación)
 {% endcomment %}
 
 
@@ -108,7 +109,58 @@ public class InventarioService {
 
 `@Component` es una anotación de propósito general para registrar un bean. `@Service`, `@Repository` y `@RestController` son anotaciones especializadas que expresan el papel del componente.
 
-## 4. Inyección de dependencias
+## 4. Manejo de excepciones
+
+Las excepciones representan situaciones que impiden completar una operación. En una API, el servidor debe convertirlas en respuestas HTTP con el código adecuado, sin exponer trazas, consultas internas ni detalles sensibles.
+
+Spring ofrece `ResponseStatusException`, una excepción que lleva asociado un código de estado HTTP. Si se lanza desde un controlador o un servicio, Spring responde directamente con ese código, sin necesidad de escribir ningún manejador. Para no repetir el código y el mensaje en cada punto, se crean excepciones propias que **extienden** `ResponseStatusException`:
+
+```java
+public class RecursoNoEncontradoException extends ResponseStatusException {
+    public RecursoNoEncontradoException(String mensaje) {
+        super(HttpStatus.NOT_FOUND, mensaje);
+    }
+}
+```
+
+```java
+public class ReservaSolapadaException extends ResponseStatusException {
+    public ReservaSolapadaException() {
+        super(HttpStatus.CONFLICT, "La sala ya está ocupada en ese horario");
+    }
+}
+```
+
+```java
+public class DatosNoValidosException extends ResponseStatusException {
+    public DatosNoValidosException(String mensaje) {
+        super(HttpStatus.BAD_REQUEST, mensaje);
+    }
+}
+```
+
+El servicio lanza la excepción cuando se incumple una regla de negocio y el controlador no necesita ningún `if` ni `try/catch`:
+
+```java
+public ReservaDto buscar(long id) {
+    return reservaRepository.buscar(id)
+            .orElseThrow(() ->
+                    new RecursoNoEncontradoException("No existe la reserva " + id));
+}
+```
+
+```java
+@GetMapping("/{id}")
+public ReservaDto buscar(@PathVariable long id) {
+    return reservaService.buscar(id);
+}
+```
+
+Si `GET /reservas/99` no encuentra el recurso, la respuesta será `404 Not Found`. El mensaje de la excepción queda disponible como motivo del error; según la configuración de Spring Boot (`server.error.include-message`) puede no incluirse en el cuerpo de la respuesta, lo cual es lo recomendable para no exponer información interna.
+
+Asigna un código adecuado a cada error esperado (`400` para datos inválidos, `404` para recursos inexistentes, `409` para conflictos) y deja que los errores inesperados terminen como `500 Internal Server Error`.
+
+## 5. Inyección de dependencias
 
 Spring crea y administra los objetos de la aplicación, llamados *beans*. En vez de que un controlador construya sus servicios con `new`, Spring puede inyectar las dependencias necesarias. Esto reduce el acoplamiento y hace más sencillo probar cada parte.
 
@@ -145,7 +197,7 @@ public class ReservaController {
 
 La inyección por campo también existe, pero el constructor suele ser preferible: hace explícitas las dependencias, facilita las pruebas y permite declarar los campos como inmutables.
 
-## 5. HTTP y ResponseEntity
+## 6. HTTP y ResponseEntity
 
 Una aplicación web intercambia mensajes mediante el protocolo HTTP. El navegador u otro cliente envía una **petición** al servidor Spring Boot, y el servidor devuelve una **respuesta**. Cada operación se dirige a una URL y utiliza un método HTTP que expresa la intención: consultar, crear, reemplazar o borrar un recurso.
 
@@ -217,9 +269,9 @@ public ResponseEntity<?> crear(@RequestBody ReservaCrearDto entrada) {
 }
 ```
 
-Para una API con reglas de error comunes se puede centralizar el tratamiento de excepciones con `@RestControllerAdvice`. El ejemplo anterior es breve para mostrar la forma de la respuesta; en una aplicación mayor, la validación debe quedar en una capa coherente y no repetirse en cada controlador.
+Para los errores esperados también se pueden lanzar excepciones que extienden `ResponseStatusException`, como se explicó en el apartado 4; así el controlador queda libre de condicionales de error.
 
-## 6. DTOs: datos de entrada y salida
+## 7. DTOs: datos de entrada y salida
 
 Un **DTO** (*Data Transfer Object*) representa los datos que cruzan el límite de la API. Separa el contrato HTTP de las clases internas de negocio o persistencia y permite controlar qué información se expone.
 
@@ -272,7 +324,7 @@ Content-Type: application/json
 
 Para que los datos inválidos no lleguen a la lógica de negocio, se pueden añadir restricciones de Bean Validation a los DTOs, por ejemplo `@NotBlank`, `@Min` o `@Max`, y validar el cuerpo con `@Valid`.
 
-## 7. Inicio de sesión con Firebase Authentication
+## 8. Inicio de sesión con Firebase Authentication
 
 Firebase Authentication permite que el cliente inicie sesión mediante los proveedores configurados (correo, Google u otros). El flujo recomendado para una API Spring es:
 
@@ -308,12 +360,13 @@ public class FirebaseAuthService {
         this.firebaseAuth = firebaseAuth;
     }
 
-    public UsuarioAutenticadoDto verificar(String idToken)
-            throws FirebaseAuthException {
-        FirebaseToken token = firebaseAuth.verifyIdToken(idToken);
-        return new UsuarioAutenticadoDto(
-                token.getUid(),
-                token.getEmail());
+    public UsuarioAutenticadoDto verificar(String idToken) {
+        try {
+            FirebaseToken token = firebaseAuth.verifyIdToken(idToken);
+            return new UsuarioAutenticadoDto(token.getUid(), token.getEmail());
+        } catch (FirebaseAuthException e) {
+            throw new TokenInvalidoException();
+        }
     }
 }
 ```
@@ -335,22 +388,30 @@ public class AuthController {
 
     @PostMapping("/login")
     public ResponseEntity<UsuarioAutenticadoDto> login(
-            @RequestBody LoginFirebaseDto entrada) throws FirebaseAuthException {
+            @RequestBody LoginFirebaseDto entrada) {
         return ResponseEntity.ok(
                 firebaseAuthService.verificar(entrada.idToken()));
     }
 }
 ```
 
-Un manejador específico convierte los errores de verificación en `401 Unauthorized`, sin exponer detalles internos del SDK:
+El servicio convierte los errores de verificación en una excepción propia que extiende `ResponseStatusException` con `401 Unauthorized`, sin exponer detalles internos del SDK:
 
 ```java
-@RestControllerAdvice
-public class AuthExceptionHandler {
-    @ExceptionHandler(FirebaseAuthException.class)
-    public ResponseEntity<ErrorDto> tokenInvalido(FirebaseAuthException exception) {
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                .body(new ErrorDto("El token de Firebase no es válido"));
+public class TokenInvalidoException extends ResponseStatusException {
+    public TokenInvalidoException() {
+        super(HttpStatus.UNAUTHORIZED, "El token de Firebase no es válido");
+    }
+}
+```
+
+```java
+public UsuarioAutenticadoDto verificar(String idToken) {
+    try {
+        FirebaseToken token = firebaseAuth.verifyIdToken(idToken);
+        return new UsuarioAutenticadoDto(token.getUid(), token.getEmail());
+    } catch (FirebaseAuthException e) {
+        throw new TokenInvalidoException();
     }
 }
 ```
@@ -361,7 +422,7 @@ La verificación del token autentica al usuario, pero no concede automáticament
 
 {% comment %}
 
-## 8. Práctica 1: reservas de una sala
+## 9. Práctica 1: reservas de una sala
 
 ### Objetivo
 
@@ -400,7 +461,7 @@ Las horas disponibles se calculan sobre el intervalo de apertura (11 horas). Si 
 
 **Ampliación:** añade `PUT /reservas/{id}` para modificar una reserva y vuelve a comprobar las reglas de horario y solapamiento sin considerar la reserva que se está editando como conflicto consigo misma.
 
-## 9. Práctica 2: estrategias de facturación
+## 10. Práctica 2: estrategias de facturación
 
 ### Objetivo
 
@@ -438,7 +499,7 @@ POST /compra?periodo=BLACK_FRIDAY
 
 El cuerpo JSON representa el carrito. El controlador delega el cálculo en un servicio, que selecciona e invoca la estrategia. Así, añadir un nuevo periodo no requiere añadir ramas condicionales al controlador.
 
-## 10. Práctica 3: telemetría de un rover
+## 11. Práctica 3: telemetría de un rover
 
 ### Objetivo y configuración
 
@@ -473,7 +534,7 @@ El DTO de telemetría puede incluir posición, batería y estado de destrucción
 
 1. Usa Postman o el cliente HTTP del IDE para probar cada endpoint. Registra el método, URL, cuerpo, estado HTTP y respuesta.
 2. Añade validación de entrada a los DTOs y respuestas consistentes para los errores.
-3. Implementa un manejador común con `@RestControllerAdvice`.
+3. Crea excepciones propias que extiendan `ResponseStatusException` para los errores de las prácticas.
 4. Protege una ruta con Firebase Authentication y comprueba que las peticiones con token inválido reciben `401`.
 5. Escribe pruebas unitarias para servicios y estrategias, y pruebas de integración para los estados HTTP.
 6. Explica qué datos de las prácticas se perderían al reiniciar la aplicación y qué cambiaría al sustituir las colecciones en memoria por un repositorio persistente.
