@@ -700,7 +700,7 @@ La verificación del token autentica al usuario, pero no concede automáticament
 
 ## 9. Actividades
 
-### 9.1 Actividad: catálogo de productos con ResponseEntity
+### 9.1 Actividad 1: catálogo de productos con ResponseEntity
 
 Crea un controlador Spring Boot sencillo para consultar y modificar un catálogo de productos, elegir el código de estado adecuado en cada caso y devolver cuerpos con o sin contenido según proceda. Los datos se mantienen en memoria, en una lista dentro del propio controlador. La actividad utiliza tres operaciones `GET` y un `POST`, y ninguna recibe datos en el cuerpo de la petición.
 
