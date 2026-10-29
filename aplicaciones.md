@@ -387,63 +387,571 @@ Content-Type: application/json
 
 ## 3. Servicios y organización por capas
 
-Una organización habitual separa responsabilidades:
+### 3.1. ¿Por qué organizar el código en capas?
 
-- **Controller (`@RestController`):** recibe las peticiones HTTP, enlaza parámetros y DTOs, y elige el estado HTTP.
-- **Service (`@Service`):** aplica las reglas de negocio y coordina operaciones.
-- **DTO:** define los datos que entran y salen de la API.
+Cuando una aplicación crece, lo más peligroso no es la cantidad de código, sino que **todo esté mezclado**. Imagina un único método que recibe la petición HTTP, valida los datos, aplica las reglas de la aplicación, consulta la base de datos y construye la respuesta. Funcionaría, pero:
 
-En este tema los datos se mantienen en memoria (por ejemplo, en una colección dentro del servicio); el almacenamiento persistente queda fuera de su alcance.
+- Sería difícil de leer: ¿dónde termina lo que es HTTP y empieza la lógica?
+- Sería difícil de modificar: cambiar una regla obligaría a tocar código web.
+- Sería difícil de probar: para comprobar una regla tendrías que simular una petición completa.
+- No se podría reutilizar: si otra parte de la aplicación necesita esa regla, habría que copiarla.
 
-`@Service` registra una clase como componente de la capa de negocio. El controlador delega en el servicio, en lugar de contener reglas de reservas, descuentos o movimiento:
+La solución es **dividir la aplicación en capas**, de forma que cada una tenga una única responsabilidad. Este principio se conoce como **separación de responsabilidades**.
+
+---
+
+### 3.2. El flujo habitual en una API Spring
+
+En una API Spring sencilla, una petición recorre las capas así:
+
+```text
+Petición HTTP -> Controller -> Service -> respuesta
+```
+
+Y la respuesta hace el camino de vuelta:
+
+```text
+Cliente  --(petición)-->  Controller  --(llama a)-->  Service
+Cliente  <--(respuesta)-- Controller  <--(resultado)-- Service
+```
+
+Cada capa tiene su papel:
+
+- **Controller (`@RestController`):** es la puerta de entrada. Recibe la petición, extrae los datos, llama al servicio y prepara la respuesta HTTP.
+- **Service (`@Service`):** es el "cerebro". Ejecuta las operaciones y las reglas propias de la aplicación.
+
+> En aplicaciones con base de datos suele añadirse una tercera capa, el **repositorio** (`@Repository`), encargada de leer y guardar datos. El flujo pasa a ser `Controller -> Service -> Repository -> base de datos`. Por ahora trabajamos solo con controlador y servicio.
+
+#### Qué debe y qué no debe hacer cada capa
+
+| Capa | Sí debe | No debe |
+|---|---|---|
+| **Controller** | Recibir la petición, leer el cuerpo, parámetros y rutas, llamar al servicio, devolver la respuesta y el código HTTP. | Contener reglas de negocio, cálculos o decisiones sobre los datos. |
+| **Service** | Aplicar reglas, hacer comprobaciones y cálculos, coordinar operaciones. | Conocer detalles de HTTP (rutas, códigos de estado, cabeceras). |
+
+Una buena pregunta para saber dónde va un fragmento de código es: *"¿esto cambiaría si en lugar de una API web tuviera una aplicación de consola?"*. Si la respuesta es **no**, probablemente pertenece al servicio.
+
+---
+
+### 3.3. Estructura de paquetes del proyecto
+
+Por ahora, el código Java del proyecto puede organizarse así. `com.ejemplo.aplicacion` es un paquete de ejemplo: en tu proyecto tendrá el nombre que hayas configurado.
+
+```text
+src/
+└── main/
+    └── java/
+        └── com/ejemplo/aplicacion/
+            ├── Aplicacion.java
+            ├── controller/
+            │   └── InventarioController.java
+            ├── model/
+            │   └── Producto.java
+            └── service/
+                └── InventarioService.java
+```
+
+Qué contiene cada elemento:
+
+- **`Aplicacion.java`**: la clase principal, anotada con `@SpringBootApplication`. Es el punto de arranque.
+- **`controller`**: las clases que reciben las peticiones.
+- **`service`**: las clases que realizan las operaciones y aplican las reglas.
+- **`model`**: las clases que representan los elementos del dominio, como un producto o una reserva.
+
+Los nombres de los paquetes pueden variar (`controllers`, `services`, `domain`, `entity`...), pero mantener cada responsabilidad en su lugar ayuda a encontrar y entender el código.
+
+> **Importante:** `controller`, `service` y `model` deben quedar **dentro** del paquete de la clase principal. Spring escanea ese paquete y sus subpaquetes para encontrar las clases anotadas; si una clase queda fuera, no se registrará.
+
+#### Ejemplo de clase del modelo
+
+Una clase del modelo solo representa datos. Por ejemplo:
+
+```java
+public record Producto(Long id, String nombre, int unidades) {
+}
+```
+
+No tiene lógica de la aplicación ni sabe nada de HTTP: simplemente describe qué es un producto.
+
+---
+
+### 3.4. ¿Qué es un servicio?
+
+En este contexto, un **servicio** es una clase Java que reúne operaciones relacionadas con una tarea de la aplicación.
+
+Ejemplos:
+
+- Un servicio de **inventario** puede comprobar si hay unidades suficientes, calcular el stock restante o registrar una entrada de mercancía.
+- Un servicio de **reservas** puede comprobar si una reserva cumple las reglas: fechas válidas, plazas disponibles, antelación mínima...
+
+Algunas características importantes:
+
+- **No es una URL.** Los clientes no llaman directamente al servicio.
+- **No recibe la petición HTTP.** De eso se encarga el controlador.
+- **Es una clase normal de Java.** Sus métodos pueden llamarse desde cualquier sitio, también desde otros servicios o desde tests.
+
+El flujo de trabajo es: el controlador le pide al servicio que haga el trabajo y utiliza el resultado para decidir qué respuesta enviar.
+
+---
+
+### 3.5. ¿Por qué separar el servicio?
+
+Separar el servicio del controlador aporta varias ventajas:
+
+1. **Responsabilidades claras.** El controlador se ocupa de HTTP y el servicio de las reglas de negocio. Cada clase tiene un trabajo claro.
+2. **Reutilización.** Si la misma regla se necesita desde varias operaciones (por ejemplo, desde un endpoint de consulta y desde otro de reserva), se escribe una vez en el servicio y se llama desde ambos.
+3. **Facilidad para probar.** Un servicio se puede probar con un test normal de Java, sin levantar el servidor ni enviar peticiones web.
+4. **Mantenimiento más sencillo.** Si cambia una regla, se modifica el servicio sin tocar el controlador. Si cambia la ruta o el formato de la respuesta, se modifica el controlador sin tocar las reglas.
+5. **Código más legible.** Los controladores se quedan cortos y fáciles de leer.
+
+#### Comparación: sin separar y separando
+
+**Sin separar** (todo en el controlador):
+
+```java
+@PostMapping("/disponibilidad")
+public boolean hayUnidades(@RequestBody ComprobarInventarioRequest entrada) {
+    // regla de negocio mezclada con el controlador
+    return entrada.solicitadas() > 0
+            && entrada.disponibles() >= entrada.solicitadas();
+}
+```
+
+**Separando** (el controlador delega):
+
+```java
+@PostMapping("/disponibilidad")
+public boolean hayUnidades(@RequestBody ComprobarInventarioRequest entrada) {
+    return inventarioService.hayUnidades(
+            entrada.disponibles(), entrada.solicitadas());
+}
+```
+
+En el segundo caso, el controlador no sabe *cómo* se decide si hay unidades; solo sabe a quién preguntar.
+
+---
+
+### 3.6. ¿Cómo se define y se usa un servicio?
+
+#### Paso 1: crear el servicio
+
+Se crea una clase y se anota con `@Service`. Sus métodos representan las operaciones que ofrece:
 
 ```java
 @Service
 public class InventarioService {
+
     public boolean hayUnidades(int disponibles, int solicitadas) {
         return solicitadas > 0 && disponibles >= solicitadas;
     }
 }
 ```
 
-`@Component` es una anotación de propósito general para registrar un bean. `@Service` y `@RestController` son anotaciones especializadas que expresan el papel del componente.
+Este método devuelve `true` solo si se piden unidades (más de 0) y hay suficientes disponibles. Esa es una **regla de negocio**, y por eso vive en el servicio.
 
-## 4. Inyección de dependencias
+#### Paso 2: recibir los datos de la petición
 
-Spring crea y administra los objetos de la aplicación, llamados *beans*. En vez de que un controlador construya sus servicios con `new`, Spring puede inyectar las dependencias necesarias. Esto reduce el acoplamiento y hace más sencillo probar cada parte.
+El cliente envía los datos en el cuerpo de una petición:
 
-### Inyección mediante constructor con `@Autowired`
+```http
+POST /inventario/disponibilidad
+Content-Type: application/json
 
-La inyección por constructor deja visible qué dependencias necesita una clase y permite mantenerlas como campos `final`. Spring moderno suele detectar automáticamente un único constructor, pero `@Autowired` puede escribirse de forma explícita:
-
-```java
-@Service
-public class ReservaService {
-    private final RelojService relojService;
-
-    @Autowired
-    public ReservaService(RelojService relojService) {
-        this.relojService = relojService;
-    }
+{
+  "disponibles": 8,
+  "solicitadas": 3
 }
 ```
 
-El controlador recibe el servicio del mismo modo:
+Para representar esos datos en Java se crea una clase (aquí, un `record`) cuyos componentes coinciden con los campos del JSON:
+
+```java
+public record ComprobarInventarioRequest(int disponibles, int solicitadas) {
+}
+```
+
+`@RequestBody` se encarga de convertir ese JSON en un objeto Java.
+
+#### Paso 3: crear el controlador
+
+El controlador pasa los valores al servicio y devuelve el resultado:
 
 ```java
 @RestController
-@RequestMapping("/reservas")
-public class ReservaController {
-    private final ReservaService reservaService;
+@RequestMapping("/inventario")
+public class InventarioController {
 
-    @Autowired
-    public ReservaController(ReservaService reservaService) {
-        this.reservaService = reservaService;
+    private final InventarioService inventarioService;
+
+    public InventarioController(InventarioService inventarioService) {
+        this.inventarioService = inventarioService;
+    }
+
+    @PostMapping("/disponibilidad")
+    public boolean hayUnidades(@RequestBody ComprobarInventarioRequest entrada) {
+        return inventarioService.hayUnidades(
+                entrada.disponibles(), entrada.solicitadas());
     }
 }
 ```
 
-La inyección por campo también existe, pero el constructor suele ser preferible: hace explícitas las dependencias, facilita las pruebas y permite declarar los campos como inmutables.
+Elementos del controlador:
+
+- **`@RestController`**: indica que la clase atiende peticiones HTTP y que lo que devuelven sus métodos se envía como cuerpo de la respuesta.
+- **`@RequestMapping("/inventario")`**: prefijo común de todas las rutas de esta clase.
+- **`@PostMapping("/disponibilidad")`**: este método atiende peticiones `POST` a `/inventario/disponibilidad`.
+- **`@RequestBody`**: convierte el JSON recibido en un `ComprobarInventarioRequest`.
+- **Constructor**: Spring lo usa para entregar el `InventarioService` al controlador (se explica en detalle en la sección de inyección de dependencias).
+
+#### Paso 4: el resultado
+
+En este ejemplo, `true` indica que se pueden atender las unidades solicitadas y `false` que no.
+
+Con la petición anterior (`disponibles: 8`, `solicitadas: 3`), la respuesta sería:
+
+```http
+HTTP/1.1 200 OK
+Content-Type: application/json
+
+true
+```
+
+El controlador recibe la petición; la comprobación sigue estando en el servicio.
+
+#### Recorrido completo de una petición
+
+```text
+1. El cliente envía POST /inventario/disponibilidad con el JSON.
+2. Spring dirige la petición al método hayUnidades del controlador.
+3. @RequestBody convierte el JSON en un ComprobarInventarioRequest.
+4. El controlador llama a inventarioService.hayUnidades(8, 3).
+5. El servicio aplica la regla y devuelve true.
+6. El controlador devuelve ese valor y Spring lo envía como respuesta.
+```
+
+---
+
+### 3.7. `@Service` y `@Component`
+
+La anotación `@Service` permite que Spring detecte y gestione esa clase para poder proporcionársela al controlador. Al arrancar, Spring la registra como **bean** (un objeto que él crea y administra).
+
+Hay otra anotación en Spring: `@Component`, que también registra una clase, pero es más general. `@Service` expresa que la clase contiene operaciones de negocio.
+
+En realidad, `@Service`, `@Repository` y `@RestController` son **especializaciones** de `@Component`: Spring las trata igual a la hora de registrarlas, pero cada una comunica un propósito distinto.
+
+| Anotación | Se usa en | Significado |
+|---|---|---|
+| `@Component` | Cualquier clase que no encaje en las demás | Componente genérico. |
+| `@Service` | Clases de la capa de servicio | Contiene operaciones y reglas de negocio. |
+| `@Repository` | Clases de acceso a datos | Lee y guarda información. |
+| `@RestController` | Clases de la capa web | Atiende peticiones HTTP y devuelve datos. |
+
+¿Por qué usar `@Service` si `@Component` también funcionaría? Porque **el código se lee mejor**: al ver `@Service`, cualquiera sabe en qué capa está la clase y qué se espera de ella. Además, algunas herramientas y funciones de Spring pueden tratar de forma especial ciertas anotaciones.
+
+---
+
+## 4. Inyección de dependencias
+
+### 4.1. ¿Qué es una dependencia?
+
+Casi ninguna clase trabaja sola. Lo normal es que, para hacer su trabajo, necesite apoyarse en otras clases. Esa clase que se necesita se llama **dependencia**.
+
+En nuestro ejemplo:
+
+- `InventarioController` recibe las peticiones HTTP y devuelve respuestas.
+- `InventarioService` contiene la lógica para decidir si hay unidades suficientes.
+
+El controlador **depende** del servicio: sin él no podría responder a la petición. Por tanto, `InventarioService` es una dependencia de `InventarioController`.
+
+```
+Cliente HTTP ──► InventarioController ──► InventarioService
+                      (depende de)
+```
+
+---
+
+### 4.2. El problema: crear las dependencias a mano
+
+La forma más intuitiva de conseguir una dependencia es crearla con `new`:
+
+```java
+@RestController
+@RequestMapping("/inventario")
+public class InventarioController {
+
+    private final InventarioService inventarioService = new InventarioService();
+
+    @PostMapping("/disponibilidad")
+    public boolean hayUnidades(@RequestBody ComprobarInventarioRequest entrada) {
+        return inventarioService.hayUnidades(
+                entrada.disponibles(), entrada.solicitadas());
+    }
+}
+```
+
+Funciona, pero tiene varios inconvenientes:
+
+1. **Acoplamiento fuerte**: el controlador queda atado a una implementación concreta. Si mañana quieres usar otra versión del servicio, tienes que modificar el controlador.
+2. **Responsabilidad extra**: el controlador debería ocuparse de las peticiones HTTP, no de construir y configurar otros objetos.
+3. **Dependencias en cadena**: si `InventarioService` necesitara a su vez un `InventarioRepository`, y este un `DataSource`, el controlador tendría que construir toda la cadena.
+4. **Difícil de probar**: en un test no puedes sustituir el servicio real por uno falso (un *mock*), porque el controlador lo crea él mismo.
+5. **Objetos duplicados**: cada clase que haga `new InventarioService()` tendrá su propia instancia, sin control sobre ellas.
+
+---
+
+### 4.3. La solución: inversión de control
+
+La idea clave es **invertir el control**: en lugar de que cada clase fabrique lo que necesita, **otra pieza se encarga de crear los objetos y entregárselos**.
+
+En Spring, esa pieza es el **contenedor de Spring** (también llamado *contexto de aplicación* o `ApplicationContext`). Este contenedor:
+
+1. Crea los objetos de tu aplicación.
+2. Los configura.
+3. Resuelve qué objeto necesita cada clase.
+4. Se los entrega cuando los necesitan.
+
+Esto se conoce como **inversión de control (IoC)**, y la técnica concreta para entregar los objetos es la **inyección de dependencias (DI)**.
+
+> **Definición:** la inyección de dependencias consiste en que una clase **recibe** de fuera los objetos que necesita, en lugar de crearlos ella misma.
+
+---
+
+### 4.4. Beans: los objetos que gestiona Spring
+
+Un **bean** es un objeto que Spring crea, configura y administra durante la ejecución de la aplicación. No es un tipo especial de objeto: es una clase normal de Java cuyo ciclo de vida controla Spring.
+
+Para que Spring registre una clase como bean, se utilizan **anotaciones de estereotipo**:
+
+| Anotación | Uso habitual |
+|---|---|
+| `@Component` | Componente genérico. |
+| `@Service` | Clases con la lógica de negocio. |
+| `@Repository` | Clases de acceso a datos. |
+| `@RestController` | Controladores que exponen una API REST. |
+| `@Configuration` | Clases que definen beans manualmente con `@Bean`. |
+
+En nuestro ejemplo:
+
+```java
+@Service
+public class InventarioService {
+
+    public boolean hayUnidades(int disponibles, int solicitadas) {
+        return disponibles >= solicitadas;
+    }
+}
+```
+
+```java
+public record ComprobarInventarioRequest(int disponibles, int solicitadas) {}
+```
+
+Tanto `InventarioService` (por `@Service`) como `InventarioController` (por `@RestController`) se convierten en beans.
+
+#### ¿Cómo los encuentra Spring?
+
+Spring Boot realiza un **escaneo de componentes** (*component scan*). Al arrancar, recorre el paquete de la clase principal (la anotada con `@SpringBootApplication`) y todos sus subpaquetes, buscando clases con anotaciones de estereotipo.
+
+```
+com.ejemplo.tienda
+├── TiendaApplication.java        ← clase principal (@SpringBootApplication)
+├── controller
+│   └── InventarioController.java ← se detecta
+└── service
+    └── InventarioService.java    ← se detecta
+```
+
+> **Importante:** si una clase con `@Service` está **fuera** del paquete de la clase principal, Spring no la encontrará y la aplicación fallará al arrancar.
+
+---
+
+### 4.5. Primer ejemplo: inyección por campo con `@Autowired`
+
+La anotación `@Autowired` le indica a Spring: *"aquí necesito un bean de este tipo, búscalo y asígnalo"*.
+
+```java
+@RestController
+@RequestMapping("/inventario")
+public class InventarioController {
+
+    @Autowired
+    private InventarioService inventarioService;
+
+    @PostMapping("/disponibilidad")
+    public boolean hayUnidades(@RequestBody ComprobarInventarioRequest entrada) {
+        return inventarioService.hayUnidades(
+                entrada.disponibles(), entrada.solicitadas());
+    }
+}
+```
+
+Esta forma se llama **inyección por campo**, porque la anotación se coloca directamente sobre el atributo.
+
+#### ¿Qué ocurre al arrancar la aplicación?
+
+1. Spring escanea los paquetes y encuentra `InventarioService` (`@Service`) y `InventarioController` (`@RestController`).
+2. Crea primero el `InventarioService`, porque el controlador lo necesita.
+3. Crea el `InventarioController`.
+4. Ve el `@Autowired` sobre el campo `inventarioService`, busca un bean de tipo `InventarioService` y lo **asigna** al campo.
+5. Cuando llega una petición a `POST /inventario/disponibilidad`, el controlador ya tiene el servicio listo y puede llamar a `inventarioService.hayUnidades(...)`.
+
+Fíjate en que en ningún momento escribimos `new InventarioService()`. Esa tarea la hace Spring.
+
+#### Ventajas de la inyección por campo
+
+- Es muy corta y fácil de leer.
+- Se ve junto al atributo qué dependencia se necesita.
+
+#### Inconvenientes
+
+- El campo **no puede ser `final`**, así que el objeto no es inmutable.
+- Para hacer tests unitarios sin Spring hay que usar reflexión o herramientas especiales para inyectar el mock.
+- Las dependencias quedan **ocultas**: mirando el constructor (que no existe) no sabes qué necesita la clase.
+- Es muy fácil acumular muchas dependencias sin darte cuenta de que la clase hace demasiadas cosas.
+
+---
+
+### 4.6. Otras formas de inyección
+
+Spring permite tres formas de inyectar una dependencia.
+
+#### a) Inyección por constructor (la recomendada)
+
+```java
+@RestController
+@RequestMapping("/inventario")
+public class InventarioController {
+
+    private final InventarioService inventarioService;
+
+    public InventarioController(InventarioService inventarioService) {
+        this.inventarioService = inventarioService;
+    }
+
+    @PostMapping("/disponibilidad")
+    public boolean hayUnidades(@RequestBody ComprobarInventarioRequest entrada) {
+        return inventarioService.hayUnidades(
+                entrada.disponibles(), entrada.solicitadas());
+    }
+}
+```
+
+Spring llama al constructor y le pasa el bean `InventarioService`.
+
+- Desde Spring 4.3, si la clase tiene **un único constructor**, `@Autowired` es opcional (y suele omitirse).
+- Si la clase tiene **varios constructores**, hay que marcar con `@Autowired` el que Spring debe usar.
+
+**Ventajas:**
+
+- Las dependencias son **obligatorias y visibles**: no se puede crear el objeto sin ellas.
+- El campo puede ser `final`, lo que garantiza que no cambia.
+- Es sencillo hacer tests: `new InventarioController(servicioFalso)`.
+- Si una clase necesita demasiadas dependencias, el constructor se vuelve enorme y es una señal de que hay que dividirla.
+
+#### b) Inyección por constructor con Lombok
+
+Si el proyecto usa Lombok, `@RequiredArgsConstructor` genera el constructor para todos los campos `final`:
+
+```java
+@RestController
+@RequestMapping("/inventario")
+@RequiredArgsConstructor
+public class InventarioController {
+
+    private final InventarioService inventarioService;
+
+    @PostMapping("/disponibilidad")
+    public boolean hayUnidades(@RequestBody ComprobarInventarioRequest entrada) {
+        return inventarioService.hayUnidades(
+                entrada.disponibles(), entrada.solicitadas());
+    }
+}
+```
+
+Es la forma más limpia y muy habitual en proyectos reales.
+
+#### c) Inyección por *setter*
+
+```java
+@RestController
+@RequestMapping("/inventario")
+public class InventarioController {
+
+    private InventarioService inventarioService;
+
+    @Autowired
+    public void setInventarioService(InventarioService inventarioService) {
+        this.inventarioService = inventarioService;
+    }
+    ...
+}
+```
+
+Se usa para dependencias **opcionales** o que pueden cambiar después de crear el objeto. Es poco frecuente.
+
+#### Comparativa
+
+| Característica | Campo | Constructor | Setter |
+|---|---|---|---|
+| Código necesario | Mínimo | Medio (o mínimo con Lombok) | Medio |
+| Permite `final` | No | **Sí** | No |
+| Dependencias visibles | No | **Sí** | Parcialmente |
+| Facilidad en tests unitarios | Baja | **Alta** | Media |
+| Recomendada | Solo en ejemplos sencillos | **Sí, por defecto** | Para dependencias opcionales |
+
+> En estos apuntes usamos inyección por campo porque es la forma más directa de ver `@Autowired` en acción. En proyectos reales, la inyección por constructor suele ser la preferida.
+
+---
+
+### 4.7. ¿Cómo decide Spring qué bean inyectar?
+
+Spring busca primero por **tipo**. Si pides un `InventarioService`, buscará un bean de ese tipo.
+
+Normalmente solo hay uno y no hay problema. Pero si el tipo es una **interfaz** con varias implementaciones, aparece la ambigüedad:
+
+```java
+public interface NotificadorService {
+    void notificar(String mensaje);
+}
+
+@Service
+public class EmailNotificador implements NotificadorService { ... }
+
+@Service
+public class SmsNotificador implements NotificadorService { ... }
+```
+
+Si inyectas `NotificadorService`, Spring no sabe cuál elegir y lanza una excepción. Hay dos soluciones:
+
+**`@Primary`**: marca una implementación como la preferida por defecto.
+
+```java
+@Service
+@Primary
+public class EmailNotificador implements NotificadorService { ... }
+```
+
+**`@Qualifier`**: indica explícitamente cuál quieres en cada punto de inyección.
+
+```java
+@Autowired
+@Qualifier("smsNotificador")
+private NotificadorService notificador;
+```
+
+El nombre por defecto de un bean es el nombre de la clase con la primera letra en minúscula (`SmsNotificador` → `smsNotificador`).
+
+---
+
+### 4.8. Ciclo de vida y *scope* de los beans
+
+Por defecto, Spring crea **una única instancia** de cada bean y la comparte en toda la aplicación. Esto se llama *scope* **singleton**.
+
+Por eso, todas las clases que inyecten `InventarioService` reciben **el mismo objeto**. Es una de las razones por las que los servicios no deberían guardar datos mutables de una petición concreta en sus atributos: al compartirse entre todas las peticiones, podrían mezclarse datos de distintos usuarios.
+
+Existen otros *scopes* (como `prototype`, que crea una instancia nueva cada vez, o `request`/`session` en aplicaciones web), pero el singleton es el que usarás casi siempre.
+
+---
 
 ## 5. Parámetros de ruta y de consulta
 
