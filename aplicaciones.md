@@ -9,7 +9,7 @@ description: "<strong>Módulo: </strong>Programación Web Avanzada <br> <strong>
 
 1. [HTTP y APIs REST](#1-http-y-apis-rest)
     - [1.1 ResponseEntity](#11-responseentity)
-2. [Controladores, JSON y DTOs](#2-controladores-json-y-dtos)
+2. [DTOs y modelos](#2-dtos-y-modelos)
 3. [Servicios y organización por capas](#3-servicios-y-organización-por-capas)
 4. [Inyección de dependencias](#4-inyección-de-dependencias)
 5. [Parámetros de ruta y de consulta](#5-parámetros-de-ruta-y-de-consulta)
@@ -17,7 +17,8 @@ description: "<strong>Módulo: </strong>Programación Web Avanzada <br> <strong>
 7. [Validación y manejo de excepciones](#7-validación-y-manejo-de-excepciones)
 8. [Inicio de sesión con Firebase Authentication](#8-inicio-de-sesión-con-firebase-authentication)
 9. [Actividades](#9-actividades)
-    - [9.1 Actividad: catálogo de productos con ResponseEntity](#91-actividad-catálogo-de-productos-con-responseentity)
+    - [Actividad 1: catálogo de productos con ResponseEntity](#actividad-1-catálogo-de-productos-con-responseentity)
+    - [Actividad 2: API de biblioteca con DTOs y modelos](#actividad-2-api-de-biblioteca-con-dtos-y-modelos)
 
 {% comment %}
 10. [Práctica 1: reservas de una sala](#10-práctica-1-reservas-de-una-sala)
@@ -25,7 +26,6 @@ description: "<strong>Módulo: </strong>Programación Web Avanzada <br> <strong>
 12. [Práctica 3: telemetría de un rover](#12-práctica-3-telemetría-de-un-rover)
 13. [Actividades de ampliación](#actividades-de-ampliación)
 {% endcomment %}
-
 
 ## 1. HTTP y APIs REST
 
@@ -305,85 +305,389 @@ Observa tres detalles:
 - En `buscar`, el `Optional<String>` expresa «puede haber una palabra o no». Se convierte en `404` o `200` con `orElse(null)`.
 - `anadir` es un `POST`: modifica datos, por eso responde `201 Created` cuando la palabra se añade y `409 Conflict` cuando ya existía.
 
-## 2. Controladores, JSON y DTOs
+## 2. DTOs y modelos
 
-### Controladores
+### 2.1. Dos tipos de clases con propósitos distintos
 
-Un **controlador** recibe las peticiones HTTP y devuelve la respuesta. En Spring se declara con `@RestController`; `@RequestMapping` define la ruta base y las anotaciones `@GetMapping`, `@PostMapping`, `@PutMapping` y `@DeleteMapping` asocian cada método Java con un método HTTP.
+En una aplicación Spring hay clases que sirven para **representar datos**. A primera vista pueden parecerse mucho (ambas tienen un nombre, una hora, una duración...), pero cumplen funciones diferentes y conviene no confundirlas:
+
+- El **modelo** representa un elemento **dentro** de la aplicación: una reserva, un producto, un usuario. Es lo que utilizan el servicio y las reglas de negocio.
+- El **DTO** (*Data Transfer Object*) representa los datos **tal como viajan por la API**: lo que el cliente envía y lo que recibe.
+
+```text
+Cliente  <--JSON-->  [ DTO ]  <-- Controlador / Servicio -->  [ Modelo ]  <-->  Base de datos
+        (fuera de la aplicación)                              (dentro de la aplicación)
+```
+
+El modelo vive en el interior y el DTO en la frontera. Todo lo que sigue desarrolla esta idea.
+
+---
+
+### 2.2. El modelo
+
+#### ¿Qué es?
+
+El **modelo** (también llamado *dominio*) agrupa las clases que representan los conceptos con los que trabaja la aplicación. Si estás construyendo un sistema de reservas de salas, tu modelo contendrá la clase `Reserva`; si es una tienda, `Producto`, `Pedido`, `Cliente`...
+
+#### Características
+
+- Contiene **todos los datos que la aplicación necesita**, incluidos los internos que el cliente nunca debería ver.
+- Puede incluir **lógica y reglas de negocio** propias del concepto (comprobaciones, cálculos).
+- Está pensado para **cómo trabaja la aplicación**, no para cómo se comunica con el exterior.
+- Cambia cuando cambia el negocio o la forma de almacenar los datos.
+- Suele ubicarse en el paquete `model`.
+
+#### Ejemplo
 
 ```java
-@RestController
-@RequestMapping("/saludos")
-public class SaludoController {
+public class Reserva {
 
-    @GetMapping
-    public String saludar() {
-        return "Hola";
+    private final long id;
+    private final String nombre;
+    private final int horaInicio;
+    private final int duracionHoras;
+    private final String notasInternas;   // dato interno: el cliente no debe verlo
+
+    public Reserva(long id, String nombre, int horaInicio,
+                   int duracionHoras, String notasInternas) {
+        if (duracionHoras <= 0) {
+            throw new IllegalArgumentException("La duración debe ser positiva");
+        }
+        this.id = id;
+        this.nombre = nombre;
+        this.horaInicio = horaInicio;
+        this.duracionHoras = duracionHoras;
+        this.notasInternas = notasInternas;
+    }
+
+    public long getId() {
+        return id;
+    }
+
+    public String getNombre() {
+        return nombre;
+    }
+
+    public int getHoraInicio() {
+        return horaInicio;
+    }
+
+    public int getDuracionHoras() {
+        return duracionHoras;
+    }
+
+    public String getNotasInternas() {
+        return notasInternas;
+    }
+
+    public int horaFin() {
+        return horaInicio + duracionHoras;
+    }
+
+    public boolean solapaCon(Reserva otra) {
+        return horaInicio < otra.horaFin() && otra.horaInicio < horaFin();
     }
 }
 ```
 
-`GET /saludos` ejecuta el método y devuelve su resultado como cuerpo de la respuesta, con `200 OK`.
+Observa qué hace de `Reserva` un modelo:
 
-### DTOs: datos de entrada y salida
+- Tiene `notasInternas`, un campo que solo le interesa a la aplicación.
+- Protege su propia coherencia: no admite duraciones negativas o cero.
+- Sabe responder preguntas del dominio: cuándo termina (`horaFin`) y si choca con otra reserva (`solapaCon`).
 
-Un **DTO** (*Data Transfer Object*) representa los datos que cruzan el límite de la API. Separa el contrato HTTP de las clases internas de negocio y permite controlar qué información se expone.
+#### Modelo y entidad de base de datos
 
-Por ejemplo, un DTO de entrada para reservar una sala no necesita un identificador: ese valor lo asigna el servidor. El DTO de respuesta sí puede incluirlo.
+Cuando la aplicación guarda datos en una base de datos con JPA, el modelo suele ser una **entidad**: una clase anotada con `@Entity` y ligada a una tabla. Sigue siendo parte del interior de la aplicación y, además de representar el dominio, define cómo se almacena. Todo lo dicho sobre el modelo se aplica también a las entidades.
+
+---
+
+### 2.3. El DTO
+
+#### ¿Qué es?
+
+Un **DTO** (*Data Transfer Object*, objeto de transferencia de datos) es una clase sencilla que representa los datos que **cruzan el límite de la API**: lo que entra en la petición y lo que sale en la respuesta.
+
+Separa el contrato HTTP de las clases internas de negocio y permite controlar qué información se expone.
+
+#### Características
+
+- Contiene **solo los datos necesarios** para esa operación concreta.
+- **No tiene lógica de negocio**: es un contenedor de datos.
+- Define el **contrato de la API**: qué campos acepta y qué campos devuelve.
+- Cambia cuando cambia lo que la API ofrece, no cuando cambia el interior de la aplicación.
+- Suele ubicarse en el paquete `dto`.
+- Se define como una clase Java normal, con atributos privados, constructores, *getters* y *setters*. Spring (mediante Jackson) los utiliza para convertirla a JSON y desde JSON.
+
+#### Tipos habituales de DTO
+
+| Tipo | Sentido | Para qué sirve | Ejemplo |
+|---|---|---|---|
+| **De entrada** | Cliente → API | Los datos que el cliente aporta para crear o modificar algo. | `ReservaCrearDto` |
+| **De salida** | API → Cliente | Los datos que se devuelven al cliente. | `ReservaDto` |
+| **De resumen** | API → Cliente | Una versión reducida, para listados. | `ReservaResumenDto` |
+| **De error** | API → Cliente | Un mensaje de error con formato uniforme. | `ErrorDto` |
+
+#### Ejemplo
 
 ```java
-public record ReservaCrearDto(
-        String nombre,
-        int horaInicio,
-        int duracionHoras) {
-}
+// DTO de entrada
+public class ReservaCrearDto {
 
-public record ReservaDto(
-        long id,
-        String nombre,
-        int horaInicio,
-        int duracionHoras) {
-}
+    private String nombre;
+    private int horaInicio;
+    private int duracionHoras;
 
-public record ErrorDto(String mensaje) {
-}
-```
+    public ReservaCrearDto() {
+    }
 
-### Conversión a JSON
+    public ReservaCrearDto(String nombre, int horaInicio, int duracionHoras) {
+        this.nombre = nombre;
+        this.horaInicio = horaInicio;
+        this.duracionHoras = duracionHoras;
+    }
 
-Spring utiliza Jackson para convertir el JSON recibido en objetos Java mediante `@RequestBody` y para convertir los objetos devueltos en JSON. Una petición de ejemplo podría ser:
+    public String getNombre() {
+        return nombre;
+    }
 
-```http
-POST /reservas
-Content-Type: application/json
+    public void setNombre(String nombre) {
+        this.nombre = nombre;
+    }
 
-{
-  "nombre": "Lucía Martín",
-  "horaInicio": 10,
-  "duracionHoras": 2
+    public int getHoraInicio() {
+        return horaInicio;
+    }
+
+    public void setHoraInicio(int horaInicio) {
+        this.horaInicio = horaInicio;
+    }
+
+    public int getDuracionHoras() {
+        return duracionHoras;
+    }
+
+    public void setDuracionHoras(int duracionHoras) {
+        this.duracionHoras = duracionHoras;
+    }
 }
 ```
 
 ```java
-@PostMapping
-public ReservaDto crear(@RequestBody ReservaCrearDto entrada) {
-    // ...
+// DTO de salida
+public class ReservaDto {
+
+    private final long id;
+    private final String nombre;
+    private final int horaInicio;
+    private final int duracionHoras;
+
+    public ReservaDto(long id, String nombre, int horaInicio, int duracionHoras) {
+        this.id = id;
+        this.nombre = nombre;
+        this.horaInicio = horaInicio;
+        this.duracionHoras = duracionHoras;
+    }
+
+    public long getId() {
+        return id;
+    }
+
+    public String getNombre() {
+        return nombre;
+    }
+
+    public int getHoraInicio() {
+        return horaInicio;
+    }
+
+    public int getDuracionHoras() {
+        return duracionHoras;
+    }
 }
 ```
 
-La respuesta de creación puede contener el identificador generado:
+```java
+// DTO de resumen (para listados)
+public class ReservaResumenDto {
 
-```http
-HTTP/1.1 201 Created
-Content-Type: application/json
+    private final long id;
+    private final String nombre;
 
+    public ReservaResumenDto(long id, String nombre) {
+        this.id = id;
+        this.nombre = nombre;
+    }
+
+    public long getId() {
+        return id;
+    }
+
+    public String getNombre() {
+        return nombre;
+    }
+}
+```
+
+```java
+// DTO de error
+public class ErrorDto {
+
+    private final String mensaje;
+
+    public ErrorDto(String mensaje) {
+        this.mensaje = mensaje;
+    }
+
+    public String getMensaje() {
+        return mensaje;
+    }
+}
+```
+
+Observa qué hace de estas clases DTOs:
+
+- `ReservaCrearDto` no necesita un identificador: ese valor lo asigna el servidor. El DTO de respuesta sí puede incluirlo.
+- Ninguno incluye `notasInternas`: ese dato no forma parte del contrato de la API.
+- No tienen métodos de negocio: solo transportan datos.
+- Existen varios DTOs para una misma entidad, cada uno adaptado a una situación.
+
+#### Qué necesita cada DTO para funcionar con JSON
+
+Jackson convierte las clases a JSON y desde JSON usando sus constructores, *getters* y *setters*, así que cada DTO necesita lo adecuado a su sentido:
+
+| DTO | Qué necesita | Por qué |
+|---|---|---|
+| **De entrada** (`ReservaCrearDto`) | Constructor vacío y *setters*. | Jackson crea el objeto vacío y luego rellena cada campo con su *setter* a partir del JSON recibido. |
+| **De salida** (`ReservaDto`, `ReservaResumenDto`, `ErrorDto`) | Constructor con todos los campos y *getters*. | Se crea en el código de la aplicación, y Jackson lee los *getters* para escribir el JSON. |
+
+Los nombres de los *getters* y *setters* determinan los nombres de las claves del JSON: `getHoraInicio()` produce la clave `"horaInicio"`.
+
+> Estos métodos se pueden generar automáticamente con el IDE o con la librería Lombok. Aquí los escribimos explícitamente para ver exactamente qué contiene cada clase.
+
+---
+
+### 2.4. Diferencias entre modelo y DTO
+
+| | **Modelo** | **DTO** |
+|---|---|---|
+| **Qué representa** | Un concepto del dominio. | Los datos de una petición o una respuesta. |
+| **Dónde vive** | Dentro de la aplicación. | En la frontera con el exterior. |
+| **Quién lo usa** | Servicios y repositorios. | Controladores (y el servicio al convertir). |
+| **Lógica** | Puede tener reglas y métodos. | Ninguna, solo datos. |
+| **Campos** | Todos los que necesita la aplicación, incluso internos. | Solo los que el cliente debe enviar o ver. |
+| **Cantidad** | Normalmente uno por concepto. | Varios por concepto, según el caso de uso. |
+| **Cambia cuando...** | Cambia el negocio o el almacenamiento. | Cambia lo que ofrece la API. |
+| **Ejemplo** | `Reserva` | `ReservaCrearDto`, `ReservaDto` |
+
+Una forma sencilla de recordarlo:
+
+> El **modelo** es cómo *piensa* la aplicación sobre un dato. El **DTO** es cómo *habla* la aplicación con el exterior sobre ese dato.
+
+---
+
+### 2.5. ¿Por qué no usar el modelo directamente en la API?
+
+Parece más cómodo recibir y devolver `Reserva` directamente, sin crear más clases. Pero eso trae varios problemas.
+
+#### 1. Se exponen datos internos
+
+Si el controlador devuelve un `Reserva`, el JSON incluirá **todos** sus campos, también los internos:
+
+```json
 {
   "id": 1,
   "nombre": "Lucía Martín",
   "horaInicio": 10,
-  "duracionHoras": 2
+  "duracionHoras": 2,
+  "notasInternas": "Cliente conflictivo, vigilar"
 }
 ```
+
+Con un DTO de salida, el cliente solo recibe lo que debe ver.
+
+#### 2. El cliente puede fijar campos que no le corresponden
+
+Si la API acepta `Reserva` como entrada, un cliente podría enviar:
+
+```json
+{
+  "id": 999,
+  "nombre": "Lucía Martín",
+  "horaInicio": 10,
+  "duracionHoras": 2,
+  "notasInternas": "Reserva VIP"
+}
+```
+
+y estaría decidiendo el `id` y las notas internas. Con `ReservaCrearDto`, esos campos ni siquiera existen: aunque el cliente los envíe, se ignoran. Este problema se conoce como ***mass assignment*** (asignación masiva) y es una fuente habitual de fallos de seguridad.
+
+#### 3. Los cambios internos rompen la API
+
+Si renombras un campo del modelo o lo divides en dos, los clientes que dependían de él dejan de funcionar. Con DTOs, el contrato de la API permanece estable y solo hay que ajustar la conversión.
+
+#### 4. Una misma clase no sirve para todas las situaciones
+
+- Al **crear** no hay `id`.
+- Al **consultar** sí hay `id`.
+- En un **listado** basta con un resumen.
+- Al **actualizar** puede que solo se permitan ciertos campos.
+
+Intentar cubrirlo todo con una única clase obliga a campos opcionales y a comprobaciones confusas.
+
+#### 5. Se mezclan responsabilidades
+
+El modelo quedaría contaminado con detalles de la comunicación (nombres de campos del JSON, formatos), y los DTOs arrastrarían reglas de negocio que no les corresponden.
+
+#### 6. Problemas adicionales con entidades de base de datos
+
+Si el modelo es una entidad JPA, exponerla directamente añade más riesgos: relaciones con otras entidades que provocan **bucles infinitos** al convertir a JSON, o consultas innecesarias a la base de datos al acceder a datos relacionados.
+
+---
+
+### 2.6. ¿Cuántos DTOs necesito?
+
+No hay un número fijo. La regla práctica es **un DTO por cada forma distinta de comunicar el dato**:
+
+| Operación | DTO de entrada | DTO de salida |
+|---|---|---|
+| Crear reserva | `ReservaCrearDto` | `ReservaDto` |
+| Modificar reserva | `ReservaActualizarDto` | `ReservaDto` |
+| Listar reservas | — | `ReservaResumenDto` |
+| Consultar una reserva | — | `ReservaDto` |
+| Error | — | `ErrorDto` |
+
+Si dos operaciones comparten exactamente los mismos campos, pueden compartir DTO. Si difieren (por ejemplo, el de modificar no permite cambiar el nombre), conviene separarlos.
+
+---
+
+### 2.7. Dónde se colocan
+
+Siguiendo la organización por paquetes:
+
+```text
+src/
+└── main/
+    └── java/
+        └── com/ejemplo/aplicacion/
+            ├── Aplicacion.java
+            ├── controller/
+            │   └── ReservaController.java
+            ├── dto/
+            │   ├── ReservaCrearDto.java
+            │   ├── ReservaDto.java
+            │   ├── ReservaResumenDto.java
+            │   └── ErrorDto.java
+            ├── model/
+            │   └── Reserva.java
+            └── service/
+                └── ReservaService.java
+```
+
+- `dto`: los objetos que cruzan la API.
+- `model`: los conceptos internos de la aplicación.
+
+---
 
 ## 3. Servicios y organización por capas
 
@@ -445,6 +749,9 @@ src/
             ├── Aplicacion.java
             ├── controller/
             │   └── InventarioController.java
+            ├── dto/
+            │   ├── CrearProductoRequest.java
+            │   └── ProductoResponse.java
             ├── model/
             │   └── Producto.java
             └── service/
@@ -455,12 +762,13 @@ Qué contiene cada elemento:
 
 - **`Aplicacion.java`**: la clase principal, anotada con `@SpringBootApplication`. Es el punto de arranque.
 - **`controller`**: las clases que reciben las peticiones.
+- **`dto`**: los objetos que transportan datos entre la API y el cliente, por ejemplo, los datos de una petición o la respuesta que devuelve un endpoint. Sus clases suelen llamarse `...Request` y `...Response`.
 - **`service`**: las clases que realizan las operaciones y aplican las reglas.
 - **`model`**: las clases que representan los elementos del dominio, como un producto o una reserva.
 
-Los nombres de los paquetes pueden variar (`controllers`, `services`, `domain`, `entity`...), pero mantener cada responsabilidad en su lugar ayuda a encontrar y entender el código.
+Los DTO permiten definir qué datos acepta y devuelve la API sin exponer directamente el modelo del dominio. Los nombres de los paquetes pueden variar (`controllers`, `services`, `domain`, `entity`...), pero mantener cada responsabilidad en su lugar ayuda a encontrar y entender el código.
 
-> **Importante:** `controller`, `service` y `model` deben quedar **dentro** del paquete de la clase principal. Spring escanea ese paquete y sus subpaquetes para encontrar las clases anotadas; si una clase queda fuera, no se registrará.
+> **Importante:** `controller`, `dto`, `service` y `model` deben quedar **dentro** del paquete de la clase principal. Spring escanea ese paquete y sus subpaquetes para encontrar las clases anotadas; si una clase queda fuera, no se registrará.
 
 #### Ejemplo de clase del modelo
 
@@ -1208,7 +1516,7 @@ La verificación del token autentica al usuario, pero no concede automáticament
 
 ## 9. Actividades
 
-### 9.1 Actividad 1: catálogo de productos con ResponseEntity
+### Actividad 1: catálogo de productos con ResponseEntity
 
 Crea un controlador Spring Boot sencillo para consultar y modificar un catálogo de productos, elegir el código de estado adecuado en cada caso y devolver cuerpos con o sin contenido según proceda. Los datos se mantienen en memoria, en una lista dentro del propio controlador. La actividad utiliza tres operaciones `GET` y un `POST`, y ninguna recibe datos en el cuerpo de la petición.
 
@@ -1247,6 +1555,161 @@ La lista empieza con tres productos. Prueba los `GET` en el navegador y el `POST
 | 5 | `POST /productos/nuevo` | Hay 3, pasa a 4 | `201` | |
 | 6 | `POST /productos/nuevo` | Hay 4, pasa a 5 | `201` | |
 | 7 | `POST /productos/nuevo` | Hay 5, catálogo lleno | `409` | |
+
+### Actividad 2. API de biblioteca con DTOs y modelos
+
+La biblioteca quiere una API para registrar libros, consultarlos y gestionar sus préstamos. Cada libro tiene:
+
+| Dato | Descripción | ¿Lo ve el cliente? |
+|---|---|---|
+| `id` | Identificador numérico, lo asigna el servidor. | Sí |
+| `titulo` | Título del libro. | Sí |
+| `autor` | Autor del libro. | Sí |
+| `isbn` | Código ISBN, único para cada libro. | Sí |
+| `anioPublicacion` | Año de publicación. | Sí |
+| `prestado` | Indica si el libro está prestado en este momento. | Sí |
+| `notasInternas` | Observaciones del personal (estado del ejemplar, ubicación...). | **No** |
+
+---
+
+## Qué debe cumplir la aplicación
+
+Debes crear la clase del modelo con todos los datos de la tabla anterior. Debe cumplir estas reglas:
+
+- No puede existir un libro con `titulo` o `autor` vacíos, ni con `anioPublicacion` menor o igual que 0.
+- Un libro recién creado nunca está prestado.
+- Un libro solo puede prestarse si no está prestado, y solo puede devolverse si lo está.
+
+Piensa **dónde** debe vivir cada una de estas reglas.
+
+Diseña los DTOs que necesites. Como mínimo, la API debe tener:
+
+- Un DTO para **crear** un libro.
+- Un DTO para **mostrar** un libro con todos sus datos visibles.
+- Un DTO para los **listados**, más reducido que el anterior (solo `id` y `titulo`).
+- Un DTO para los **errores**, con un mensaje.
+
+Condiciones:
+
+- El cliente no puede decidir el `id`, el estado de préstamo ni las notas internas al crear un libro.
+- `notasInternas` no debe aparecer en ninguna respuesta.
+
+Los libros se guardan **en memoria**. Los identificadores son numéricos, incrementales y empiezan en 1. Operaciones y reglas:
+
+| Operación | Regla |
+|---|---|
+| Crear libro | No puede haber dos libros con el mismo `isbn`. |
+| Listar libros | Devuelve la versión reducida de cada libro. |
+| Obtener libro por `id` | El libro debe existir. |
+| Prestar libro | El libro debe existir y no estar ya prestado. |
+| Devolver libro | El libro debe existir y estar prestado. |
+| Eliminar libro | El libro debe existir y no estar prestado. |
+
+Ruta base `/libros`. El controlador **nunca recibe ni devuelve el modelo**: solo DTOs.
+
+| Método | Ruta | Cuerpo | Respuesta correcta |
+|---|---|---|---|
+| `POST` | `/libros` | Datos del libro a crear | `201 Created` con el libro creado |
+| `GET` | `/libros` | — | `200 OK` con la lista reducida |
+| `GET` | `/libros/{id}` | — | `200 OK` con el libro |
+| `POST` | `/libros/{id}/prestamo` | — | `200 OK` con el libro ya prestado |
+| `POST` | `/libros/{id}/devolucion` | — | `200 OK` con el libro ya devuelto |
+| `DELETE` | `/libros/{id}` | — | `204 No Content` |
+
+
+Los errores se devuelven con el DTO de error, un mensaje claro y el código de estado adecuado:
+
+| Situación | Código |
+|---|---|
+| El libro no existe | `404 Not Found` |
+| ISBN duplicado | `409 Conflict` |
+| Prestar un libro ya prestado, devolver uno no prestado, eliminar uno prestado | `409 Conflict` |
+| Datos no válidos (título vacío, año incorrecto...) | `400 Bad Request` |
+
+---
+
+## Ejemplos de peticiones y respuestas
+
+### Crear un libro
+
+```http
+POST /libros
+Content-Type: application/json
+
+{
+  "titulo": "El Quijote",
+  "autor": "Miguel de Cervantes",
+  "isbn": "978-84-376-0494-7",
+  "anioPublicacion": 1605
+}
+```
+
+```http
+HTTP/1.1 201 Created
+Content-Type: application/json
+
+{
+  "id": 1,
+  "titulo": "El Quijote",
+  "autor": "Miguel de Cervantes",
+  "isbn": "978-84-376-0494-7",
+  "anioPublicacion": 1605,
+  "prestado": false
+}
+```
+
+### Listar libros
+
+```http
+GET /libros
+```
+
+```http
+HTTP/1.1 200 OK
+Content-Type: application/json
+
+[
+  { "id": 1, "titulo": "El Quijote" },
+  { "id": 2, "titulo": "La Celestina" }
+]
+```
+
+### Prestar un libro
+
+```http
+POST /libros/1/prestamo
+```
+
+```http
+HTTP/1.1 200 OK
+Content-Type: application/json
+
+{
+  "id": 1,
+  "titulo": "El Quijote",
+  "autor": "Miguel de Cervantes",
+  "isbn": "978-84-376-0494-7",
+  "anioPublicacion": 1605,
+  "prestado": true
+}
+```
+
+### Prestar un libro que ya está prestado
+
+```http
+POST /libros/1/prestamo
+```
+
+```http
+HTTP/1.1 409 Conflict
+Content-Type: application/json
+
+{
+  "mensaje": "El libro ya está prestado"
+}
+```
+
+---
 
 {% comment %}
 
