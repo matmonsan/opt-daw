@@ -10,6 +10,8 @@ description: "<strong>Módulo: </strong>Programación Web Avanzada <br> <strong>
 1. [HTTP y APIs REST](#1-http-y-apis-rest)
     - [1.1 ResponseEntity](#11-responseentity)
 2. [DTOs y modelos](#2-dtos-y-modelos)
+    - [2.2 El modelo](#22-el-modelo)
+    - [2.3 El DTO](#23-el-dto)
 3. [Servicios y organización por capas](#3-servicios-y-organización-por-capas)
 4. [Inyección de dependencias](#4-inyección-de-dependencias)
 5. [Parámetros de ruta y de consulta](#5-parámetros-de-ruta-y-de-consulta)
