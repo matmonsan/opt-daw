@@ -1265,31 +1265,378 @@ Existen otros *scopes* (como `prototype`, que crea una instancia nueva cada vez,
 
 ## 5. Parámetros de ruta y de consulta
 
-### PathVariable
+Hasta ahora, la información que el cliente enviaba al servidor viajaba en el **cuerpo** de la petición (`@RequestBody`). Pero muchas peticiones, sobre todo las `GET` y `DELETE`, no tienen cuerpo: toda la información va en la propia **URL**. Spring ofrece dos anotaciones para leerla:
 
-`@PathVariable` enlaza una parte variable de la ruta con un parámetro Java. Se utiliza para dirigirse a un recurso concreto:
+- `@PathVariable`: lee un trozo del **camino** de la URL.
+- `@RequestParam`: lee un parámetro de la **cadena de consulta** (lo que va después del `?`).
+
+---
+
+### 5.1. Anatomía de una URL
+
+Tomemos esta petición como ejemplo:
+
+```
+GET http://localhost:8080/salas/3/reservas?fecha=2026-11-04&orden=hora
+```
+
+| Parte | Valor | Qué representa |
+|---|---|---|
+| Esquema, host y puerto | `http://localhost:8080` | Dónde está el servidor |
+| Camino (*path*) | `/salas/3/reservas` | **Qué recurso** se pide: las reservas de la sala 3 |
+| Variable de ruta | `3` | El identificador de la sala, dentro del camino |
+| Cadena de consulta (*query string*) | `fecha=2026-11-04&orden=hora` | **Cómo** se quiere el resultado: filtrado y ordenado |
+
+La cadena de consulta empieza en `?` y está formada por pares `clave=valor` separados por `&`. Los parámetros de consulta no tienen orden: `?fecha=2026-11-04&orden=hora` y `?orden=hora&fecha=2026-11-04` son equivalentes.
+
+---
+
+### 5.2. `@PathVariable`: identificar un recurso
+
+`@PathVariable` enlaza una parte variable de la ruta con un parámetro Java. En la ruta del mapeo, la parte variable se escribe entre llaves:
 
 ```java
-@GetMapping("/{id}")
-public ReservaDto buscar(@PathVariable("id") long id) {
-    return reservaService.buscar(id);
+@RestController
+@RequestMapping("/reservas")
+public class ReservaController {
+
+    @Autowired
+    private ReservaService reservaService;
+
+    @GetMapping("/{id}")
+    public ReservaDto buscar(@PathVariable("id") long id) {
+        return reservaService.buscar(id);
+    }
 }
 ```
 
-La ruta `GET /reservas/12` invoca el método con `id = 12`. El nombre del parámetro entre llaves (`{id}`) debe coincidir con el valor de `@PathVariable`, o puede omitirse el nombre si el compilador conserva los nombres de parámetros.
+La ruta `GET /reservas/12` invoca el método con `id = 12`.
 
-### RequestParam
+#### Nombre de la variable
 
-`@RequestParam` enlaza un parámetro de consulta, es decir, lo que aparece tras el `?` en la URL. Se utiliza para filtrar, ordenar o configurar una operación:
+El nombre entre llaves (`{id}`) debe coincidir con el valor indicado en `@PathVariable("id")`. Si el parámetro Java se llama igual, se puede omitir:
+
+```java
+@GetMapping("/{id}")
+public ReservaDto buscar(@PathVariable long id) { ... }
+```
+
+Esto funciona porque los *plugins* de Maven y Gradle de Spring Boot compilan con la opción `-parameters`, que conserva los nombres de los parámetros. Si el nombre del parámetro Java es distinto, hay que indicarlo explícitamente:
+
+```java
+@GetMapping("/{id}")
+public ReservaDto buscar(@PathVariable("id") long idReserva) { ... }
+```
+
+#### Varias variables en la misma ruta
+
+Una ruta puede tener tantas variables como necesite. Es habitual cuando un recurso pertenece a otro (recursos **anidados**):
+
+```java
+@GetMapping("/salas/{salaId}/reservas/{reservaId}")
+public ReservaDto buscarEnSala(
+        @PathVariable long salaId,
+        @PathVariable long reservaId) {
+    return reservaService.buscarEnSala(salaId, reservaId);
+}
+```
+
+`GET /salas/3/reservas/12` → `salaId = 3`, `reservaId = 12`.
+
+#### Conversión de tipos
+
+Todo lo que llega en la URL es texto. Spring **convierte automáticamente** ese texto al tipo del parámetro: `int`, `long`, `boolean`, `UUID`, enumerados, etc.
+
+Si la conversión no es posible, el método **no se ejecuta** y Spring responde `400 Bad Request`:
+
+| Petición | Resultado |
+|---|---|
+| `GET /reservas/12` | Se ejecuta con `id = 12` |
+| `GET /reservas/abc` | `400 Bad Request`: `"abc"` no se puede convertir a `long` |
+| `GET /reservas` | No coincide con `/{id}`: se busca otro método mapeado a `/reservas` |
+
+#### Restringir el formato con expresiones regulares
+
+Se puede indicar una expresión regular tras dos puntos. Si el valor no la cumple, la ruta no coincide y Spring responde `404 Not Found`:
+
+```java
+// Solo acepta códigos como "ABC-123"
+@GetMapping("/codigo/{codigo:[A-Z]{3}-\\d{3}}")
+public ReservaDto buscarPorCodigo(@PathVariable String codigo) {
+    return reservaService.buscarPorCodigo(codigo);
+}
+```
+
+También sirve para que dos rutas parecidas no se confundan, por ejemplo `/{id:\\d+}` (solo números) frente a `/{nombre}`.
+
+---
+
+### 5.3. `@RequestParam`: filtrar, ordenar y configurar
+
+`@RequestParam` enlaza un parámetro de la cadena de consulta con un parámetro Java:
 
 ```java
 @GetMapping
-public List<ReservaDto> listar(@RequestParam(required = false) String nombre) {
+public List<ReservaDto> listar(@RequestParam String nombre) {
     return reservaService.listar(nombre);
 }
 ```
 
-`GET /reservas?nombre=Lucia` usa un parámetro de consulta, mientras que `GET /reservas/12` identifica el recurso en el propio camino de la URL. Como regla general: `@PathVariable` identifica *qué* recurso, `@RequestParam` modifica *cómo* se consulta.
+`GET /reservas?nombre=Lucia` → `nombre = "Lucia"`.
+
+Igual que con `@PathVariable`, el nombre se puede indicar explícitamente cuando no coincide con el del parámetro Java: `@RequestParam("q") String texto` lee `?q=...`.
+
+#### Parámetros obligatorios y opcionales
+
+Por defecto, un `@RequestParam` es **obligatorio**. Si el cliente no lo envía, Spring responde `400 Bad Request` sin ejecutar el método. Hay tres formas de hacerlo opcional:
+
+**a) `required = false`**: si no llega, el valor es `null`.
+
+```java
+@GetMapping
+public List<ReservaDto> listar(@RequestParam(required = false) String nombre) {
+    // nombre == null si la petición es GET /reservas
+    return reservaService.listar(nombre);
+}
+```
+
+> Con `required = false` el tipo debe admitir `null`: usa `Integer` en lugar de `int`, `Boolean` en lugar de `boolean`, etc. Un `int` no puede ser `null` y Spring daría error.
+
+**b) `defaultValue`**: si no llega, se usa un valor por defecto. Implica `required = false`.
+
+```java
+@GetMapping
+public List<ReservaDto> listar(
+        @RequestParam(defaultValue = "0") int pagina,
+        @RequestParam(defaultValue = "10") int tamano) {
+    return reservaService.listar(pagina, tamano);
+}
+```
+
+`GET /reservas` → `pagina = 0`, `tamano = 10`. `GET /reservas?pagina=2` → `pagina = 2`, `tamano = 10`.
+
+**c) `Optional`**: deja explícito en el tipo que el valor puede faltar.
+
+```java
+@GetMapping
+public List<ReservaDto> listar(@RequestParam Optional<String> nombre) {
+    return nombre
+            .map(reservaService::listarPorNombre)
+            .orElseGet(reservaService::listarTodas);
+}
+```
+
+#### Varios parámetros a la vez
+
+Cada parámetro se declara por separado y el cliente puede combinarlos como quiera:
+
+```java
+@GetMapping
+public List<ReservaDto> listar(
+        @RequestParam(required = false) String nombre,
+        @RequestParam(required = false) Integer horaDesde,
+        @RequestParam(required = false) Integer horaHasta) {
+    return reservaService.filtrar(nombre, horaDesde, horaHasta);
+}
+```
+
+| Petición | `nombre` | `horaDesde` | `horaHasta` |
+|---|---|---|---|
+| `GET /reservas` | `null` | `null` | `null` |
+| `GET /reservas?nombre=Lucia` | `"Lucia"` | `null` | `null` |
+| `GET /reservas?horaDesde=10&horaHasta=14` | `null` | `10` | `14` |
+
+#### Listas de valores
+
+Un mismo parámetro puede repetirse o enviarse separado por comas. Spring lo recoge en una lista:
+
+```java
+@GetMapping("/por-salas")
+public List<ReservaDto> porSalas(@RequestParam List<Long> sala) {
+    return reservaService.buscarEnSalas(sala);
+}
+```
+
+Las dos peticiones siguientes son equivalentes y producen `sala = [1, 3, 5]`:
+
+```
+GET /reservas/por-salas?sala=1&sala=3&sala=5
+GET /reservas/por-salas?sala=1,3,5
+```
+
+#### Enumerados y fechas
+
+Spring convierte el texto a un `enum` usando el **nombre exacto** de la constante (distingue mayúsculas y minúsculas):
+
+```java
+public enum EstadoReserva { PENDIENTE, CONFIRMADA, CANCELADA }
+
+@GetMapping
+public List<ReservaDto> listar(@RequestParam(required = false) EstadoReserva estado) {
+    return reservaService.listarPorEstado(estado);
+}
+```
+
+`GET /reservas?estado=CONFIRMADA` funciona; `GET /reservas?estado=confirmada` o `?estado=OTRA` devuelven `400 Bad Request`.
+
+Para fechas, conviene indicar el formato con `@DateTimeFormat`. El formato ISO (`aaaa-mm-dd`) es el más habitual en APIs:
+
+```java
+@GetMapping
+public List<ReservaDto> listarPorFecha(
+        @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fecha) {
+    return reservaService.listarPorFecha(fecha);
+}
+```
+
+`GET /reservas?fecha=2026-11-04` → `fecha = LocalDate.of(2026, 11, 4)`.
+
+#### Caracteres especiales
+
+Los espacios y algunos símbolos (`&`, `=`, `?`, `#`...) tienen un significado especial en la URL, por lo que el cliente debe **codificarlos** (*URL encoding*). Spring los decodifica antes de pasarlos al método:
+
+```
+GET /reservas?nombre=Luc%C3%ADa%20P%C3%A9rez   →   nombre = "Lucía Pérez"
+```
+
+Postman y los navegadores hacen esta codificación automáticamente.
+
+---
+
+### 5.4. Combinar ambos tipos de parámetros
+
+Lo habitual es usar los dos a la vez: la ruta indica **qué** colección o recurso, y los parámetros de consulta **cómo** se quiere el resultado.
+
+```java
+@RestController
+@RequestMapping("/salas")
+public class SalaReservaController {
+
+    @Autowired
+    private ReservaService reservaService;
+
+    @GetMapping("/{salaId}/reservas")
+    public List<ReservaDto> reservasDeSala(
+            @PathVariable long salaId,
+            @RequestParam(required = false)
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fecha,
+            @RequestParam(defaultValue = "hora") String orden) {
+        return reservaService.reservasDeSala(salaId, fecha, orden);
+    }
+}
+```
+
+| Petición | Significado |
+|---|---|
+| `GET /salas/3/reservas` | Todas las reservas de la sala 3, ordenadas por hora |
+| `GET /salas/3/reservas?fecha=2026-11-04` | Reservas de la sala 3 de ese día |
+| `GET /salas/3/reservas?fecha=2026-11-04&orden=nombre` | Las mismas, ordenadas por nombre |
+
+Fíjate en que el controlador **no filtra ni ordena**: solo recoge los parámetros y se los pasa al servicio, que es quien aplica la lógica (apartado 3).
+
+---
+
+### 5.5. ¿Qué responde Spring si algo falla?
+
+Spring comprueba los parámetros **antes** de ejecutar el método. Si algo no encaja, responde él directamente:
+
+| Situación | Ejemplo | Respuesta |
+|---|---|---|
+| Falta un `@RequestParam` obligatorio | `GET /reservas` con `@RequestParam String nombre` | `400 Bad Request` |
+| No se puede convertir el tipo | `GET /reservas/abc` con `long id` | `400 Bad Request` |
+| Valor de `enum` inexistente | `GET /reservas?estado=OTRA` | `400 Bad Request` |
+| La ruta no coincide con ningún mapeo | `GET /reservas/12/extra` | `404 Not Found` |
+| El recurso no existe (el id es válido pero no está) | `GET /reservas/999` | Lo decide **tu código** (normalmente `404`, apartado 7) |
+
+La última fila es importante: Spring solo sabe si el `id` *tiene el formato correcto*; saber si la reserva *existe* es responsabilidad del servicio.
+
+#### Validar los valores de los parámetros
+
+También se pueden poner restricciones de Bean Validation directamente sobre los parámetros (en Spring Boot 3.2 o superior, con la dependencia `spring-boot-starter-validation`). Si no se cumplen, Spring responde `400 Bad Request`:
+
+```java
+@GetMapping
+public List<ReservaDto> listar(
+        @RequestParam(defaultValue = "0") @Min(0) int pagina,
+        @RequestParam(defaultValue = "10") @Min(1) @Max(100) int tamano) {
+    return reservaService.listar(pagina, tamano);
+}
+```
+
+`GET /reservas?tamano=500` → `400 Bad Request`, porque `tamano` debe estar entre 1 y 100. La validación se explica con más detalle en el apartado 7.
+
+---
+
+### 5.6. ¿Cuándo usar cada uno?
+
+| | `@PathVariable` | `@RequestParam` |
+|---|---|---|
+| Dónde va | En el camino: `/reservas/12` | Tras el `?`: `/reservas?nombre=Lucia` |
+| Para qué | **Identificar** un recurso concreto | **Filtrar, buscar, ordenar, paginar** |
+| ¿Obligatorio? | Sí, forma parte de la ruta | Por defecto sí, pero suele ser opcional |
+| Si falta | La ruta es otra (otro método o `404`) | `400`, o `null` / valor por defecto |
+| Ejemplos | `/reservas/12`, `/salas/3/reservas` | `?fecha=2026-11-04`, `?pagina=2&tamano=20` |
+
+Algunas pautas de diseño:
+
+- Usa sustantivos en plural para las colecciones (`/reservas`) y una variable de ruta para un elemento (`/reservas/{id}`).
+- No pongas filtros en el camino: `/reservas?nombre=Lucia` es mejor que `/reservas/nombre/Lucia`.
+- No pongas verbos en la URL: el verbo ya lo indica el método HTTP. Mejor `DELETE /reservas/12` que `GET /reservas/borrar/12`.
+- No envíes datos sensibles (contraseñas, tokens) en la URL: quedan guardados en el historial del navegador y en los *logs* del servidor.
+
+---
+
+### 5.7. Ejemplo completo
+
+Un controlador de reservas que reúne lo visto en este apartado:
+
+```java
+@RestController
+@RequestMapping("/reservas")
+public class ReservaController {
+
+    @Autowired
+    private ReservaService reservaService;
+
+    // GET /reservas?nombre=Lucia&estado=CONFIRMADA&pagina=0&tamano=10
+    @GetMapping
+    public List<ReservaDto> listar(
+            @RequestParam(required = false) String nombre,
+            @RequestParam(required = false) EstadoReserva estado,
+            @RequestParam(defaultValue = "0") int pagina,
+            @RequestParam(defaultValue = "10") int tamano) {
+        return reservaService.filtrar(nombre, estado, pagina, tamano);
+    }
+
+    // GET /reservas/12
+    @GetMapping("/{id}")
+    public ReservaDto buscar(@PathVariable long id) {
+        return reservaService.buscar(id);
+    }
+
+    // GET /reservas/dia?fecha=2026-11-04
+    @GetMapping("/dia")
+    public List<ReservaDto> delDia(
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fecha) {
+        return reservaService.listarPorFecha(fecha);
+    }
+}
+```
+
+> **Cuidado con el orden de las rutas:** `/reservas/dia` y `/reservas/{id}` podrían parecer ambiguas, pero Spring elige siempre la ruta **más específica** (la que tiene menos variables), así que `/reservas/dia` va al método `delDia`. Aun así, como `id` es `long`, si `/dia` no existiera la petición acabaría en `buscar` con un `400` por no poder convertir `"dia"`. Para evitar confusiones puedes usar `/{id:\\d+}`.
+
+Prueba estas peticiones en Postman y comprueba qué valor recibe cada parámetro y qué código de estado se devuelve:
+
+```
+GET /reservas
+GET /reservas?nombre=Lucia
+GET /reservas?estado=CANCELADA&pagina=1&tamano=5
+GET /reservas?tamano=abc
+GET /reservas/12
+GET /reservas/doce
+GET /reservas/dia?fecha=2026-11-04
+GET /reservas/dia
+```
 
 ## 6. Operaciones CRUD
 
