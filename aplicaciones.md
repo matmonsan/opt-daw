@@ -1952,7 +1952,6 @@ Los libros se guardan **en memoria**. Los identificadores son numéricos, increm
 | Obtener libro por `id` | El libro debe existir. |
 | Prestar libro | El libro debe existir y no estar ya prestado. |
 | Devolver libro | El libro debe existir y estar prestado. |
-| Eliminar libro | El libro debe existir y no estar prestado. |
 
 Ruta base `/libros`. El controlador **nunca recibe ni devuelve el modelo**: solo DTOs.
 
@@ -1963,7 +1962,6 @@ Ruta base `/libros`. El controlador **nunca recibe ni devuelve el modelo**: solo
 | `GET` | `/libros/{id}` | — | `200 OK` con el libro |
 | `POST` | `/libros/{id}/prestamo` | — | `200 OK` con el libro ya prestado |
 | `POST` | `/libros/{id}/devolucion` | — | `200 OK` con el libro ya devuelto |
-| `DELETE` | `/libros/{id}` | — | `204 No Content` |
 
 
 Los errores se devuelven con el DTO de error, un mensaje claro y el código de estado adecuado:
@@ -1972,7 +1970,7 @@ Los errores se devuelven con el DTO de error, un mensaje claro y el código de e
 |---|---|
 | El libro no existe | `404 Not Found` |
 | ISBN duplicado | `409 Conflict` |
-| Prestar un libro ya prestado, devolver uno no prestado, eliminar uno prestado | `409 Conflict` |
+| Prestar un libro ya prestado o devolver uno no prestado | `409 Conflict` |
 | Datos no válidos (título vacío, año incorrecto...) | `400 Bad Request` |
 
 ---
