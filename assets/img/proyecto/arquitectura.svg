@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 550" width="100%" role="img" aria-label="Arquitectura de la tienda: Vue.js, API REST con Spring Boot, base de datos, proveedor de login y Google Sheets">
+<title>Arquitectura de la tienda: Vue.js, API REST con Spring Boot, base de datos, proveedor de login y Google Sheets</title>
+<defs>
+  <marker id="flecha" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+    <path d="M0,0 L10,5 L0,10 z" fill="#1b355a"/>
+  </marker>
+  <marker id="flechaVerde" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+    <path d="M0,0 L10,5 L0,10 z" fill="#157878"/>
+  </marker>
+  <marker id="flechaGris" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+    <path d="M0,0 L10,5 L0,10 z" fill="#5b6b7f"/>
+  </marker>
+</defs>
+<rect x="1" y="1" width="998" height="548" rx="12" fill="#f3f6fa" stroke="#c9d4e2"/>
+<rect x="370" y="30" width="260" height="90" rx="10" fill="#ffffff" stroke="#157878" stroke-width="2.5"/><rect x="370" y="30" width="260" height="8" rx="4" fill="#157878"/><text x="500.0" y="77.0" text-anchor="middle" font-family="'Segoe UI', Helvetica, Arial, sans-serif" font-size="20" font-weight="600" fill="#157878">Proveedor de login</text><text x="500.0" y="101.0" text-anchor="middle" font-family="'Segoe UI', Helvetica, Arial, sans-serif" font-size="14" fill="#5b6b7f">Firebase · Supabase · Spring Security</text>
+<rect x="30" y="220" width="240" height="110" rx="10" fill="#ffffff" stroke="#1b355a" stroke-width="2.5"/><rect x="30" y="220" width="240" height="8" rx="4" fill="#1b355a"/><text x="150.0" y="277.0" text-anchor="middle" font-family="'Segoe UI', Helvetica, Arial, sans-serif" font-size="20" font-weight="600" fill="#1b355a">Aplicación Vue.js</text><text x="150.0" y="301.0" text-anchor="middle" font-family="'Segoe UI', Helvetica, Arial, sans-serif" font-size="14" fill="#5b6b7f">Parte 2 · navegador</text>
+<rect x="380" y="220" width="240" height="110" rx="10" fill="#ffffff" stroke="#1b355a" stroke-width="2.5"/><rect x="380" y="220" width="240" height="8" rx="4" fill="#1b355a"/><text x="500.0" y="277.0" text-anchor="middle" font-family="'Segoe UI', Helvetica, Arial, sans-serif" font-size="20" font-weight="600" fill="#1b355a">API REST Spring Boot</text><text x="500.0" y="301.0" text-anchor="middle" font-family="'Segoe UI', Helvetica, Arial, sans-serif" font-size="14" fill="#5b6b7f">Parte 1 · lógica de la tienda</text>
+<rect x="730" y="220" width="240" height="110" rx="10" fill="#ffffff" stroke="#1b355a" stroke-width="2.5"/><rect x="730" y="220" width="240" height="8" rx="4" fill="#1b355a"/><text x="850.0" y="277.0" text-anchor="middle" font-family="'Segoe UI', Helvetica, Arial, sans-serif" font-size="20" font-weight="600" fill="#1b355a">Base de datos</text><text x="850.0" y="301.0" text-anchor="middle" font-family="'Segoe UI', Helvetica, Arial, sans-serif" font-size="14" fill="#5b6b7f">MariaDB · MySQL · PostgreSQL</text>
+<rect x="380" y="430" width="240" height="90" rx="10" fill="#ffffff" stroke="#157878" stroke-width="2.5"/><rect x="380" y="430" width="240" height="8" rx="4" fill="#157878"/><text x="500.0" y="477.0" text-anchor="middle" font-family="'Segoe UI', Helvetica, Arial, sans-serif" font-size="20" font-weight="600" fill="#157878">Google Sheets</text><text x="500.0" y="501.0" text-anchor="middle" font-family="'Segoe UI', Helvetica, Arial, sans-serif" font-size="14" fill="#5b6b7f">pedidos para importar</text>
+<path d="M150 220 V75 H362" fill="none" stroke="#157878" stroke-width="2.5" marker-end="url(#flechaVerde)"/>
+<text x="165" y="66" text-anchor="start" font-family="'Segoe UI', Helvetica, Arial, sans-serif" font-size="15" fill="#1b355a">1 · Inicia sesión</text>
+<text x="165" y="97" text-anchor="start" font-family="'Segoe UI', Helvetica, Arial, sans-serif" font-size="15" fill="#1b355a">y obtiene el token</text>
+<path d="M500 220 V128" fill="none" stroke="#157878" stroke-width="2.5" stroke-dasharray="7 5" marker-end="url(#flechaVerde)"/>
+<text x="512" y="180" text-anchor="start" font-family="'Segoe UI', Helvetica, Arial, sans-serif" font-size="15" fill="#1b355a">3 · Verifica el token</text>
+<path d="M270 255 H372" fill="none" stroke="#1b355a" stroke-width="2.5" marker-end="url(#flecha)"/>
+<text x="325" y="228" text-anchor="middle" font-family="'Segoe UI', Helvetica, Arial, sans-serif" font-size="15" fill="#1b355a">2 · Petición</text>
+<text x="325" y="246" text-anchor="middle" font-family="'Segoe UI', Helvetica, Arial, sans-serif" font-size="15" fill="#1b355a">+ token</text>
+<path d="M380 300 H278" fill="none" stroke="#1b355a" stroke-width="2.5" marker-end="url(#flecha)"/>
+<text x="325" y="322" text-anchor="middle" font-family="'Segoe UI', Helvetica, Arial, sans-serif" font-size="15" fill="#1b355a">JSON</text>
+<path d="M620 275 H722" fill="none" stroke="#1b355a" stroke-width="2.5" marker-start="url(#flecha)" marker-end="url(#flecha)"/>
+<text x="675" y="263" text-anchor="middle" font-family="'Segoe UI', Helvetica, Arial, sans-serif" font-size="15" fill="#1b355a">JPA / SQL</text>
+<path d="M500 330 V422" fill="none" stroke="#157878" stroke-width="2.5" marker-end="url(#flechaVerde)"/>
+<text x="512" y="382" text-anchor="start" font-family="'Segoe UI', Helvetica, Arial, sans-serif" font-size="15" fill="#1b355a">Descarga la hoja en CSV</text>
+</svg>

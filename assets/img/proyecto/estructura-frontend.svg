@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 330" width="100%" role="img" aria-label="Estructura del proyecto Vue.js">
+<title>Estructura del proyecto Vue.js</title>
+<defs>
+  <marker id="flecha" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+    <path d="M0,0 L10,5 L0,10 z" fill="#1b355a"/>
+  </marker>
+  <marker id="flechaVerde" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+    <path d="M0,0 L10,5 L0,10 z" fill="#157878"/>
+  </marker>
+  <marker id="flechaGris" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+    <path d="M0,0 L10,5 L0,10 z" fill="#5b6b7f"/>
+  </marker>
+</defs>
+<rect x="1" y="1" width="998" height="328" rx="12" fill="#f3f6fa" stroke="#c9d4e2"/>
+<text x="40" y="42" font-family="Consolas, 'Courier New', monospace" font-size="18" font-weight="700" fill="#1b355a">frontend/src/</text>
+<path d="M46 54 V76 H58" fill="none" stroke="#c9d4e2" stroke-width="2"/>
+<path d="M64 67 h12 l5 5 v15 h-17 z" fill="#ffffff" stroke="#5b6b7f" stroke-width="1.5"/>
+<text x="94" y="82" font-family="Consolas, 'Courier New', monospace" font-size="17" fill="#1b355a" font-weight="400">router/index.js</text>
+<text x="470" y="82" font-family="'Segoe UI', Helvetica, Arial, sans-serif" font-size="16" fill="#5b6b7f">rutas y navigation guards</text>
+<path d="M46 94 V116 H58" fill="none" stroke="#c9d4e2" stroke-width="2"/>
+<path d="M62 108 h8 l3 3 h11 v15 h-22 z" fill="#157878" opacity="0.9"/>
+<text x="94" y="122" font-family="Consolas, 'Courier New', monospace" font-size="17" fill="#1b355a" font-weight="600">stores/</text>
+<text x="470" y="122" font-family="'Segoe UI', Helvetica, Arial, sans-serif" font-size="16" fill="#5b6b7f">stores de Pinia (sesión, carrito)</text>
+<path d="M46 134 V156 H58" fill="none" stroke="#c9d4e2" stroke-width="2"/>
+<path d="M62 148 h8 l3 3 h11 v15 h-22 z" fill="#157878" opacity="0.9"/>
+<text x="94" y="162" font-family="Consolas, 'Courier New', monospace" font-size="17" fill="#1b355a" font-weight="600">services/</text>
+<text x="470" y="162" font-family="'Segoe UI', Helvetica, Arial, sans-serif" font-size="16" fill="#5b6b7f">api.js y un servicio por recurso</text>
+<path d="M46 174 V196 H58" fill="none" stroke="#c9d4e2" stroke-width="2"/>
+<path d="M62 188 h8 l3 3 h11 v15 h-22 z" fill="#157878" opacity="0.9"/>
+<text x="94" y="202" font-family="Consolas, 'Courier New', monospace" font-size="17" fill="#1b355a" font-weight="600">components/</text>
+<text x="470" y="202" font-family="'Segoe UI', Helvetica, Arial, sans-serif" font-size="16" fill="#5b6b7f">componentes reutilizables, cabecera, pie...</text>
+<path d="M46 214 V236 H58" fill="none" stroke="#c9d4e2" stroke-width="2"/>
+<path d="M62 228 h8 l3 3 h11 v15 h-22 z" fill="#157878" opacity="0.9"/>
+<text x="94" y="242" font-family="Consolas, 'Courier New', monospace" font-size="17" fill="#1b355a" font-weight="600">views/</text>
+<text x="470" y="242" font-family="'Segoe UI', Helvetica, Arial, sans-serif" font-size="16" fill="#5b6b7f">una vista por pantalla</text>
+<path d="M76 254 V276 H88" fill="none" stroke="#c9d4e2" stroke-width="2"/>
+<path d="M92 268 h8 l3 3 h11 v15 h-22 z" fill="#157878" opacity="0.9"/>
+<text x="124" y="282" font-family="Consolas, 'Courier New', monospace" font-size="17" fill="#1b355a" font-weight="600">admin/</text>
+<text x="470" y="282" font-family="'Segoe UI', Helvetica, Arial, sans-serif" font-size="16" fill="#5b6b7f">vistas del panel de administración (Versión 4)</text>
+</svg>

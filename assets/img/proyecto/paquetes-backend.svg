@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 450" width="100%" role="img" aria-label="Paquetes del proyecto Spring Boot">
+<title>Paquetes del proyecto Spring Boot</title>
+<defs>
+  <marker id="flecha" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+    <path d="M0,0 L10,5 L0,10 z" fill="#1b355a"/>
+  </marker>
+  <marker id="flechaVerde" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+    <path d="M0,0 L10,5 L0,10 z" fill="#157878"/>
+  </marker>
+  <marker id="flechaGris" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+    <path d="M0,0 L10,5 L0,10 z" fill="#5b6b7f"/>
+  </marker>
+</defs>
+<rect x="1" y="1" width="998" height="448" rx="12" fill="#f3f6fa" stroke="#c9d4e2"/>
+<text x="40" y="42" font-family="Consolas, 'Courier New', monospace" font-size="18" font-weight="700" fill="#1b355a">backend/src/main/java/com/&lt;tienda&gt;/</text>
+<path d="M46 54 V76 H58" fill="none" stroke="#c9d4e2" stroke-width="2"/>
+<path d="M62 68 h8 l3 3 h11 v15 h-22 z" fill="#157878" opacity="0.9"/>
+<text x="94" y="82" font-family="Consolas, 'Courier New', monospace" font-size="17" fill="#1b355a" font-weight="600">config/</text>
+<text x="470" y="82" font-family="'Segoe UI', Helvetica, Arial, sans-serif" font-size="16" fill="#5b6b7f">configuración y datos de ejemplo</text>
+<path d="M46 94 V116 H58" fill="none" stroke="#c9d4e2" stroke-width="2"/>
+<path d="M62 108 h8 l3 3 h11 v15 h-22 z" fill="#157878" opacity="0.9"/>
+<text x="94" y="122" font-family="Consolas, 'Courier New', monospace" font-size="17" fill="#1b355a" font-weight="600">controller/</text>
+<text x="470" y="122" font-family="'Segoe UI', Helvetica, Arial, sans-serif" font-size="16" fill="#5b6b7f">controladores REST</text>
+<path d="M46 134 V156 H58" fill="none" stroke="#c9d4e2" stroke-width="2"/>
+<path d="M62 148 h8 l3 3 h11 v15 h-22 z" fill="#157878" opacity="0.9"/>
+<text x="94" y="162" font-family="Consolas, 'Courier New', monospace" font-size="17" fill="#1b355a" font-weight="600">dto/</text>
+<text x="470" y="162" font-family="'Segoe UI', Helvetica, Arial, sans-serif" font-size="16" fill="#5b6b7f">clases DTO de entrada y salida</text>
+<path d="M46 174 V196 H58" fill="none" stroke="#c9d4e2" stroke-width="2"/>
+<path d="M62 188 h8 l3 3 h11 v15 h-22 z" fill="#157878" opacity="0.9"/>
+<text x="94" y="202" font-family="Consolas, 'Courier New', monospace" font-size="17" fill="#1b355a" font-weight="600">exception/</text>
+<text x="470" y="202" font-family="'Segoe UI', Helvetica, Arial, sans-serif" font-size="16" fill="#5b6b7f">excepciones propias</text>
+<path d="M46 214 V236 H58" fill="none" stroke="#c9d4e2" stroke-width="2"/>
+<path d="M62 228 h8 l3 3 h11 v15 h-22 z" fill="#157878" opacity="0.9"/>
+<text x="94" y="242" font-family="Consolas, 'Courier New', monospace" font-size="17" fill="#1b355a" font-weight="600">mapper/</text>
+<text x="470" y="242" font-family="'Segoe UI', Helvetica, Arial, sans-serif" font-size="16" fill="#5b6b7f">conversión entre modelo y DTO</text>
+<path d="M46 254 V276 H58" fill="none" stroke="#c9d4e2" stroke-width="2"/>
+<path d="M62 268 h8 l3 3 h11 v15 h-22 z" fill="#157878" opacity="0.9"/>
+<text x="94" y="282" font-family="Consolas, 'Courier New', monospace" font-size="17" fill="#1b355a" font-weight="600">model/</text>
+<text x="470" y="282" font-family="'Segoe UI', Helvetica, Arial, sans-serif" font-size="16" fill="#5b6b7f">clases del modelo</text>
+<path d="M46 294 V316 H58" fill="none" stroke="#c9d4e2" stroke-width="2"/>
+<path d="M62 308 h8 l3 3 h11 v15 h-22 z" fill="#157878" opacity="0.9"/>
+<text x="94" y="322" font-family="Consolas, 'Courier New', monospace" font-size="17" fill="#1b355a" font-weight="600">repository/</text>
+<text x="470" y="322" font-family="'Segoe UI', Helvetica, Arial, sans-serif" font-size="16" fill="#5b6b7f">repositorios en memoria (JPA en la Versión 2)</text>
+<path d="M46 334 V356 H58" fill="none" stroke="#c9d4e2" stroke-width="2"/>
+<path d="M62 348 h8 l3 3 h11 v15 h-22 z" fill="#157878" opacity="0.9"/>
+<text x="94" y="362" font-family="Consolas, 'Courier New', monospace" font-size="17" fill="#1b355a" font-weight="600">security/</text>
+<text x="470" y="362" font-family="'Segoe UI', Helvetica, Arial, sans-serif" font-size="16" fill="#5b6b7f">autenticación</text>
+<path d="M46 374 V396 H58" fill="none" stroke="#c9d4e2" stroke-width="2"/>
+<path d="M62 388 h8 l3 3 h11 v15 h-22 z" fill="#157878" opacity="0.9"/>
+<text x="94" y="402" font-family="Consolas, 'Courier New', monospace" font-size="17" fill="#1b355a" font-weight="600">service/</text>
+<text x="470" y="402" font-family="'Segoe UI', Helvetica, Arial, sans-serif" font-size="16" fill="#5b6b7f">lógica de negocio</text>
+</svg>

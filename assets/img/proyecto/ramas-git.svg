@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 470" width="100%" role="img" aria-label="Flujo de ramas: main, develop y una rama por persona integradas con Pull Requests">
+<title>Flujo de ramas: main, develop y una rama por persona integradas con Pull Requests</title>
+<defs>
+  <marker id="flecha" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+    <path d="M0,0 L10,5 L0,10 z" fill="#1b355a"/>
+  </marker>
+  <marker id="flechaVerde" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+    <path d="M0,0 L10,5 L0,10 z" fill="#157878"/>
+  </marker>
+  <marker id="flechaGris" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+    <path d="M0,0 L10,5 L0,10 z" fill="#5b6b7f"/>
+  </marker>
+</defs>
+<rect x="1" y="1" width="998" height="468" rx="12" fill="#f3f6fa" stroke="#c9d4e2"/>
+<text x="30" y="66" font-family="Consolas, 'Courier New', monospace" font-size="17" font-weight="700" fill="#1b355a">main</text>
+<text x="30" y="88" font-family="'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" fill="#5b6b7f">versiones terminadas</text>
+<text x="30" y="166" font-family="Consolas, 'Courier New', monospace" font-size="17" font-weight="700" fill="#157878">develop</text>
+<text x="30" y="188" font-family="'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" fill="#5b6b7f">integración</text>
+<text x="30" y="266" font-family="Consolas, 'Courier New', monospace" font-size="17" font-weight="700" fill="#d35400">persona-a</text>
+<text x="30" y="288" font-family="'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" fill="#5b6b7f">rama de la persona A</text>
+<text x="30" y="356" font-family="Consolas, 'Courier New', monospace" font-size="17" font-weight="700" fill="#8e44ad">persona-b</text>
+<text x="30" y="378" font-family="'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" fill="#5b6b7f">rama de la persona B</text>
+<line x1="210" y1="70" x2="960" y2="70" stroke="#1b355a" stroke-width="4" stroke-linecap="round" opacity="0.85"/>
+<line x1="260" y1="170" x2="960" y2="170" stroke="#157878" stroke-width="4" stroke-linecap="round" opacity="0.85"/>
+<line x1="320" y1="270" x2="960" y2="270" stroke="#d35400" stroke-width="4" stroke-linecap="round" opacity="0.85"/>
+<line x1="340" y1="360" x2="960" y2="360" stroke="#8e44ad" stroke-width="4" stroke-linecap="round" opacity="0.85"/>
+<path d="M210 70 C240 70, 230 170, 260 170" fill="none" stroke="#157878" stroke-width="4"/>
+<path d="M260 170 C290 170, 290 270, 320 270" fill="none" stroke="#d35400" stroke-width="4"/>
+<path d="M260 170 C300 170, 300 360, 340 360" fill="none" stroke="#8e44ad" stroke-width="4"/>
+<circle cx="370" cy="270" r="9" fill="#ffffff" stroke="#d35400" stroke-width="4"/>
+<circle cx="450" cy="270" r="9" fill="#ffffff" stroke="#d35400" stroke-width="4"/>
+<circle cx="530" cy="270" r="9" fill="#ffffff" stroke="#d35400" stroke-width="4"/>
+<circle cx="400" cy="360" r="9" fill="#ffffff" stroke="#8e44ad" stroke-width="4"/>
+<circle cx="480" cy="360" r="9" fill="#ffffff" stroke="#8e44ad" stroke-width="4"/>
+<circle cx="640" cy="360" r="9" fill="#ffffff" stroke="#8e44ad" stroke-width="4"/>
+<circle cx="700" cy="360" r="9" fill="#ffffff" stroke="#8e44ad" stroke-width="4"/>
+<path d="M530 260 L590 182" stroke="#1b355a" stroke-width="2.5" stroke-dasharray="8 5" marker-end="url(#flecha)"/>
+<text x="566" y="228" font-family="'Segoe UI', Helvetica, Arial, sans-serif" font-size="14" fill="#1b355a">Pull Request</text>
+<circle cx="600" cy="170" r="9" fill="#157878" stroke="#157878" stroke-width="4"/>
+<path d="M604 180 L636 348" stroke="#5b6b7f" stroke-width="2" stroke-dasharray="2 5" marker-end="url(#flechaGris)"/>
+<path d="M700 350 L770 182" stroke="#1b355a" stroke-width="2.5" stroke-dasharray="8 5" marker-end="url(#flecha)"/>
+<text x="746" y="300" font-family="'Segoe UI', Helvetica, Arial, sans-serif" font-size="14" fill="#1b355a">Pull Request</text>
+<circle cx="780" cy="170" r="9" fill="#157878" stroke="#157878" stroke-width="4"/>
+<path d="M780 170 C820 170, 820 70, 860 70" fill="none" stroke="#157878" stroke-width="4"/>
+<circle cx="210" cy="70" r="9" fill="#1b355a" stroke="#1b355a" stroke-width="4"/>
+<circle cx="860" cy="70" r="9" fill="#1b355a" stroke="#1b355a" stroke-width="4"/>
+<rect x="878" y="28" width="56" height="28" rx="6" fill="#1b355a"/><text x="906" y="48" text-anchor="middle" font-family="Consolas, 'Courier New', monospace" font-size="16" font-weight="700" fill="#ffffff">v1</text>
+<circle cx="50" cy="430" r="8" fill="#ffffff" stroke="#5b6b7f" stroke-width="3"/><text x="66" y="435" font-family="'Segoe UI', Helvetica, Arial, sans-serif" font-size="14" fill="#5b6b7f">commit</text>
+<line x1="150" y1="430" x2="200" y2="430" stroke="#1b355a" stroke-width="2.5" stroke-dasharray="8 5"/><text x="210" y="435" font-family="'Segoe UI', Helvetica, Arial, sans-serif" font-size="14" fill="#5b6b7f">Pull Request revisada y aprobada por la otra persona</text>
+<line x1="560" y1="430" x2="610" y2="430" stroke="#5b6b7f" stroke-width="2" stroke-dasharray="2 5"/><text x="620" y="435" font-family="'Segoe UI', Helvetica, Arial, sans-serif" font-size="14" fill="#5b6b7f">actualizar la rama con develop</text>
+<rect x="850" y="417" width="40" height="24" rx="5" fill="#1b355a"/><text x="870" y="435" text-anchor="middle" font-family="Consolas, 'Courier New', monospace" font-size="13" fill="#fff">v1</text><text x="898" y="435" font-family="'Segoe UI', Helvetica, Arial, sans-serif" font-size="14" fill="#5b6b7f">etiqueta</text>
+</svg>

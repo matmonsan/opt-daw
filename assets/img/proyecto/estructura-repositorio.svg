@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 450" width="100%" role="img" aria-label="Estructura del repositorio de la pareja">
+<title>Estructura del repositorio de la pareja</title>
+<defs>
+  <marker id="flecha" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+    <path d="M0,0 L10,5 L0,10 z" fill="#1b355a"/>
+  </marker>
+  <marker id="flechaVerde" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+    <path d="M0,0 L10,5 L0,10 z" fill="#157878"/>
+  </marker>
+  <marker id="flechaGris" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+    <path d="M0,0 L10,5 L0,10 z" fill="#5b6b7f"/>
+  </marker>
+</defs>
+<rect x="1" y="1" width="998" height="448" rx="12" fill="#f3f6fa" stroke="#c9d4e2"/>
+<text x="40" y="42" font-family="Consolas, 'Courier New', monospace" font-size="18" font-weight="700" fill="#1b355a">tienda-&lt;nombre&gt;/</text>
+<path d="M46 54 V76 H58" fill="none" stroke="#c9d4e2" stroke-width="2"/>
+<path d="M62 68 h8 l3 3 h11 v15 h-22 z" fill="#157878" opacity="0.9"/>
+<text x="94" y="82" font-family="Consolas, 'Courier New', monospace" font-size="17" fill="#1b355a" font-weight="600">backend/</text>
+<text x="470" y="82" font-family="'Segoe UI', Helvetica, Arial, sans-serif" font-size="16" fill="#5b6b7f">proyecto Spring Boot (Parte 1)</text>
+<path d="M46 94 V116 H58" fill="none" stroke="#c9d4e2" stroke-width="2"/>
+<path d="M62 108 h8 l3 3 h11 v15 h-22 z" fill="#157878" opacity="0.9"/>
+<text x="94" y="122" font-family="Consolas, 'Courier New', monospace" font-size="17" fill="#1b355a" font-weight="600">frontend/</text>
+<text x="470" y="122" font-family="'Segoe UI', Helvetica, Arial, sans-serif" font-size="16" fill="#5b6b7f">proyecto Vue.js (Parte 2)</text>
+<path d="M46 134 V156 H58" fill="none" stroke="#c9d4e2" stroke-width="2"/>
+<path d="M62 148 h8 l3 3 h11 v15 h-22 z" fill="#157878" opacity="0.9"/>
+<text x="94" y="162" font-family="Consolas, 'Courier New', monospace" font-size="17" fill="#1b355a" font-weight="600">docs/</text>
+<text x="470" y="162" font-family="'Segoe UI', Helvetica, Arial, sans-serif" font-size="16" fill="#5b6b7f">documentación del proyecto</text>
+<path d="M76 174 V196 H88" fill="none" stroke="#c9d4e2" stroke-width="2"/>
+<path d="M94 187 h12 l5 5 v15 h-17 z" fill="#ffffff" stroke="#5b6b7f" stroke-width="1.5"/>
+<text x="124" y="202" font-family="Consolas, 'Courier New', monospace" font-size="17" fill="#1b355a" font-weight="400">api.md</text>
+<text x="470" y="202" font-family="'Segoe UI', Helvetica, Arial, sans-serif" font-size="16" fill="#5b6b7f">contrato de la API, siempre actualizado</text>
+<path d="M76 214 V236 H88" fill="none" stroke="#c9d4e2" stroke-width="2"/>
+<path d="M92 228 h8 l3 3 h11 v15 h-22 z" fill="#157878" opacity="0.9"/>
+<text x="124" y="242" font-family="Consolas, 'Courier New', monospace" font-size="17" fill="#1b355a" font-weight="600">diagramas/</text>
+<text x="470" y="242" font-family="'Segoe UI', Helvetica, Arial, sans-serif" font-size="16" fill="#5b6b7f">diagrama de clases, entidad-relación...</text>
+<path d="M76 254 V276 H88" fill="none" stroke="#c9d4e2" stroke-width="2"/>
+<path d="M92 268 h8 l3 3 h11 v15 h-22 z" fill="#157878" opacity="0.9"/>
+<text x="124" y="282" font-family="Consolas, 'Courier New', monospace" font-size="17" fill="#1b355a" font-weight="600">memorias/</text>
+<text x="470" y="282" font-family="'Segoe UI', Helvetica, Arial, sans-serif" font-size="16" fill="#5b6b7f">PDF de cada versión</text>
+<path d="M46 294 V316 H58" fill="none" stroke="#c9d4e2" stroke-width="2"/>
+<path d="M62 308 h8 l3 3 h11 v15 h-22 z" fill="#157878" opacity="0.9"/>
+<text x="94" y="322" font-family="Consolas, 'Courier New', monospace" font-size="17" fill="#1b355a" font-weight="600">postman/</text>
+<text x="470" y="322" font-family="'Segoe UI', Helvetica, Arial, sans-serif" font-size="16" fill="#5b6b7f">colección y entorno de Postman exportados</text>
+<path d="M46 334 V356 H58" fill="none" stroke="#c9d4e2" stroke-width="2"/>
+<path d="M64 347 h12 l5 5 v15 h-17 z" fill="#ffffff" stroke="#5b6b7f" stroke-width="1.5"/>
+<text x="94" y="362" font-family="Consolas, 'Courier New', monospace" font-size="17" fill="#1b355a" font-weight="400">docker-compose.yml</text>
+<text x="470" y="362" font-family="'Segoe UI', Helvetica, Arial, sans-serif" font-size="16" fill="#5b6b7f">base de datos (a partir de la Versión 2)</text>
+<path d="M46 374 V396 H58" fill="none" stroke="#c9d4e2" stroke-width="2"/>
+<path d="M64 387 h12 l5 5 v15 h-17 z" fill="#ffffff" stroke="#5b6b7f" stroke-width="1.5"/>
+<text x="94" y="402" font-family="Consolas, 'Courier New', monospace" font-size="17" fill="#1b355a" font-weight="400">README.md</text>
+<text x="470" y="402" font-family="'Segoe UI', Helvetica, Arial, sans-serif" font-size="16" fill="#5b6b7f">descripción, arranque y usuarios de prueba</text>
+</svg>
