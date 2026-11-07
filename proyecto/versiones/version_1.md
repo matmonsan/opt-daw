@@ -10,7 +10,7 @@ description: "<strong>Módulo:</strong> Programación Web Avanzada <br> <strong>
 
 ## Objetivo
 
-Construir la estructura completa del backend de la tienda con Spring Boot: diseño, repositorio con una rama por persona, catálogo, búsqueda, validación, autenticación, carrito y pedidos.
+Construir la estructura completa del backend de la tienda con Spring Boot: diseño, repositorio con una rama por persona, catálogo, búsqueda, excepciones, autenticación, carrito y pedidos.
 
 En esta versión no hay base de datos: los datos se guardan en memoria y se pierden al reiniciar la aplicación. La persistencia llegará en la Versión 2.
 
@@ -19,7 +19,7 @@ En esta versión no hay base de datos: los datos se guardan en memoria y se pier
 | Semana | Trabajo |
 |---|---|
 | 09/11 - 15/11 | Apartados 1 a 4: diseño, repositorio y ramas, proyecto base y catálogo |
-| 16/11 - 22/11 | Apartados 5 a 7: búsqueda y filtros, validación y errores, autenticación |
+| 16/11 - 22/11 | Apartados 5 a 7: búsqueda y filtros, excepciones, autenticación |
 | 23/11 - 29/11 | Apartado 8: carrito y pedidos, y revisión final con la colección de Postman |
 
 ---
@@ -35,8 +35,8 @@ Diseñad el diagrama de clases (draw.io, PlantUML, Mermaid...) y guardadlo en `d
 | Clase | Atributos mínimos |
 |---|---|
 | `Categoria` | `id`, `nombre`, `descripcion` |
-| `Producto` | `id`, `sku` (código único), `nombre`, `descripcion`, `precio`, `stock`, `imagenUrl`, `activo`, `destacado`, `fechaAlta`, `categoria`, **dos atributos propios de la temática** |
-| `Usuario` | `id`, `uid` (identificador del proveedor de autenticación), `email`, `nombre`, `direccionEnvio`, `rol`, `fechaAlta` |
+| `Producto` | `id`, `sku` (código único), `nombre`, `descripcion`, `precio`, `stock`, `imagenUrl`, `activo`, `destacado`, `fechaAlta`, `categoria`, dos atributos propios de la temática |
+| `Usuario` | `id`, `uid` (identificador de Firebase o Supabase; con Spring Security, la contraseña cifrada), `email`, `nombre`, `direccionEnvio`, `rol`, `fechaAlta` |
 | `Carrito` y `LineaCarrito` | `usuario`, `lineas` / `producto`, `cantidad` |
 | `Pedido` | `id`, `codigo` (legible, por ejemplo `PED-2026-0001`), `usuario`, `fecha`, `estado`, `direccionEnvio`, `subtotal`, `gastosEnvio`, `total`, `lineas` |
 | `LineaPedido` | `producto`, `nombreProducto`, `precioUnitario`, `cantidad`, `subtotal` |
@@ -68,85 +68,73 @@ Investigad y aplicad también: reglas de protección de ramas (no se permite `pu
 
 ### 3. Proyecto base y organización por capas
 
-Cread el proyecto en `backend/` con [Spring Initializr](https://start.spring.io/): Maven, Java 21 o superior, y las dependencias Spring Web, Validation, Lombok y DevTools. Organizad los paquetes así:
+Cread el proyecto en `backend/` con [Spring Initializr](https://start.spring.io/): Maven, Java 21 o superior, y las dependencias Spring Web y DevTools. Organizad los paquetes así:
 
 <img src="../../assets/img/proyecto/paquetes-backend.svg" alt="Paquetes del proyecto Spring Boot" width="100%">
 
 - Los controladores solo reciben la petición, llaman al servicio y devuelven un `ResponseEntity` con el código adecuado.
-- Los servicios contienen la lógica de negocio, trabajan con DTOs y no conocen `ResponseEntity`.
-- Inyección de dependencias por constructor (`@RequiredArgsConstructor`).
+- Los servicios contienen la lógica de negocio y los datos en memoria, trabajan con DTOs y no conocen `ResponseEntity`.
+- Inyección de dependencias por constructor.
+- En esta versión no hay capa de repositorio: se incorporará en la Versión 2 junto con la base de datos.
 - Las rutas de administración empiezan por `/api/admin`, lo que facilitará protegerlas.
 
 Material de referencia: [apartados 1 a 4 de Aplicaciones Spring Boot](../../aplicaciones.md#1-http-y-apis-rest).
 
 ### 4. Catálogo
 
-Los modelos y los DTOs son clases Java con Lombok. DTOs mínimos: `CategoriaDto`, `CategoriaCrearDto`, `ProductoResumenDto` (para listados), `ProductoDetalleDto`, `ProductoCrearDto` y `StockDto`. El cliente nunca envía `id`, `activo` ni `fechaAlta`: los asigna el servidor. Las conversiones van en clases del paquete `mapper`.
+Los modelos y los DTOs son clases Java con atributos privados, constructores, *getters* y *setters*. DTOs mínimos: `CategoriaDto`, `CategoriaCrearDto`, `ProductoResumenDto` (para listados), `ProductoDetalleDto`, `ProductoCrearDto` y `StockDto`. El cliente nunca envía `id`, `activo` ni `fechaAlta`: los asigna el servidor. La conversión entre el modelo y los DTOs se hace en los servicios.
 
 ```java
-@Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
 public class ProductoCrearDto {
 
-    @NotBlank(message = "El SKU es obligatorio")
-    @Pattern(regexp = "[A-Za-z0-9-]{3,20}", message = "El SKU solo admite letras, números y guiones (3 a 20)")
     private String sku;
-
-    @NotBlank(message = "El nombre es obligatorio")
-    @Size(max = 100, message = "El nombre no puede superar los 100 caracteres")
     private String nombre;
-
-    @NotNull(message = "El precio es obligatorio")
-    @Positive(message = "El precio debe ser mayor que 0")
     private BigDecimal precio;
-
-    @NotNull(message = "El stock es obligatorio")
-    @PositiveOrZero(message = "El stock no puede ser negativo")
     private Integer stock;
-
-    @NotNull(message = "La categoría es obligatoria")
     private Long categoriaId;
 
     // descripcion, imagenUrl, destacado y atributos propios de la temática...
+
+    public ProductoCrearDto() {
+    }
+
+    // getters y setters...
 }
 ```
 
-El constructor sin argumentos y los *setters* son necesarios para que Jackson pueda construir el objeto a partir del JSON de la petición.
+El constructor sin argumentos y los *setters* son necesarios para que Jackson pueda construir el objeto a partir del JSON de la petición. En esta versión los DTOs no llevan anotaciones de validación: la validación de los datos de entrada con Bean Validation se incorporará en la Versión 2.
 
-Repositorios en memoria con los mismos nombres de métodos que tendrá Spring Data JPA, para que en la Versión 2 el cambio sea mínimo:
+Datos en memoria: cada servicio guarda sus datos en una colección y genera los identificadores con un contador.
 
 ```java
-@Repository
-public class ProductoRepository {
+@Service
+public class ProductoService {
 
-    private final Map<Long, Producto> productos = new ConcurrentHashMap<>();
-    private final AtomicLong secuencia = new AtomicLong();
+    private final Map<Long, Producto> productos = new HashMap<>();
+    private long siguienteId = 1;
 
-    public List<Producto> findAll() {
-        return new ArrayList<>(productos.values());
+    private final CategoriaService categoriaService;
+
+    public ProductoService(CategoriaService categoriaService) {
+        this.categoriaService = categoriaService;
+        cargarDatosDeEjemplo();
     }
 
-    public Optional<Producto> findById(Long id) {
-        return Optional.ofNullable(productos.get(id));
-    }
-
-    public Producto save(Producto producto) {
-        if (producto.getId() == null) {
-            producto.setId(secuencia.incrementAndGet());
+    public ProductoDetalleDto buscar(long id) {
+        Producto producto = productos.get(id);
+        if (producto == null || !producto.isActivo()) {
+            throw new RecursoNoEncontradoException("No existe el producto " + id);
         }
-        productos.put(producto.getId(), producto);
-        return producto;
+        return convertirADetalleDto(producto);
     }
 
-    public void deleteById(Long id) {
-        productos.remove(id);
-    }
+    // crear, modificar, retirar, ajustar stock...
 }
 ```
 
-Datos de ejemplo: una clase de `config` que implemente `CommandLineRunner` carga al arrancar al menos 3 categorías y 12 productos con imágenes reales, incluyendo alguno sin stock, alguno retirado y alguno destacado.
+Cuidado con las dependencias circulares: si `ProductoService` recibe `CategoriaService` y `CategoriaService` recibe `ProductoService` (por ejemplo, para comprobar si una categoría tiene productos antes de borrarla), Spring no podrá arrancar la aplicación. Decidid qué servicio depende de cuál y explicad en la memoria cómo lo habéis resuelto.
+
+Datos de ejemplo: al arrancar, los servicios cargan al menos 3 categorías y 12 productos con imágenes reales, incluyendo alguno sin stock, alguno retirado y alguno destacado.
 
 Reglas: SKU único (se guarda en mayúsculas); no se puede usar una categoría inexistente; no puede haber dos categorías con el mismo nombre; no se puede eliminar una categoría con productos; eliminar un producto lo marca como retirado; el stock nunca queda en negativo; los listados públicos solo muestran productos activos.
 
@@ -158,6 +146,7 @@ Reglas: SKU único (se guarda en mayúsculas); no se puede usar una categoría i
 | `GET`, `POST /api/admin/categorias` · `PUT`, `DELETE /api/admin/categorias/{id}` | Gestión de categorías | `200`, `201`, `204`, `404`, `409` |
 | `GET`, `POST /api/admin/productos` · `PUT`, `DELETE /api/admin/productos/{id}` | Gestión de productos (el listado incluye los retirados) | `200`, `201`, `204`, `400`, `404`, `409` |
 | `PATCH /api/admin/productos/{id}/stock` | Sumar o restar stock | `200`, `404`, `409` |
+| `PATCH /api/admin/productos/{id}/reactivar` | Volver a activar un producto retirado | `200`, `404` |
 
 Las respuestas `201 Created` incluyen la cabecera `Location` (investigad `ServletUriComponentsBuilder`).
 
@@ -181,13 +170,13 @@ Además: `GET /api/categorias/{id}/productos`, `GET /api/productos/sku/{sku}` (c
 
 Material de referencia: [apartado 5 de los apuntes](../../aplicaciones.md#5-parámetros-de-ruta-y-de-consulta).
 
-### 6. Validación y excepciones
+### 6. Excepciones
 
-- Todos los DTOs de entrada tienen restricciones de Bean Validation (`@NotBlank`, `@Size`, `@Positive`, `@PositiveOrZero`, `@Pattern`...) con mensajes en castellano y se validan con `@Valid`.
 - Cread excepciones propias que extiendan `ResponseStatusException`: `RecursoNoEncontradoException` (`404`), `ConflictoException` (`409`), `DatosNoValidosException` (`400`) y `StockInsuficienteException` (`409`). Los servicios las lanzan y los controladores no tienen `try/catch`.
 - Las respuestas de error no muestran trazas ni información interna.
+- Por defecto, Spring Boot no incluye en la respuesta el mensaje de las excepciones. Como la aplicación Vue de la Parte 2 tendrá que mostrarlo al usuario, configurad `server.error.include-message=always`. Por eso los mensajes de vuestras excepciones deben estar pensados para el usuario final y no contener información interna.
 
-Material de referencia: [apartado 7 de los apuntes](../../aplicaciones.md#7-validación-y-manejo-de-excepciones).
+Material de referencia: [apartado 7 de los apuntes](../../aplicaciones.md#excepciones) (excepciones).
 
 ### 7. Investigación: autenticación y roles
 {: .investigacion}
@@ -204,7 +193,7 @@ Elegid una opción y justificadla:
 Requisitos:
 
 - Sin token, o con un token no válido o caducado: `401`. Un cliente en cualquier ruta `/api/admin/`: `403`.
-- La primera vez que un usuario accede se crea su `Usuario` con rol `CLIENTE`. Los administradores se definen en `application.properties` (`tienda.admins=admin@tienda.com`).
+- La primera vez que un usuario accede se crea su `Usuario` con rol `CLIENTE` (con Spring Security, al registrarse). Los administradores se definen en `application.properties` (`tienda.admins=admin@tienda.com`).
 - La identidad se obtiene siempre del token verificado, encapsulada en un `UsuarioActualService` que usará el resto del código.
 - *Endpoints*: `GET` y `PUT /api/usuarios/me`, `GET /api/admin/usuarios` y `PATCH /api/admin/usuarios/{id}/rol`.
 - Dos usuarios de prueba (cliente y administrador) indicados en el `README.md`; la colección de Postman obtiene el token con una petición de *login* y lo guarda en una variable `{{token}}`.
@@ -216,14 +205,14 @@ Carrito (siempre el del usuario autenticado; las rutas no llevan id de usuario):
 
 | Método y ruta | Descripción |
 |---|---|
-| `GET /api/carrito` | Ver el carrito con importes calculados por el servidor y `avisos` |
+| `GET /api/carrito` | Ver el carrito: líneas, número de artículos, subtotal, gastos de envío, total, importe que falta para el envío gratuito y `avisos`, todo calculado por el servidor |
 | `POST /api/carrito/lineas` | `{ "productoId": 7, "cantidad": 2 }`; si ya existe, suma la cantidad |
 | `PUT` y `DELETE /api/carrito/lineas/{productoId}` | Cambiar la cantidad o quitar la línea |
 | `DELETE /api/carrito` | Vaciar el carrito |
 
-- No se pueden añadir productos retirados ni más unidades que el stock (`409`) ni superar `tienda.carrito.max-unidades-por-producto`.
+- La cantidad mínima de una línea es 1 (`400`). No se pueden añadir productos retirados ni más unidades que el stock (`409`) ni superar `tienda.carrito.max-unidades-por-producto`.
 - Si un producto del carrito se retira o baja su stock, el carrito lo indica en `avisos` y no se puede confirmar el pedido.
-- Gastos de envío configurables con `@ConfigurationProperties` (`tienda.envio.coste` y `tienda.envio.gratis-desde`).
+- Gastos de envío configurables en `application.properties` (`tienda.envio.coste` y `tienda.envio.gratis-desde`) y leídos con `@Value`.
 
 Pedidos:
 
@@ -232,10 +221,10 @@ Pedidos:
 | `POST /api/pedidos` | Confirmar el carrito (dirección del cuerpo o del perfil) |
 | `GET /api/pedidos?estado=` · `GET /api/pedidos/{id}` | Mis pedidos y su detalle (`404` si es de otro usuario) |
 | `PATCH /api/pedidos/{id}/cancelar` | Cancelar uno de mis pedidos |
-| `GET /api/admin/pedidos?estado=&desde=&hasta=` · `GET /api/admin/pedidos/{id}` | Todos los pedidos |
+| `GET /api/admin/pedidos?estado=&desde=&hasta=&email=` · `GET /api/admin/pedidos/{id}` | Todos los pedidos, filtrando por estado, fechas y correo del cliente |
 | `PATCH /api/admin/pedidos/{id}/estado` | Cambiar el estado |
 
-Al confirmar: se comprueba que el carrito no esté vacío y que todas las líneas tienen stock (si alguna falla, no se modifica nada), se crea el pedido `PENDIENTE` con la copia de nombres y precios, se descuenta el stock y se vacía el carrito. Al cancelar, se repone el stock. Las transiciones de estado se definen en el propio enumerado:
+Al confirmar: se comprueba que el carrito no esté vacío y que todas las líneas tienen stock (si alguna falla, se responde `409` indicando qué productos no tienen stock suficiente y no se modifica nada), se crea el pedido `PENDIENTE` con la copia de nombres y precios, se descuenta el stock y se vacía el carrito. Al cancelar, se repone el stock. Las transiciones de estado se definen en el propio enumerado:
 
 ```java
 public enum EstadoPedido {
@@ -261,7 +250,7 @@ El cliente solo puede cancelar; el resto de cambios los hace el administrador. U
 - Repositorio con la estructura indicada, ramas protegidas, una rama por persona y *Pull Requests* revisadas, con un conflicto resuelto.
 - Organización por capas, DTOs en la API e inyección por constructor.
 - Todos los *endpoints* indicados con los códigos HTTP correctos y las reglas de negocio implementadas.
-- Validación de todos los DTOs de entrada y excepciones propias.
+- Excepciones propias lanzadas desde los servicios.
 - Ninguna ruta responde sin token válido (salvo las públicas indicadas) y las de administración devuelven `403` a los clientes.
 - Colección de Postman con todas las peticiones, incluidas las que deben fallar.
 - Ningún secreto en el repositorio. Etiqueta `v1` en `main`.
@@ -279,7 +268,7 @@ El cliente solo puede cancelar; el resto de cambios los hace el administrador. U
 
 - El proyecto arranca siguiendo el `README.md` y se puede probar desde Postman.
 - Flujo completo demostrable: iniciar sesión → consultar el catálogo con filtros → añadir al carrito → confirmar el pedido → el stock baja → el administrador lo marca como `PAGADO` → el cliente lo cancela → el stock se repone.
-- Los datos no válidos, las operaciones prohibidas y los accesos sin permiso se rechazan con el código adecuado.
+- Las operaciones que incumplen las reglas de negocio y los accesos sin permiso se rechazan con el código adecuado.
 - El historial de Git muestra el trabajo de las dos personas.
 
 ## Entrega
@@ -287,7 +276,7 @@ El cliente solo puede cancelar; el resto de cambios los hace el administrador. U
 Incluid en la memoria:
 
 - Temática, diagrama de clases y tabla de *endpoints*.
-- Capturas de las pruebas más relevantes: flujo de compra, filtros, errores de validación, `401`, `403`, `404` y `409`.
+- Capturas de las pruebas más relevantes: flujo de compra, filtros, `400`, `401`, `403`, `404` y `409`.
 - Investigación sobre Git: flujo de ramas, reglas de protección, una *Pull Request* revisada y el conflicto resuelto.
 - Investigación sobre autenticación: opción elegida, flujo de una petición autenticada, qué es un JWT y cómo se obtiene el token para las pruebas.
 

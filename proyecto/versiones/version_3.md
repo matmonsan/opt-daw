@@ -18,8 +18,9 @@ Comenzar la Parte 2: diseñar la interfaz, crear el proyecto Vue 3 en la carpeta
 |---|---|
 | 11/01 - 17/01 | Apartados 1 y 2: prototipo, proyecto Vue y diseño base |
 | 18/01 - 24/01 | Apartado 3: inicio de sesión y rutas protegidas |
-| 25/01 - 07/02 | Apartado 4: catálogo y detalle de producto |
-| 08/02 - 12/02 | Apartados 5 y 6: carrito, importación e informes Excel |
+| 25/01 - 31/01 | Apartado 4: catálogo y detalle de producto |
+| 01/02 - 07/02 | Apartado 5: carrito e importación |
+| 08/02 - 12/02 | Apartado 6: informes Excel |
 
 ---
 
@@ -36,10 +37,10 @@ Cread el proyecto con `npm create vue@latest`, activando Vue Router y Pinia. Usa
 <img src="../../assets/img/proyecto/estructura-frontend.svg" alt="Estructura del proyecto Vue.js" width="100%">
 
 - La URL de la API se lee de `VITE_API_URL` (`.env.development`, con un `.env.example` en el repositorio).
-- Configurad CORS en el backend para el origen de Vite (`http://localhost:5173`), leyendo los orígenes permitidos de `application.properties`.
+- Configurad CORS en el backend para el origen de Vite (`http://localhost:5173`), leyendo los orígenes permitidos de `application.properties`. El navegador envía antes una petición `OPTIONS` (*preflight*) sin token: comprobad que vuestro filtro de autenticación la deja pasar.
 - Definid todas las rutas (con vistas provisionales para las de la Versión 4) y una vista 404.
 - Diseño base adaptable a móvil: cabecera con logotipo, navegación y menú plegable, pie y zona de contenido.
-- Portada con los productos destacados y las novedades.
+- Portada con los productos destacados (`/api/productos/destacados`) y las novedades (`/api/productos` ordenado por fecha de alta).
 
 ### 3. Inicio de sesión y rutas protegidas
 
@@ -77,17 +78,17 @@ Toda la comunicación con la API está en `services/`; los componentes no constr
 > Este apartado no se explica en clase. Es trabajo de investigación y debe documentarse en la memoria.
 {: .investigacion}
 
-Investigad la librería Apache POI (`poi-ooxml`) y añadid al backend dos *endpoints* que generan archivos `.xlsx`:
+Investigad la librería Apache POI (`poi-ooxml`) y añadid al backend tres *endpoints* que generan archivos `.xlsx`:
 
 | Método y ruta | Contenido |
 |---|---|
 | `GET /api/admin/pedidos/exportar?desde=&hasta=&estado=` | Libro con dos hojas: `Pedidos` (código, fecha, cliente, estado, subtotal, envío, total) y `Líneas` (código del pedido, SKU, producto, precio, cantidad, subtotal) |
-| `GET /api/pedidos/{id}/exportar` | Uno de los pedidos del cliente con las columnas `sku`, `cantidad` y `comentario`: **el mismo formato que la importación desde Google Sheets** |
+| `GET /api/pedidos/{id}/exportar` | Uno de los pedidos del cliente con las columnas `sku`, `cantidad` y `comentario`, el mismo formato que la importación desde Google Sheets |
+| `GET /api/carrito/exportar` | El carrito actual, con el mismo formato que la importación |
 
-- Cabecera en negrita con color de fondo, filas inmovilizadas, filtros automáticos, importes con formato de moneda, fechas con formato de fecha, columnas ajustadas y una fila de totales con una fórmula `SUM`.
+- En todos los informes: cabecera en negrita con color de fondo, filas inmovilizadas y columnas ajustadas al contenido.
+- En el informe de administración, además: filtros automáticos, importes con formato de moneda, fechas con formato de fecha y una fila de totales con una fórmula `SUM`.
 - Respuesta con `ResponseEntity<byte[]>`, tipo `application/vnd.openxmlformats-officedocument.spreadsheetml.sheet` y cabecera `Content-Disposition: attachment; filename="..."`.
-
-Añadid también `GET /api/carrito/exportar`, que descarga el carrito actual con el formato de importación (`sku`, `cantidad`, `comentario`).
 
 Y en Vue:
 

@@ -35,18 +35,20 @@ Tramitación (`/compra`):
 Mis pedidos (`/pedidos` y `/pedidos/:id`):
 
 - Listado paginado con código, fecha, estado (distintivo de color), número de artículos y total; filtro por estado.
-- Detalle con líneas, importes, dirección y línea de tiempo de estados.
+- Detalle con líneas, importes, dirección y un indicador del progreso del pedido dentro del ciclo `PENDIENTE → PAGADO → ENVIADO → ENTREGADO` (o `CANCELADO`).
 - Cancelar pedido, solo si el estado lo permite y con confirmación.
 - Repetir pedido: añade al carrito las líneas del pedido y lleva al carrito.
 - Descargar Excel del pedido (`GET /api/pedidos/{id}/exportar`), reutilizando la descarga con token de la Versión 3.
 
-Mi perfil (`/perfil`): modificar nombre y dirección de envío. Los errores de validación de la API se muestran junto a cada campo, con un mecanismo reutilizable (por ejemplo, un *composable* `useErroresApi`) que se usará también en la administración.
+Mi perfil (`/perfil`): modificar nombre y dirección de envío.
+
+Todos los formularios validan los datos en el cliente antes de enviarlos. Si aun así la API los rechaza, los errores de validación de cada campo y los mensajes de las excepciones (configurados en las versiones 1 y 2) se muestran al usuario con un mecanismo reutilizable, por ejemplo un *composable* `useErroresApi`, que se usará también en la administración.
 
 ### 2. Panel de administración
 
 Rutas anidadas bajo `/admin`, solo para administradores, con un menú lateral propio:
 
-- Resumen con los datos de `GET /api/admin/estadisticas`: tarjetas con ventas, pedidos y ticket medio; al menos dos gráficas (pedidos por estado y ventas por categoría, por ejemplo con Chart.js y `vue-chartjs`); productos más vendidos y con stock bajo; selector de rango de fechas y botón para descargar el Excel de pedidos del rango (`GET /api/admin/pedidos/exportar`).
+- Resumen con los datos de `GET /api/admin/estadisticas`: tarjetas con ventas, pedidos y ticket medio; al menos dos gráficas (pedidos por estado y ventas por categoría, por ejemplo con Chart.js y `vue-chartjs`); productos más vendidos y productos con stock bajo (`GET /api/admin/productos/stock-bajo`); selector de rango de fechas y botón para descargar el Excel de pedidos del rango (`GET /api/admin/pedidos/exportar`).
 - Categorías: tabla, alta, edición y borrado con confirmación (explicando el `409` si tiene productos).
 - Productos: tabla paginada con búsqueda y filtros; un mismo formulario para crear y editar con validación; vista previa de la imagen; ajuste rápido de stock; retirar, reactivar y marcar como destacado.
 - Pedidos: tabla paginada con filtros por estado, fechas y cliente; detalle; cambio de estado ofreciendo solo las transiciones válidas.
@@ -103,7 +105,7 @@ Incluid en la memoria:
 - Investigación sobre el despliegue: opción elegida, diagrama de la arquitectura desplegada, configuración y gestión de secretos.
 - Valoración final del proyecto por cada persona de la pareja.
 
-Consultad los requisitos comunes de entrega en el [enunciado general](../enunciado_proyecto.md#contenido-de-cada-entrega).
+Consultad los requisitos comunes de entrega en el [enunciado general](../enunciado_proyecto.md#contenido-de-cada-entrega). Tras esta entrega se realizará la [defensa final del proyecto](../enunciado_proyecto.md#defensa-final-del-proyecto).
 
 ---
 
