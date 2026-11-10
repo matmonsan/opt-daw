@@ -112,16 +112,23 @@ Datos de ejemplo: al arrancar, los servicios cargan al menos 3 categorías y 12 
 
 Reglas: SKU único (se guarda en mayúsculas); no se puede usar una categoría inexistente; no puede haber dos categorías con el mismo nombre; no se puede eliminar una categoría con productos; eliminar un producto lo marca como retirado; el stock nunca queda en negativo; los listados públicos solo muestran productos activos.
 
+Categorías:
+
 | Método | Ruta | Descripción | Respuestas |
 |---|---|---|---|
 | `GET` | `/api/categorias` | Listar categorías | `200` |
 | `GET` | `/api/categorias/{id}` | Consultar una categoría | `200`, `404` |
-| `GET` | `/api/productos/{id}` | Detalle de un producto activo | `200`, `404` |
-| `GET` | `/api/productos/destacados` | Productos activos destacados | `200` |
 | `GET` | `/api/admin/categorias` | Listar categorías (administración) | `200` |
 | `POST` | `/api/admin/categorias` | Crear una categoría | `201`, `409` |
 | `PUT` | `/api/admin/categorias/{id}` | Modificar una categoría | `200`, `404`, `409` |
 | `DELETE` | `/api/admin/categorias/{id}` | Eliminar una categoría sin productos | `204`, `404`, `409` |
+
+Productos:
+
+| Método | Ruta | Descripción | Respuestas |
+|---|---|---|---|
+| `GET` | `/api/productos/{id}` | Detalle de un producto activo | `200`, `404` |
+| `GET` | `/api/productos/destacados` | Productos activos destacados | `200` |
 | `GET` | `/api/admin/productos` | Listar todos los productos, incluidos los retirados | `200` |
 | `POST` | `/api/admin/productos` | Crear un producto | `201`, `400`, `409` |
 | `PUT` | `/api/admin/productos/{id}` | Modificar un producto | `200`, `400`, `404`, `409` |
@@ -174,7 +181,10 @@ Requisitos:
 - Sin token, o con un token no válido o caducado: `401`. Un cliente en cualquier ruta `/api/admin/`: `403`.
 - La primera vez que un usuario accede se crea su `Usuario` con rol `CLIENTE` (con Spring Security, al registrarse). Los administradores se definen en `application.properties` (`tienda.admins=admin@tienda.com`).
 - La identidad se obtiene siempre del token verificado, encapsulada en un `UsuarioActualService` que usará el resto del código.
-- *Endpoints* de usuario:
+- Dos usuarios de prueba (cliente y administrador) indicados en el `README.md`; la colección de Postman obtiene el token con una petición de *login* y lo guarda en una variable `{{token}}`.
+- Las credenciales privadas no se suben al repositorio; se incluye un `application-example.properties`.
+
+Usuarios:
 
 | Método | Ruta | Descripción |
 |---|---|---|
@@ -182,9 +192,6 @@ Requisitos:
 | `PUT` | `/api/usuarios/me` | Modificar el nombre y la dirección de envío |
 | `GET` | `/api/admin/usuarios` | Listar usuarios |
 | `PUT` | `/api/admin/usuarios/{id}/rol` | Cambiar el rol de un usuario |
-
-- Dos usuarios de prueba (cliente y administrador) indicados en el `README.md`; la colección de Postman obtiene el token con una petición de *login* y lo guarda en una variable `{{token}}`.
-- Las credenciales privadas no se suben al repositorio; se incluye un `application-example.properties`.
 
 ### 8. Carrito y pedidos
 
