@@ -30,7 +30,7 @@ En esta versión no hay base de datos: los datos se guardan en memoria y se pier
 
 Elegid la temática y el nombre de la tienda y describidlos en el `README.md`, junto con los nombres de la pareja, la rama de cada persona y cómo se llamarán en vuestro proyecto las clases genéricas (`Producto` → `Videojuego`, `Categoria` → `Genero`...).
 
-Diseñad el diagrama de clases (draw.io, PlantUML, Mermaid...) y guardadlo en `docs/diagramas/`. Como mínimo:
+El modelo de la tienda tendrá, como mínimo, estas clases:
 
 | Clase | Atributos mínimos |
 |---|---|
@@ -68,7 +68,7 @@ Investigad y aplicad también: reglas de protección de ramas (no se permite `pu
 
 ### 3. Proyecto base y organización por capas
 
-Cread el proyecto en `backend/` con [Spring Initializr](https://start.spring.io/): Maven, Java 21 o superior, y las dependencias Spring Web y DevTools. Organizad los paquetes así:
+Cread el proyecto en `backend/` con [Spring Initializr](https://start.spring.io/): Maven, Java 21 y la dependencia Spring Web. Organizad los paquetes así:
 
 <img src="../../assets/img/proyecto/paquetes-backend.svg" alt="Paquetes del proyecto Spring Boot" width="100%">
 
@@ -104,33 +104,7 @@ public class ProductoCrearDto {
 
 El constructor sin argumentos y los *setters* son necesarios para que Jackson pueda construir el objeto a partir del JSON de la petición. En esta versión los DTOs no llevan anotaciones de validación: la validación de los datos de entrada con Bean Validation se incorporará en la Versión 2.
 
-Datos en memoria: cada servicio guarda sus datos en una colección y genera los identificadores con un contador.
-
-```java
-@Service
-public class ProductoService {
-
-    private final Map<Long, Producto> productos = new HashMap<>();
-    private long siguienteId = 1;
-
-    private final CategoriaService categoriaService;
-
-    public ProductoService(CategoriaService categoriaService) {
-        this.categoriaService = categoriaService;
-        cargarDatosDeEjemplo();
-    }
-
-    public ProductoDetalleDto buscar(long id) {
-        Producto producto = productos.get(id);
-        if (producto == null || !producto.isActivo()) {
-            throw new RecursoNoEncontradoException("No existe el producto " + id);
-        }
-        return convertirADetalleDto(producto);
-    }
-
-    // crear, modificar, retirar, ajustar stock...
-}
-```
+Datos en memoria: los servicios guardan los datos en memoria, siguiendo los ejemplos vistos en clase.
 
 Cuidado con las dependencias circulares: si `ProductoService` recibe `CategoriaService` y `CategoriaService` recibe `ProductoService` (por ejemplo, para comprobar si una categoría tiene productos antes de borrarla), Spring no podrá arrancar la aplicación. Decidid qué servicio depende de cuál y explicad en la memoria cómo lo habéis resuelto.
 
@@ -138,17 +112,22 @@ Datos de ejemplo: al arrancar, los servicios cargan al menos 3 categorías y 12 
 
 Reglas: SKU único (se guarda en mayúsculas); no se puede usar una categoría inexistente; no puede haber dos categorías con el mismo nombre; no se puede eliminar una categoría con productos; eliminar un producto lo marca como retirado; el stock nunca queda en negativo; los listados públicos solo muestran productos activos.
 
-| Método y ruta | Descripción | Respuestas |
-|---|---|---|
-| `GET /api/categorias` · `GET /api/categorias/{id}` | Consultar categorías | `200`, `404` |
-| `GET /api/productos/{id}` | Detalle de un producto activo | `200`, `404` |
-| `GET /api/productos/destacados` | Productos activos destacados | `200` |
-| `GET`, `POST /api/admin/categorias` · `PUT`, `DELETE /api/admin/categorias/{id}` | Gestión de categorías | `200`, `201`, `204`, `404`, `409` |
-| `GET`, `POST /api/admin/productos` · `PUT`, `DELETE /api/admin/productos/{id}` | Gestión de productos (el listado incluye los retirados) | `200`, `201`, `204`, `400`, `404`, `409` |
-| `PATCH /api/admin/productos/{id}/stock` | Sumar o restar stock | `200`, `404`, `409` |
-| `PATCH /api/admin/productos/{id}/reactivar` | Volver a activar un producto retirado | `200`, `404` |
-
-Las respuestas `201 Created` incluyen la cabecera `Location` (investigad `ServletUriComponentsBuilder`).
+| Método | Ruta | Descripción | Respuestas |
+|---|---|---|---|
+| `GET` | `/api/categorias` | Listar categorías | `200` |
+| `GET` | `/api/categorias/{id}` | Consultar una categoría | `200`, `404` |
+| `GET` | `/api/productos/{id}` | Detalle de un producto activo | `200`, `404` |
+| `GET` | `/api/productos/destacados` | Productos activos destacados | `200` |
+| `GET` | `/api/admin/categorias` | Listar categorías (administración) | `200` |
+| `POST` | `/api/admin/categorias` | Crear una categoría | `201`, `409` |
+| `PUT` | `/api/admin/categorias/{id}` | Modificar una categoría | `200`, `404`, `409` |
+| `DELETE` | `/api/admin/categorias/{id}` | Eliminar una categoría sin productos | `204`, `404`, `409` |
+| `GET` | `/api/admin/productos` | Listar todos los productos, incluidos los retirados | `200` |
+| `POST` | `/api/admin/productos` | Crear un producto | `201`, `400`, `409` |
+| `PUT` | `/api/admin/productos/{id}` | Modificar un producto | `200`, `400`, `404`, `409` |
+| `DELETE` | `/api/admin/productos/{id}` | Retirar un producto del catálogo | `204`, `404` |
+| `PUT` | `/api/admin/productos/{id}/stock` | Sumar o restar stock | `200`, `404`, `409` |
+| `PUT` | `/api/admin/productos/{id}/reactivar` | Volver a activar un producto retirado | `200`, `404` |
 
 ### 5. Búsqueda, filtros y ordenación
 
@@ -163,16 +142,16 @@ Las respuestas `201 Created` incluyen la cabecera `Location` (investigad `Servle
 | `orden`, `direccion` | `?orden=PRECIO&direccion=DESC` | Enumerados `NOMBRE`, `PRECIO`, `NOVEDAD` y `ASC`, `DESC` |
 | Uno propio | `?plataforma=SWITCH` | Filtro por un atributo de vuestra temática |
 
-Además: `GET /api/categorias/{id}/productos`, `GET /api/productos/sku/{sku}` (con el formato restringido por una expresión regular en la ruta) y `GET /api/admin/productos/stock-bajo?umbral=5`.
+Además: `GET /api/categorias/{id}/productos`, `GET /api/productos/sku/{sku}` y `GET /api/admin/productos/stock-bajo?umbral=5`.
 
 - Agrupad los filtros en una clase `ProductoFiltroDto` y aplicadlos en el servicio con *streams* y `Comparator`.
-- Comprobad que `/api/productos/destacados` no se confunde con `/api/productos/{id}` (podéis restringir `{id:\\d+}`).
+- Comprobad que `/api/productos/destacados` no se confunde con `/api/productos/{id}`.
 
 Material de referencia: [apartado 5 de los apuntes](../../aplicaciones.md#5-parámetros-de-ruta-y-de-consulta).
 
 ### 6. Excepciones
 
-- Cread excepciones propias que extiendan `ResponseStatusException`: `RecursoNoEncontradoException` (`404`), `ConflictoException` (`409`), `DatosNoValidosException` (`400`) y `StockInsuficienteException` (`409`). Los servicios las lanzan y los controladores no tienen `try/catch`.
+- Cread excepciones propias. Los servicios las lanzan y los controladores no tienen `try/catch`.
 - Las respuestas de error no muestran trazas ni información interna.
 - Por defecto, Spring Boot no incluye en la respuesta el mensaje de las excepciones. Como la aplicación Vue de la Parte 2 tendrá que mostrarlo al usuario, configurad `server.error.include-message=always`. Por eso los mensajes de vuestras excepciones deben estar pensados para el usuario final y no contener información interna.
 
@@ -195,7 +174,15 @@ Requisitos:
 - Sin token, o con un token no válido o caducado: `401`. Un cliente en cualquier ruta `/api/admin/`: `403`.
 - La primera vez que un usuario accede se crea su `Usuario` con rol `CLIENTE` (con Spring Security, al registrarse). Los administradores se definen en `application.properties` (`tienda.admins=admin@tienda.com`).
 - La identidad se obtiene siempre del token verificado, encapsulada en un `UsuarioActualService` que usará el resto del código.
-- *Endpoints*: `GET` y `PUT /api/usuarios/me`, `GET /api/admin/usuarios` y `PATCH /api/admin/usuarios/{id}/rol`.
+- *Endpoints* de usuario:
+
+| Método | Ruta | Descripción |
+|---|---|---|
+| `GET` | `/api/usuarios/me` | Datos del usuario autenticado y su rol |
+| `PUT` | `/api/usuarios/me` | Modificar el nombre y la dirección de envío |
+| `GET` | `/api/admin/usuarios` | Listar usuarios |
+| `PUT` | `/api/admin/usuarios/{id}/rol` | Cambiar el rol de un usuario |
+
 - Dos usuarios de prueba (cliente y administrador) indicados en el `README.md`; la colección de Postman obtiene el token con una petición de *login* y lo guarda en una variable `{{token}}`.
 - Las credenciales privadas no se suben al repositorio; se incluye un `application-example.properties`.
 
@@ -203,12 +190,13 @@ Requisitos:
 
 Carrito (siempre el del usuario autenticado; las rutas no llevan id de usuario):
 
-| Método y ruta | Descripción |
-|---|---|
-| `GET /api/carrito` | Ver el carrito: líneas, número de artículos, subtotal, gastos de envío, total, importe que falta para el envío gratuito y `avisos`, todo calculado por el servidor |
-| `POST /api/carrito/lineas` | `{ "productoId": 7, "cantidad": 2 }`; si ya existe, suma la cantidad |
-| `PUT` y `DELETE /api/carrito/lineas/{productoId}` | Cambiar la cantidad o quitar la línea |
-| `DELETE /api/carrito` | Vaciar el carrito |
+| Método | Ruta | Descripción |
+|---|---|---|
+| `GET` | `/api/carrito` | Ver el carrito: líneas, número de artículos, subtotal, gastos de envío, total, importe que falta para el envío gratuito y `avisos`, todo calculado por el servidor |
+| `POST` | `/api/carrito/lineas` | Añadir un producto: `{ "productoId": 7, "cantidad": 2 }`; si ya existe, suma la cantidad |
+| `PUT` | `/api/carrito/lineas/{productoId}` | Cambiar la cantidad de una línea |
+| `DELETE` | `/api/carrito/lineas/{productoId}` | Quitar una línea |
+| `DELETE` | `/api/carrito` | Vaciar el carrito |
 
 - La cantidad mínima de una línea es 1 (`400`). No se pueden añadir productos retirados ni más unidades que el stock (`409`) ni superar `tienda.carrito.max-unidades-por-producto`.
 - Si un producto del carrito se retira o baja su stock, el carrito lo indica en `avisos` y no se puede confirmar el pedido.
@@ -216,13 +204,15 @@ Carrito (siempre el del usuario autenticado; las rutas no llevan id de usuario):
 
 Pedidos:
 
-| Método y ruta | Descripción |
-|---|---|
-| `POST /api/pedidos` | Confirmar el carrito (dirección del cuerpo o del perfil) |
-| `GET /api/pedidos?estado=` · `GET /api/pedidos/{id}` | Mis pedidos y su detalle (`404` si es de otro usuario) |
-| `PATCH /api/pedidos/{id}/cancelar` | Cancelar uno de mis pedidos |
-| `GET /api/admin/pedidos?estado=&desde=&hasta=&email=` · `GET /api/admin/pedidos/{id}` | Todos los pedidos, filtrando por estado, fechas y correo del cliente |
-| `PATCH /api/admin/pedidos/{id}/estado` | Cambiar el estado |
+| Método | Ruta | Descripción |
+|---|---|---|
+| `POST` | `/api/pedidos` | Confirmar el carrito (dirección del cuerpo o del perfil) |
+| `GET` | `/api/pedidos?estado=` | Mis pedidos, con filtro opcional por estado |
+| `GET` | `/api/pedidos/{id}` | Detalle de uno de mis pedidos (`404` si es de otro usuario) |
+| `PUT` | `/api/pedidos/{id}/cancelar` | Cancelar uno de mis pedidos |
+| `GET` | `/api/admin/pedidos?estado=&desde=&hasta=&email=` | Todos los pedidos, filtrando por estado, fechas y correo del cliente |
+| `GET` | `/api/admin/pedidos/{id}` | Detalle de cualquier pedido |
+| `PUT` | `/api/admin/pedidos/{id}/estado` | Cambiar el estado de un pedido |
 
 Al confirmar: se comprueba que el carrito no esté vacío y que todas las líneas tienen stock (si alguna falla, se responde `409` indicando qué productos no tienen stock suficiente y no se modifica nada), se crea el pedido `PENDIENTE` con la copia de nombres y precios, se descuenta el stock y se vacía el carrito. Al cancelar, se repone el stock. Las transiciones de estado se definen en el propio enumerado:
 
@@ -259,7 +249,7 @@ El cliente solo puede cancelar; el resto de cambios los hace el administrador. U
 
 | Persona A | Persona B |
 |---|---|
-| Repositorio, ramas, protección y proyecto base | Diagrama de clases y contrato de la API |
+| Repositorio, ramas, protección y proyecto base | Modelo y contrato de la API |
 | Categorías y búsqueda/filtros | Productos, ordenación y datos de ejemplo |
 | Autenticación: filtro, `401`/`403` y secretos | Usuarios, roles, `UsuarioActualService` y `/api/usuarios/me` |
 | Carrito y gastos de envío | Pedidos y ciclo de vida |
@@ -275,7 +265,7 @@ El cliente solo puede cancelar; el resto de cambios los hace el administrador. U
 
 Incluid en la memoria:
 
-- Temática, diagrama de clases y tabla de *endpoints*.
+- Temática y tabla de *endpoints*.
 - Capturas de las pruebas más relevantes: flujo de compra, filtros, `400`, `401`, `403`, `404` y `409`.
 - Investigación sobre Git: flujo de ramas, reglas de protección, una *Pull Request* revisada y el conflicto resuelto.
 - Investigación sobre autenticación: opción elegida, flujo de una petición autenticada, qué es un JWT y cómo se obtiene el token para las pruebas.

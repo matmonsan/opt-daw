@@ -32,7 +32,7 @@
 <path d="M76 214 V236 H88" fill="none" stroke="#c9d4e2" stroke-width="2"/>
 <path d="M92 228 h8 l3 3 h11 v15 h-22 z" fill="#157878" opacity="0.9"/>
 <text x="124" y="242" font-family="Consolas, 'Courier New', monospace" font-size="17" fill="#1b355a" font-weight="600">diagramas/</text>
-<text x="470" y="242" font-family="'Segoe UI', Helvetica, Arial, sans-serif" font-size="16" fill="#5b6b7f">diagrama de clases, entidad-relación...</text>
+<text x="470" y="242" font-family="'Segoe UI', Helvetica, Arial, sans-serif" font-size="16" fill="#5b6b7f">diagrama entidad-relación (Versión 2)</text>
 <path d="M76 254 V276 H88" fill="none" stroke="#c9d4e2" stroke-width="2"/>
 <path d="M92 268 h8 l3 3 h11 v15 h-22 z" fill="#157878" opacity="0.9"/>
 <text x="124" y="282" font-family="Consolas, 'Courier New', monospace" font-size="17" fill="#1b355a" font-weight="600">memorias/</text>

@@ -22,6 +22,18 @@ En clase se explicarán la mayor parte de las tecnologías necesarias y se propo
 
 ## Trabajo en parejas y control de versiones
 
+| Pareja | Integrante 1 | Integrante 2 |
+|---|---|---|
+| Pareja 1 | Alexandra | Sara |
+| Pareja 2 | Nuria | Nuria |
+| Pareja 3 | Jose Miguel | Shin |
+| Pareja 4 | Gonzálo | Gonzálo |
+| Pareja 5 | Martín | Jose Ángel |
+| Pareja 6 | | |
+| Pareja 7 | | |
+| Pareja 8 | | |
+| Pareja 9 | | |
+
 El proyecto se realiza en parejas, pero cada persona trabajará en su propia rama de Git y el código se integrará mediante *Pull Requests* revisadas por la otra persona de la pareja. La forma de organizar las ramas, proteger la rama principal, revisar el código y resolver conflictos es <span class="investigacion">Investigación</span> y se plantea en la [Versión 1](versiones/version_1.md).
 
 Cada versión incluye un apartado Reparto en la pareja con una propuesta orientativa de qué hace cada persona. Podéis cambiar el reparto, pero:
@@ -30,7 +42,7 @@ Cada versión incluye un apartado Reparto en la pareja con una propuesta orienta
 - El historial de *commits* y de *Pull Requests* debe reflejar el trabajo de cada una.
 - En cada entrega, cualquiera de las dos personas debe poder explicar cualquier parte del proyecto, no solo la suya.
 
-La nota de cada versión se calculará sobre el trabajo de la pareja y se ajustará de forma individual según la contribución que muestre el repositorio y las explicaciones de cada persona en la defensa.
+La nota de cada versión se calculará sobre el trabajo de la pareja y se ajustará de forma individual según la contribución que muestre el repositorio y las explicaciones de cada persona en las defensas.
 
 ---
 
@@ -128,7 +140,7 @@ En cada versión se subirá a Moodle (una entrega por pareja, indicando los dos 
    - Tabla de reparto del trabajo: qué ha hecho cada persona, con enlaces a sus *Pull Requests*.
 3. En las versiones de la Parte 1, la colección de Postman actualizada en la carpeta `postman/`.
 
-Tras cada entrega se realizará una defensa en clase en la que se podrá pedir a cualquiera de las dos personas que explique o modifique cualquier parte del código.
+Tras cada entrega, el docente podrá realizar, si lo considera oportuno, una defensa a las parejas o a las personas que estime conveniente. En ella se podrá pedir que se explique o modifique cualquier parte del código.
 
 ---
 
@@ -158,10 +170,10 @@ La aplicación se mostrará funcionando a partir del código de la etiqueta `v4`
 ### Normas
 
 1. **Control de Versiones (Git):** Es obligatorio el uso de Git y la entrega mediante un repositorio remoto (GitHub, GitLab, etc.) al que tendrá acceso el profesor. Cada persona trabajará en su propia rama y se evaluará el desarrollo incremental a través del histórico de *commits*, *Pull Requests* y etiquetas. No se aceptarán proyectos con uno o muy pocos *commits* subidos al final.
-2. **Trabajo individual dentro de la pareja:** si el repositorio muestra que una persona no ha contribuido en una versión, o no es capaz de explicar el código en la defensa, su nota de esa versión podrá ser distinta a la de su pareja, llegando a 0.0.
+2. **Trabajo individual dentro de la pareja:** si el repositorio muestra que una persona no ha contribuido en una versión, o no es capaz de explicar el código cuando se le pide, su nota de esa versión podrá ser distinta a la de su pareja, llegando a 0.0.
 3. **Documentación PDF:** cada versión incluye la memoria descrita arriba. Las investigaciones que no estén documentadas no se considerarán realizadas.
-4. **Defensas:** las defensas de cada entrega y la defensa final son obligatorias para las dos personas de la pareja.
-   > Si el código subido al repositorio no coincide con la funcionalidad mostrada en la defensa, la versión será evaluada automáticamente con una nota de 0.0.
+4. **Defensas:** la defensa final es obligatoria para las dos personas de la pareja. Las defensas de cada entrega se realizarán a criterio del docente, cuando lo considere oportuno y a quien considere oportuno.
+   > Si el código subido al repositorio no coincide con la funcionalidad mostrada en una defensa, la versión correspondiente será evaluada automáticamente con una nota de 0.0.
 5. **Secretos fuera del repositorio:** las claves privadas, contraseñas y credenciales (por ejemplo, el JSON de la cuenta de servicio de Firebase o la clave de firma de los JWT) no se subirán al repositorio. Se incluirá un archivo de ejemplo (`application-example.properties`, `.env.example`) y se explicará en el `README.md` cómo configurarlas.
-6. **El proyecto debe arrancar:** siguiendo el `README.md`, el profesor debe poder arrancar el proyecto en su equipo. Si no arranca, la versión se evaluará únicamente con lo que pueda comprobarse en la defensa.
+6. **El proyecto debe arrancar:** siguiendo el `README.md`, el profesor debe poder arrancar el proyecto en su equipo. Si no arranca, la versión se evaluará únicamente con lo que pueda comprobarse en la memoria y, en su caso, en la defensa.
 7. **Plazos:** no se permiten entregas fuera de plazo.

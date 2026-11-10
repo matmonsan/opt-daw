@@ -265,10 +265,10 @@ El cliente prepara su pedido en una hoja de Google Sheets compartida como «Cual
 | NSW-MK8 | 2 | Para el cumpleaños |
 | PS5-GOW | 1 | |
 
-| Método y ruta | Cuerpo | Descripción |
-|---|---|---|
-| `POST /api/carrito/importar/previsualizar` | `{ "url": "https://docs.google.com/spreadsheets/d/.../edit#gid=0" }` | Valida la hoja y devuelve el resultado sin modificar el carrito |
-| `POST /api/carrito/importar` | `{ "url": "...", "modo": "SUMAR", "estricto": false }` | Importa en el carrito. `modo`: `SUMAR` o `REEMPLAZAR`. Con `estricto`, si alguna fila falla no se importa nada |
+| Método | Ruta | Cuerpo | Descripción |
+|---|---|---|---|
+| `POST` | `/api/carrito/importar/previsualizar` | `{ "url": "https://docs.google.com/spreadsheets/d/.../edit#gid=0" }` | Valida la hoja y devuelve el resultado sin modificar el carrito |
+| `POST` | `/api/carrito/importar` | `{ "url": "...", "modo": "SUMAR", "estricto": false }` | Importa en el carrito. `modo`: `SUMAR` o `REEMPLAZAR`. Con `estricto`, si alguna fila falla no se importa nada |
 
 La respuesta indica las líneas importadas y los errores fila a fila:
 

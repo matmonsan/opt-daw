@@ -62,7 +62,7 @@ Rutas anidadas bajo `/admin`, solo para administradores, con un menú lateral pr
 
 Elegid una opción:
 
-- **Docker Compose:** `Dockerfile` *multi-stage* para el backend (compilar con Maven y ejecutar con una imagen de JRE) y para el frontend (`npm run build` servido con Nginx, configurado para que las rutas de Vue funcionen al recargar). `docker compose up --build` deja la tienda completa funcionando en `http://localhost`.
+- **Docker Compose:** `Dockerfile` *multi-stage* para el backend (compilar con Maven y ejecutar con una imagen de JRE 21) y para el frontend (`npm run build` servido con Nginx, configurado para que las rutas de Vue funcionen al recargar). `docker compose up --build` deja la tienda completa funcionando en `http://localhost`.
 - **Nube:** base de datos gestionada, API en Render, Railway o similar, y Vue en Netlify, Vercel o similar, con las variables de entorno, CORS y los dominios autorizados en el proveedor de autenticación configurados.
 
 En ambos casos, usad un perfil de producción de Spring (`application-prod.properties`) y no incluyáis secretos en las imágenes ni en el repositorio.

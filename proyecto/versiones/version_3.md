@@ -80,11 +80,11 @@ Toda la comunicación con la API está en `services/`; los componentes no constr
 
 Investigad la librería Apache POI (`poi-ooxml`) y añadid al backend tres *endpoints* que generan archivos `.xlsx`:
 
-| Método y ruta | Contenido |
-|---|---|
-| `GET /api/admin/pedidos/exportar?desde=&hasta=&estado=` | Libro con dos hojas: `Pedidos` (código, fecha, cliente, estado, subtotal, envío, total) y `Líneas` (código del pedido, SKU, producto, precio, cantidad, subtotal) |
-| `GET /api/pedidos/{id}/exportar` | Uno de los pedidos del cliente con las columnas `sku`, `cantidad` y `comentario`, el mismo formato que la importación desde Google Sheets |
-| `GET /api/carrito/exportar` | El carrito actual, con el mismo formato que la importación |
+| Método | Ruta | Contenido |
+|---|---|---|
+| `GET` | `/api/admin/pedidos/exportar?desde=&hasta=&estado=` | Libro con dos hojas: `Pedidos` (código, fecha, cliente, estado, subtotal, envío, total) y `Líneas` (código del pedido, SKU, producto, precio, cantidad, subtotal) |
+| `GET` | `/api/pedidos/{id}/exportar` | Uno de los pedidos del cliente con las columnas `sku`, `cantidad` y `comentario`, el mismo formato que la importación desde Google Sheets |
+| `GET` | `/api/carrito/exportar` | El carrito actual, con el mismo formato que la importación |
 
 - En todos los informes: cabecera en negrita con color de fondo, filas inmovilizadas y columnas ajustadas al contenido.
 - En el informe de administración, además: filtros automáticos, importes con formato de moneda, fechas con formato de fecha y una fila de totales con una fórmula `SUM`.
