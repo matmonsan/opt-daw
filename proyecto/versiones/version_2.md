@@ -10,16 +10,16 @@ description: "<strong>Módulo:</strong> Programación Web Avanzada <br> <strong>
 
 ## Objetivo
 
-Sustituir los datos en memoria de los servicios por una base de datos relacional gestionada con Spring Data JPA: el modelo pasa a ser un conjunto de entidades con sus relaciones, se añade la capa de repositorios con Spring Data y Lombok elimina el código repetitivo. Además, se validan los datos de entrada, los filtros se trasladan a consultas, los listados se paginan, las operaciones críticas se hacen transaccionales, se añaden estadísticas de ventas, la importación de pedidos desde Google Sheets y la documentación de la API (<span class="investigacion">investigación</span>).
+Sustituir los datos en memoria de los servicios por una base de datos MariaDB gestionada con Spring Data JPA: el modelo pasa a ser un conjunto de entidades con sus relaciones, se añade la capa de repositorios con Spring Data y Lombok elimina el código repetitivo. Además, se validan los datos de entrada, los filtros se trasladan a consultas, las operaciones críticas se hacen transaccionales, se añaden estadísticas de ventas, la importación de pedidos desde Google Sheets y la documentación de la API (<span class="investigacion">investigación</span>).
 
-Los *endpoints* de la Versión 1 deben seguir funcionando igual y con la misma seguridad. Solo cambian dos cosas: los listados pasan a estar paginados (apartado 6) y los datos de entrada se validan (apartado 9). A ellos se suman los *endpoints* nuevos de esta versión. La colección de Postman de la Versión 1, adaptada a la paginación, es la prueba de que nada se ha roto.
+Los *endpoints* de la Versión 1 deben seguir funcionando igual y con la misma seguridad. El único cambio es que los datos de entrada se validan (apartado 8). A ellos se suman los *endpoints* nuevos de esta versión. La colección de Postman de la Versión 1 es la prueba de que nada se ha roto.
 
 ## Planificación orientativa
 
 | Semana | Trabajo |
 |---|---|
-| 30/11 - 06/12 | Apartados 1 a 4, 9 y comienzo del 10: base de datos, entidades, relaciones, repositorios, validación e importación |
-| 07/12 - 13/12 | Apartados 5 a 8, final del 10 y 11: consultas, paginación, transacciones, estadísticas, importación y documentación |
+| 30/11 - 06/12 | Apartados 1 a 4, 8 y comienzo del 9: base de datos, entidades, relaciones, repositorios, validación e importación |
+| 07/12 - 13/12 | Apartados 5 a 7, final del 9 y 10: consultas, transacciones, estadísticas, importación y documentación |
 
 ---
 
@@ -27,81 +27,32 @@ Los *endpoints* de la Versión 1 deben seguir funcionando igual y con la misma s
 
 ### 1. Base de datos y configuración
 
-Usaréis MariaDB, MySQL o PostgreSQL (si usáis Supabase para la autenticación, podéis usar su base de datos). Cread en la raíz del repositorio un `docker-compose.yml` que levante la base de datos. Ejemplo con MariaDB:
+La base de datos será MariaDB, la que incluye XAMPP:
 
-```yaml
-services:
-  db:
-    image: mariadb:11.4
-    environment:
-      MARIADB_DATABASE: tienda
-      MARIADB_USER: tienda
-      MARIADB_PASSWORD: ${DB_PASSWORD}
-      MARIADB_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
-    ports:
-      - "3306:3306"
-    volumes:
-      - datos_tienda:/var/lib/mysql
-
-volumes:
-  datos_tienda:
-```
-
-Añadid las dependencias Spring Data JPA, Lombok y el *driver* de la base de datos, y configurad la conexión leyendo las contraseñas de variables de entorno (archivo `.env` fuera del repositorio y `.env.example` dentro):
+- Arrancad MySQL/MariaDB desde el panel de control de XAMPP y cread una base de datos vacía llamada `tienda` (por ejemplo, desde phpMyAdmin). Las tablas las creará Hibernate.
+- Añadid al proyecto las dependencias Spring Data JPA, Lombok y el *driver* de MariaDB.
+- Configurad la conexión en `application.properties`:
 
 ```properties
 spring.datasource.url=jdbc:mariadb://localhost:3306/tienda
-spring.datasource.username=${DB_USER:tienda}
-spring.datasource.password=${DB_PASSWORD}
+spring.datasource.username=root
+spring.datasource.password=
 spring.jpa.hibernate.ddl-auto=update
 spring.jpa.show-sql=true
 ```
+
+- Si vuestro usuario de MariaDB tiene contraseña, no la subáis al repositorio: incluid un `application-example.properties` y explicad en el `README.md` cómo configurarla.
+- Explicad también en el `README.md` cómo crear la base de datos para arrancar el proyecto.
 
 ### 2. Entidades con Lombok
 
 Transformad las clases del modelo en entidades JPA:
 
-```java
-@Entity
-@Table(name = "productos")
-@Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
-@Builder
-public class Producto {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-
-    @Column(nullable = false, unique = true, length = 20)
-    private String sku;
-
-    @Column(nullable = false, length = 100)
-    private String nombre;
-
-    @Column(nullable = false, precision = 10, scale = 2)
-    private BigDecimal precio;
-
-    @Column(nullable = false)
-    private Integer stock;
-
-    @Builder.Default
-    @Column(nullable = false)
-    private boolean activo = true;
-
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "categoria_id")
-    private Categoria categoria;
-
-    // resto de atributos...
-}
-```
-
-- Usad `@Getter`, `@Setter`, `@NoArgsConstructor` (JPA lo necesita), `@AllArgsConstructor` y `@Builder`, y `@Builder.Default` para los valores por defecto y las colecciones.
+- Anotad cada clase con `@Entity` y `@Table`, el identificador con `@Id` y `@GeneratedValue(strategy = GenerationType.IDENTITY)`, y los atributos con `@Column` indicando si son obligatorios (`nullable`), únicos (`unique`, por ejemplo el SKU o el nombre de la categoría) y su longitud (`length`).
+- Los importes (`BigDecimal`) se definen con `precision` y `scale` para guardar dos decimales.
+- Los enumerados (`Rol`, `EstadoPedido`) se guardan con `@Enumerated(EnumType.STRING)`.
+- Usad Lombok para eliminar el código repetitivo: `@Getter`, `@Setter`, `@NoArgsConstructor` (JPA lo necesita) y `@AllArgsConstructor`.
 - No uséis `@Data` en entidades con relaciones: los `toString`, `equals` y `hashCode` generados recorren las relaciones y pueden provocar recursión infinita o cargar colecciones sin querer. Explicadlo en la memoria.
-- Los enumerados se guardan con `@Enumerated(EnumType.STRING)`.
 
 ### 3. Relaciones
 
@@ -134,67 +85,46 @@ public interface ProductoRepository extends JpaRepository<Producto, Long> {
 
 ### 5. Consultas
 
-Sustituid los filtros con *streams* de la Versión 1 por consultas a la base de datos:
+Los filtros y búsquedas que en la Versión 1 se hacían con *streams* pasan a resolverse en la base de datos. Usad consultas derivadas (el nombre del método genera la consulta) siempre que sea posible, y consultas JPQL con `@Query` cuando haya filtros opcionales que se combinan.
 
-Consultas derivadas, donde sea posible:
+Como mínimo, los repositorios deben ofrecer estas consultas:
 
-```java
-Optional<Producto> findBySkuIgnoreCase(String sku);
-List<Producto> findByActivoTrueAndDestacadoTrue();
-List<Producto> findByActivoTrueAndStockLessThanEqualOrderByStockAsc(int umbral);
-Optional<Pedido> findByIdAndUsuarioId(Long id, Long usuarioId);
-```
+| Repositorio | Consulta |
+|---|---|
+| Productos | Buscar un producto por su SKU sin distinguir mayúsculas y minúsculas |
+| Productos | Obtener los productos activos y destacados |
+| Productos | Obtener los productos activos de una categoría |
+| Productos | Obtener los productos activos con un stock menor o igual que un umbral, ordenados por stock |
+| Productos | Comprobar si existe algún producto de una categoría (para impedir borrarla) |
+| Productos | Listado del catálogo con los filtros opcionales y combinables de la Versión 1 (categoría, texto, rango de precio, solo disponibles y vuestro filtro propio) y su ordenación |
+| Categorías | Comprobar si ya existe una categoría con un nombre |
+| Usuarios | Buscar un usuario por su `uid` (o por su correo, si usáis Spring Security) |
+| Carritos | Obtener el carrito de un usuario |
+| Pedidos | Obtener los pedidos de un usuario, del más reciente al más antiguo, con filtro opcional por estado |
+| Pedidos | Obtener un pedido por su identificador solo si pertenece a un usuario (así se devuelve `404` si es de otro) |
+| Pedidos | Listado de administración con filtros opcionales por estado, rango de fechas y correo del cliente |
 
-Consultas JPQL con `@Query` para los filtros opcionales combinables del catálogo y de los pedidos de administración:
+Comprobad en el *log* (`show-sql`) el SQL que genera cada consulta.
 
-```java
-@Query("""
-        SELECT p FROM Producto p
-        WHERE p.activo = true
-          AND (:categoriaId IS NULL OR p.categoria.id = :categoriaId)
-          AND (:precioMin IS NULL OR p.precio >= :precioMin)
-          AND (:precioMax IS NULL OR p.precio <= :precioMax)
-        """)
-Page<Producto> buscar(@Param("categoriaId") Long categoriaId,
-                      @Param("precioMin") BigDecimal precioMin,
-                      @Param("precioMax") BigDecimal precioMax,
-                      Pageable pageable);
-```
-
-Completad la consulta con la búsqueda por texto, `soloDisponibles` y vuestro filtro propio, y comprobad en el *log* el SQL que se genera.
-
-### 6. Paginación
-
-Paginad con `Pageable` los listados de productos (público y de administración), pedidos (cliente y administración) y usuarios:
-
-- Parámetros `page`, `size` y `sort` (`?page=0&size=12&sort=precio,desc`). Tamaño por defecto 12 y máximo 50.
-- El parámetro `sort` sustituye a los parámetros `orden` y `direccion` de la Versión 1.
-- Respuesta con un DTO propio en lugar del `Page` de Spring:
-
-```java
-@Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
-public class PaginaDto<T> {
-    private List<T> contenido;
-    private int pagina;
-    private int tamano;
-    private long totalElementos;
-    private int totalPaginas;
-}
-```
-
-Actualizad el contrato de la API y la colección de Postman.
-
-### 7. Transacciones
+### 6. Transacciones
 
 - Los servicios usan `@Transactional` y `@Transactional(readOnly = true)` en las consultas.
-- Confirmar un pedido, cancelarlo e importar desde Google Sheets en modo estricto (apartado 10) son atómicos: demostrad que, si falla el último producto de un pedido por falta de stock, no se descuenta el stock de los anteriores ni se crea el pedido.
+- Confirmar un pedido, cancelarlo e importar desde Google Sheets en modo estricto (apartado 9) son atómicos: demostrad que, si falla el último producto de un pedido por falta de stock, no se descuenta el stock de los anteriores ni se crea el pedido.
 
-### 8. Estadísticas de ventas
+### 7. Estadísticas de ventas
 
-Cread `GET /api/admin/estadisticas?desde=&hasta=` (por defecto, los últimos 30 días), que usará el panel de administración de la Versión 4:
+El panel de administración de la Versión 4 mostrará un resumen de cómo va la tienda en un periodo de tiempo. Para ello, cread el *endpoint* `GET /api/admin/estadisticas?desde=&hasta=`, solo para administradores, que devuelva estas cifras calculadas sobre los pedidos realizados entre las dos fechas (ambas incluidas; si no se indican, los últimos 30 días):
+
+| Dato | Qué significa |
+|---|---|
+| `totalVentas` | Suma de los totales de los pedidos no cancelados |
+| `numeroPedidos` | Número de pedidos no cancelados |
+| `ticketMedio` | Importe medio por pedido: `totalVentas` entre `numeroPedidos` (0 si no hay pedidos) |
+| `pedidosPorEstado` | Cuántos pedidos hay en cada estado, incluidos los cancelados |
+| `ventasPorCategoria` | Para cada categoría, unidades vendidas e importe vendido, sumando las líneas de los pedidos no cancelados |
+| `productosMasVendidos` | Los 5 productos con más unidades vendidas en pedidos no cancelados, con sus unidades e importe |
+
+Ejemplo de respuesta:
 
 ```json
 {
@@ -207,52 +137,23 @@ Cread `GET /api/admin/estadisticas?desde=&hasta=` (por defecto, los últimos 30 
 }
 ```
 
-Las ventas excluyen los pedidos cancelados y se calculan en la base de datos con consultas JPQL de agregación (`SUM`, `COUNT`, `GROUP BY`), recogiendo los resultados en DTOs con expresiones `SELECT new ...`.
+Los cálculos no se hacen recorriendo los pedidos en Java: se hacen en la base de datos con consultas JPQL de agregación (`SUM`, `COUNT`, `GROUP BY`, `ORDER BY`), y los resultados se recogen directamente en DTOs con expresiones `SELECT new ...`. Para comprobar que las cifras son correctas, comparadlas con una consulta SQL hecha a mano en phpMyAdmin.
 
-### 9. Validación de los datos de entrada
+### 8. Validación de los datos de entrada
 
-Añadid la dependencia Validation (`spring-boot-starter-validation`) y validad todos los datos que llegan a la API:
+Añadid la dependencia Validation (`spring-boot-starter-validation`) para que la API rechace los datos incorrectos antes de que lleguen a los servicios:
 
-- Todos los DTOs de entrada tienen restricciones de Bean Validation (`@NotBlank`, `@NotNull`, `@Size`, `@Positive`, `@PositiveOrZero`, `@Pattern`, `@Email`...) con mensajes en castellano pensados para el usuario final.
+- Añadid a todos los DTOs de entrada las anotaciones de Bean Validation que correspondan a cada campo: obligatorio (`@NotBlank` en textos, `@NotNull` en el resto), longitud máxima (`@Size`), números positivos (`@Positive`) o no negativos (`@PositiveOrZero`), formato (`@Pattern`, por ejemplo para el SKU) o correo (`@Email`).
+- Cada anotación lleva un mensaje en castellano pensado para el usuario final (por ejemplo, «El precio debe ser mayor que 0»).
 - Los controladores validan el cuerpo de las peticiones con `@Valid`. Si los datos no cumplen las restricciones, Spring responde `400` sin ejecutar el método.
-- Validad también los parámetros de ruta y de consulta que lo necesiten (por ejemplo, `@Min(0)` en el umbral de stock bajo), anotando el controlador con `@Validated`.
+- Validad también los parámetros de ruta y de consulta que lo necesiten (por ejemplo, que el umbral de stock bajo no sea negativo), anotando el controlador con `@Validated`.
 - Configurad `server.error.include-binding-errors=always` para que la respuesta incluya los errores de cada campo, que la aplicación Vue mostrará junto al formulario.
-
-```java
-@Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
-public class ProductoCrearDto {
-
-    @NotBlank(message = "El SKU es obligatorio")
-    @Pattern(regexp = "[A-Za-z0-9-]{3,20}", message = "El SKU solo admite letras, números y guiones (3 a 20)")
-    private String sku;
-
-    @NotBlank(message = "El nombre es obligatorio")
-    @Size(max = 100, message = "El nombre no puede superar los 100 caracteres")
-    private String nombre;
-
-    @NotNull(message = "El precio es obligatorio")
-    @Positive(message = "El precio debe ser mayor que 0")
-    private BigDecimal precio;
-
-    @NotNull(message = "El stock es obligatorio")
-    @PositiveOrZero(message = "El stock no puede ser negativo")
-    private Integer stock;
-
-    @NotNull(message = "La categoría es obligatoria")
-    private Long categoriaId;
-
-    // resto de atributos...
-}
-```
 
 Bean Validation comprueba el formato de los datos; las reglas de negocio (SKU único, stock suficiente, transiciones de estado...) siguen en los servicios.
 
 Material de referencia: [apartado 7 de los apuntes](../../aplicaciones.md#validación-de-los-datos-de-entrada).
 
-### 10. Investigación: importar pedidos desde Google Sheets
+### 9. Investigación: importar pedidos desde Google Sheets
 {: .investigacion}
 
 > Este apartado no se explica en clase. Es trabajo de investigación y debe documentarse en la memoria.
@@ -290,12 +191,12 @@ Pasos a investigar e implementar:
 2. Construir la URL de exportación: `https://docs.google.com/spreadsheets/d/<ID>/export?format=csv&gid=<GID>`.
 3. Descargar con `RestClient`, con tiempos de espera y comprobando que sigue la redirección de Google. Si la hoja no es pública, Google no devuelve un CSV (`422`); si no responde, `502`.
 4. Interpretar el CSV con una librería (Apache Commons CSV u OpenCSV), no con `split(",")`.
-5. Validar cada fila (SKU existente y activo, cantidad entera positiva, stock) reutilizando las reglas del carrito. La importación en modo estricto debe ser transaccional (apartado 7).
+5. Validar cada fila (SKU existente y activo, cantidad entera positiva, stock) reutilizando las reglas del carrito. La importación en modo estricto debe ser transaccional (apartado 6).
 6. Seguridad (SSRF): la URL que se descarga la construye vuestro código a partir del identificador, nunca se descarga la URL recibida. Limitad el tamaño y el número de filas.
 
 Cread hojas de prueba (correcta, con errores, sin la columna `cantidad` y privada) y enlazadlas en el `README.md` y en Postman.
 
-### 11. Investigación: documentación con OpenAPI y pruebas en Postman
+### 10. Investigación: documentación con OpenAPI y pruebas en Postman
 {: .investigacion}
 
 > Este apartado no se explica en clase. Es trabajo de investigación y debe documentarse en la memoria.
@@ -313,26 +214,25 @@ pm.environment.set("productoId", pm.response.json().id);
 
 ## Requisitos
 
-- La base de datos se levanta con `docker compose up -d` y los servicios ya no guardan datos en memoria.
+- La aplicación se conecta a la base de datos MariaDB de XAMPP y los servicios ya no guardan datos en memoria.
 - Entidades con Lombok (sin `@Data`) y todas las relaciones de la tabla.
 - Las entidades no se exponen en la API.
-- Los filtros se resuelven con consultas derivadas y `@Query`, no en memoria.
-- Listados paginados con `PaginaDto` y tamaño máximo.
+- Las consultas mínimas del apartado 5 están implementadas y los filtros se resuelven en la base de datos, no en memoria.
 - Operaciones críticas transaccionales, con el *rollback* demostrado.
 - Estadísticas calculadas con consultas de agregación.
 - Todos los DTOs de entrada validados con Bean Validation y mensajes en castellano.
 - Importación desde Google Sheets con previsualización, modos, errores por fila y medidas contra SSRF.
 - Swagger UI completo y colección de Postman con pruebas que se ejecuta entera sin fallos.
-- Los datos se conservan al reiniciar y la colección de Postman de la Versión 1, adaptada a la paginación, sigue funcionando.
+- Los datos se conservan al reiniciar y la colección de Postman de la Versión 1 sigue funcionando.
 - Etiqueta `v2` en `main`.
 
 ## Reparto en la pareja
 
 | Persona A | Persona B |
 |---|---|
-| `docker-compose.yml` y configuración | Diagrama entidad-relación |
+| Base de datos y configuración | Diagrama entidad-relación |
 | Entidades y repositorios de catálogo y usuarios | Entidades y repositorios de carrito y pedidos |
-| Consultas y paginación del catálogo | Consultas y paginación de pedidos y usuarios |
+| Consultas del catálogo | Consultas de pedidos y usuarios |
 | Estadísticas de ventas | Transacciones y demostración del *rollback* |
 | Validación de los DTOs de catálogo y usuarios | Validación de los DTOs de carrito, pedidos e importación |
 | Importación: enlace, descarga y SSRF | Importación: CSV, validación por fila y modos |
@@ -340,8 +240,8 @@ pm.environment.set("productoId", pm.response.json().id);
 
 ## Criterios de finalización
 
-- Toda la API funciona igual que en la Versión 1 (con los listados paginados), ahora con base de datos, y los datos sobreviven a un reinicio.
-- `GET /api/productos?categoriaId=2&precioMax=60&page=1&size=5&sort=precio,asc` devuelve la página correcta con los totales.
+- Toda la API funciona igual que en la Versión 1, ahora con base de datos, y los datos sobreviven a un reinicio.
+- `GET /api/productos?categoriaId=2&precioMax=60&orden=PRECIO&direccion=ASC` devuelve los productos correctos, filtrados por la base de datos.
 - Un pedido que falla a mitad no deja cambios en la base de datos.
 - Los datos no válidos se rechazan con `400` indicando qué campos fallan y por qué.
 - Las cifras de las estadísticas coinciden con una consulta SQL hecha a mano.
@@ -354,8 +254,8 @@ Incluid en la memoria:
 
 - Diagrama entidad-relación y explicación de cada relación (tipo, lado propietario, `cascade`, `fetch`).
 - Anotaciones de Lombok utilizadas y por qué no se usa `@Data`.
-- Las consultas `@Query` y el SQL que generan.
-- Capturas de un listado paginado, de la demostración del *rollback* y de las estadísticas comprobadas con SQL.
+- Las consultas implementadas y el SQL que generan.
+- Capturas de la demostración del *rollback* y de las estadísticas comprobadas con SQL.
 - Capturas de las tablas con datos.
 - Capturas de errores de validación con los mensajes de cada campo.
 - Investigación sobre la importación: exportación CSV de Google Sheets, `RestClient`, librería CSV, qué es SSRF y cómo se evita, y capturas con cada hoja de prueba.

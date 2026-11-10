@@ -84,7 +84,7 @@ Todos los *endpoints* de la API solo podrán utilizarse después de iniciar sesi
 
 ### 2. Frontend: aplicación web con Vue.js
 
-En la segunda parte se construirá la interfaz gráfica de la tienda con Vue.js, consumiendo la API de la Parte 1: inicio de sesión, catálogo con filtros y paginación, detalle de producto, carrito, importación de pedidos desde Google Sheets, proceso de compra, área del cliente y panel de administración con estadísticas e informes en Excel.
+En la segunda parte se construirá la interfaz gráfica de la tienda con Vue.js, consumiendo la API de la Parte 1: inicio de sesión, catálogo con filtros, detalle de producto, carrito, importación de pedidos desde Google Sheets, proceso de compra, área del cliente y panel de administración con estadísticas e informes en Excel.
 
 ---
 
@@ -110,7 +110,7 @@ Dentro de cada versión se propone una planificación semanal orientativa para q
 ### Parte 1: Backend con Spring Boot
 
 * [**Versión 1 (API REST completa sin base de datos)**](versiones/version_1.md): Diseño, repositorio con una rama por persona, catálogo, filtros, excepciones, autenticación, carrito y pedidos, con los datos en memoria. <span class="investigacion">Investigación</span> <span class="delivery-date">→ <strong>FECHA ENTREGA:</strong> 29/11/2026</span>
-* [**Versión 2 (Persistencia con Spring Data JPA y Lombok)**](versiones/version_2.md): Validación de los datos de entrada, entidades, relaciones, repositorios JPA, consultas, paginación, transacciones, estadísticas de ventas, importación desde Google Sheets y documentación de la API. <span class="investigacion">Investigación</span> <span class="delivery-date">→ <strong>FECHA ENTREGA:</strong> 13/12/2026</span>
+* [**Versión 2 (Persistencia con Spring Data JPA y Lombok)**](versiones/version_2.md): Validación de los datos de entrada, entidades, relaciones, repositorios JPA, consultas, transacciones, estadísticas de ventas, importación desde Google Sheets y documentación de la API. <span class="investigacion">Investigación</span> <span class="delivery-date">→ <strong>FECHA ENTREGA:</strong> 13/12/2026</span>
 
 ### Parte 2: Frontend con Vue.js
 
@@ -163,7 +163,7 @@ La aplicación se mostrará funcionando a partir del código de la etiqueta `v4`
 | Versión | Contenidos que se evalúan |
 |---|---|
 | **Versión 1** | API REST, `ResponseEntity` y códigos HTTP, organización por capas, DTOs y modelos, inyección de dependencias, `@PathVariable` y `@RequestParam`, CRUD y excepciones. Investigaciones: Git con ramas y autenticación. |
-| **Versión 2** | Validación de los datos de entrada con Bean Validation, Spring Data JPA, entidades y relaciones, Lombok, repositorios y consultas, paginación, transacciones y consultas de agregación. Investigaciones: importación desde Google Sheets y OpenAPI. |
+| **Versión 2** | Validación de los datos de entrada con Bean Validation, Spring Data JPA, entidades y relaciones, Lombok, repositorios y consultas, transacciones y consultas de agregación. Investigaciones: importación desde Google Sheets y OpenAPI. |
 | **Versión 3** | Proyecto Vue, componentes, *props* y eventos, Vue Router, consumo de la API, gestión de la sesión y del estado con Pinia. Investigación: informes Excel. |
 | **Versión 4** | Formularios y validación en el cliente, rutas por rol, tratamiento de errores, integración completa. Investigación: despliegue. |
 

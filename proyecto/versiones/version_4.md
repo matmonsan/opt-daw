@@ -34,7 +34,7 @@ Tramitación (`/compra`):
 
 Mis pedidos (`/pedidos` y `/pedidos/:id`):
 
-- Listado paginado con código, fecha, estado (distintivo de color), número de artículos y total; filtro por estado.
+- Listado con código, fecha, estado (distintivo de color), número de artículos y total; filtro por estado.
 - Detalle con líneas, importes, dirección y un indicador del progreso del pedido dentro del ciclo `PENDIENTE → PAGADO → ENVIADO → ENTREGADO` (o `CANCELADO`).
 - Cancelar pedido, solo si el estado lo permite y con confirmación.
 - Repetir pedido: añade al carrito las líneas del pedido y lleva al carrito.
@@ -50,9 +50,9 @@ Rutas anidadas bajo `/admin`, solo para administradores, con un menú lateral pr
 
 - Resumen con los datos de `GET /api/admin/estadisticas`: tarjetas con ventas, pedidos y ticket medio; al menos dos gráficas (pedidos por estado y ventas por categoría, por ejemplo con Chart.js y `vue-chartjs`); productos más vendidos y productos con stock bajo (`GET /api/admin/productos/stock-bajo`); selector de rango de fechas y botón para descargar el Excel de pedidos del rango (`GET /api/admin/pedidos/exportar`).
 - Categorías: tabla, alta, edición y borrado con confirmación (explicando el `409` si tiene productos).
-- Productos: tabla paginada con búsqueda y filtros; un mismo formulario para crear y editar con validación; vista previa de la imagen; ajuste rápido de stock; retirar, reactivar y marcar como destacado.
-- Pedidos: tabla paginada con filtros por estado, fechas y cliente; detalle; cambio de estado ofreciendo solo las transiciones válidas.
-- Usuarios: tabla paginada y cambio de rol con confirmación.
+- Productos: tabla con búsqueda y filtros; un mismo formulario para crear y editar con validación; vista previa de la imagen; ajuste rápido de stock; retirar, reactivar y marcar como destacado.
+- Pedidos: tabla con filtros por estado, fechas y cliente; detalle; cambio de estado ofreciendo solo las transiciones válidas.
+- Usuarios: tabla y cambio de rol con confirmación.
 
 ### 3. Investigación: despliegue
 {: .investigacion}

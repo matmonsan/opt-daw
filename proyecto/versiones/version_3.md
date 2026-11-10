@@ -53,12 +53,12 @@ Cread el proyecto con `npm create vue@latest`, activando Vue Router y Pinia. Usa
 
 ### 4. Catálogo y detalle de producto
 
-Componentes reutilizables mínimos, comunicados con *props* y eventos: `TarjetaProducto`, `ListaProductos`, `FiltrosCatalogo`, `Paginacion`, `IndicadorCarga` y `MensajeError`.
+Componentes reutilizables mínimos, comunicados con *props* y eventos: `TarjetaProducto`, `ListaProductos`, `FiltrosCatalogo`, `IndicadorCarga` y `MensajeError`.
 
 Catálogo (`/catalogo`):
 
-- Cuadrícula de tarjetas con filtros por categoría, texto, precio, disponibilidad y vuestro filtro propio, ordenación y paginación, usando los parámetros de la API (no se filtra en el navegador).
-- El estado del catálogo se refleja en la URL (`/catalogo?categoriaId=2&q=mario&page=1`): al recargar o compartir el enlace se ve el mismo resultado.
+- Cuadrícula de tarjetas con filtros por categoría, texto, precio, disponibilidad y vuestro filtro propio y ordenación, usando los parámetros de la API (no se filtra en el navegador).
+- El estado del catálogo se refleja en la URL (`/catalogo?categoriaId=2&q=mario&orden=PRECIO`): al recargar o compartir el enlace se ve el mismo resultado.
 - La búsqueda por texto usa *debounce* para no lanzar una petición por cada tecla.
 - Estados de carga, error (con reintentar) y sin resultados.
 
@@ -104,7 +104,7 @@ Comprobad el ciclo completo: exportar el carrito o un pedido → abrirlo con Goo
 - Prototipo completo y mapa de navegación en `docs/`.
 - Proyecto que arranca con `npm install` y `npm run dev`, con la URL de la API en variables de entorno y CORS configurado.
 - Inicio de sesión, registro y cierre de sesión; sesión persistente; token en todas las peticiones; rutas protegidas por sesión y por rol.
-- Catálogo con los filtros, la ordenación y la paginación de la API, estado en la URL y *debounce*.
+- Catálogo con los filtros y la ordenación de la API, estado en la URL y *debounce*.
 - Componentes reutilizables con *props* y eventos.
 - Carrito centralizado en Pinia con avisos e importación con previsualización.
 - Los tres *endpoints* de exportación generan `.xlsx` con los formatos indicados y el carrito se descarga desde Vue con token.
@@ -118,7 +118,7 @@ Comprobad el ciclo completo: exportar el carrito o un pedido → abrirlo con Goo
 | Prototipo de las pantallas de cliente | Prototipo de administración y mapa de navegación |
 | Proyecto Vue, `api.js`, diseño base y portada | CORS, *router* y vista 404 |
 | Vistas de acceso e integración con el proveedor | *Store* de sesión, interceptor y *guards* |
-| Detalle de producto y componentes de tarjeta y lista | Catálogo con filtros, URL, *debounce* y paginación |
+| Detalle de producto y componentes de tarjeta y lista | Catálogo con filtros, ordenación, URL y *debounce* |
 | *Store* y vista del carrito | Importación desde Google Sheets |
 | Excel de administración con Apache POI | Excel del pedido y del carrito, y descarga desde Vue |
 
