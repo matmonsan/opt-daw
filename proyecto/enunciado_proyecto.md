@@ -29,10 +29,10 @@ En clase se explicarán la mayor parte de las tecnologías necesarias y se propo
 | Pareja 3 | Jose Miguel | Shin |
 | Pareja 4 | Gonzálo | Gonzálo |
 | Pareja 5 | Martín | Jose Ángel |
-| Pareja 6 | | |
-| Pareja 7 | | |
-| Pareja 8 | | |
-| Pareja 9 | | |
+| Pareja 6 | Ángel | Francisco Manuel |
+| Pareja 7 | Antonio | Adrián |
+| Pareja 8 | Diego | Samuel |
+| Pareja 9 | Pablo | Francisco |
 
 El proyecto se realiza en parejas, pero cada persona trabajará en su propia rama de Git y el código se integrará mediante *Pull Requests* revisadas por la otra persona de la pareja. La forma de organizar las ramas, proteger la rama principal, revisar el código y resolver conflictos es <span class="investigacion">Investigación</span> y se plantea en la [Versión 1](versiones/version_1.md).
 
