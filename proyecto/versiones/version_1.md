@@ -162,7 +162,7 @@ Material de referencia: [apartado 5 de los apuntes](../../aplicaciones.md#5-par�
 - Las respuestas de error no muestran trazas ni información interna.
 - Por defecto, Spring Boot no incluye en la respuesta el mensaje de las excepciones. Como la aplicación Vue de la Parte 2 tendrá que mostrarlo al usuario, configurad `server.error.include-message=always`. Por eso los mensajes de vuestras excepciones deben estar pensados para el usuario final y no contener información interna.
 
-Material de referencia: [apartado 7 de los apuntes](../../aplicaciones.md#excepciones) (excepciones).
+Material de referencia: [apartado 7 de los apuntes](../../aplicaciones.md#7-manejo-de-excepciones).
 
 ### 7. Investigación: autenticación y roles
 {: .investigacion}
@@ -172,7 +172,7 @@ Material de referencia: [apartado 7 de los apuntes](../../aplicaciones.md#excepc
 
 Elegid una opción y justificadla:
 
-- **Firebase Authentication:** el cliente envía el ID token en `Authorization: Bearer <token>` y el backend lo verifica con Firebase Admin SDK. Punto de partida: [apartado 8 de los apuntes](../../aplicaciones.md#8-inicio-de-sesión-con-firebase-authentication), llevando la verificación a un filtro que proteja todas las rutas.
+- **Firebase Authentication:** el cliente envía el ID token en `Authorization: Bearer <token>` y el backend lo verifica con Firebase Admin SDK en un filtro que proteja todas las rutas.
 - **Supabase Auth:** el backend verifica la firma, la caducidad y el emisor del *access token* (JWT) de Supabase.
 - **Spring Security:** usuarios propios con contraseña cifrada (`BCryptPasswordEncoder`), `POST /api/auth/registro` y `POST /api/auth/login` (únicas rutas públicas) que devuelven un JWT, y un filtro que lo valida.
 

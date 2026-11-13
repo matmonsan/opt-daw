@@ -16,24 +16,23 @@ description: "<strong>Módulo: </strong>Programación Web Avanzada <br> <strong>
 4. [Inyección de dependencias](#4-inyección-de-dependencias)
 5. [Parámetros de ruta y de consulta](#5-parámetros-de-ruta-y-de-consulta)
 6. [Operaciones CRUD](#6-operaciones-crud)
-7. [Validación y manejo de excepciones](#7-validación-y-manejo-de-excepciones)
-8. [Inicio de sesión con Firebase Authentication](#8-inicio-de-sesión-con-firebase-authentication)
-9. [Actividades](#9-actividades)
+7. [Manejo de excepciones](#7-manejo-de-excepciones)
+    - [7.1 Flujo de una excepción](#71-flujo-de-una-excepción)
+    - [7.2 Excepciones propias con `ResponseStatusException`](#72-excepciones-propias-con-responsestatusexception)
+8. [Actividades](#8-actividades)
     - [Actividad 1: catálogo de productos con ResponseEntity](#actividad-1-catálogo-de-productos-con-responseentity)
     - [Actividad 2: API de biblioteca con DTOs y modelos](#actividad-2-api-de-biblioteca-con-dtos-y-modelos)
-
-{% comment %}
-10. [Práctica 1: reservas de una sala](#10-práctica-1-reservas-de-una-sala)
-11. [Práctica 2: estrategias de facturación](#11-práctica-2-estrategias-de-facturación)
-12. [Práctica 3: telemetría de un rover](#12-práctica-3-telemetría-de-un-rover)
-13. [Actividades de ampliación](#actividades-de-ampliación)
-{% endcomment %}
+    - [Actividad 3: calculadora con PathVariable y excepciones](#actividad-3-calculadora-con-pathvariable-y-excepciones)
+9. [Actividades de ampliación](#9-actividades-de-ampliación)
+    - [Ampliación 1: reservas de una sala](#ampliación-1-reservas-de-una-sala)
+    - [Ampliación 2: estrategias de facturación](#ampliación-2-estrategias-de-facturación)
+    - [Ampliación 3: telemetría de un rover](#ampliación-3-telemetría-de-un-rover)
 
 ## 1. HTTP y APIs REST
 
 ![API REST](./assets/img/API.png)
 
-Una aplicación web intercambia mensajes mediante el protocolo HTTP. El navegador u otro cliente envía una **petición** al servidor Spring Boot, y el servidor devuelve una **respuesta**. Cada operación se dirige a una URL y utiliza un método HTTP que expresa la intención: consultar, crear, reemplazar o borrar un recurso.
+Una aplicación web intercambia mensajes mediante el protocolo HTTP. El navegador u otro cliente envía una petición al servidor Spring Boot, y el servidor devuelve una respuesta. Cada operación se dirige a una URL y utiliza un método HTTP que expresa la intención: consultar, crear, reemplazar o borrar un recurso.
 
 | Método | Intención | Ejemplo |
 |---|---|---|
@@ -48,7 +47,7 @@ Una respuesta HTTP tiene tres componentes:
 2. **Cabeceras:** metadatos de la respuesta, como `Content-Type: application/json`.
 3. **Cuerpo:** los datos devueltos, normalmente JSON en una API REST, o HTML en una aplicación con vistas.
 
-En Chrome se puede inspeccionar el tráfico desde las herramientas de desarrollador: abre **Network (Red)**, genera una petición y selecciona la fila correspondiente para consultar estado, cabeceras y cuerpo.
+En Chrome se puede inspeccionar el tráfico desde las herramientas de desarrollador: abre Network (Red), genera una petición y selecciona la fila correspondiente para consultar estado, cabeceras y cuerpo.
 
 ### Códigos de estado habituales
 
@@ -70,7 +69,7 @@ El estado HTTP forma parte del contrato de la API. No conviene responder `200 OK
 
 ### 1.1 ResponseEntity
 
-`ResponseEntity` es la clase de Spring que representa **la respuesta HTTP completa**: código de estado, cabeceras y cuerpo. Es el elemento que permite al controlador decidir exactamente qué envía al cliente.
+`ResponseEntity` es la clase de Spring que representa la respuesta HTTP completa: código de estado, cabeceras y cuerpo. Es el elemento que permite al controlador decidir exactamente qué envía al cliente.
 
 #### Por qué se necesita
 
@@ -95,7 +94,7 @@ public ResponseEntity<ReservaDto> ultima() {
 
 #### El tipo genérico `ResponseEntity<T>`
 
-`ResponseEntity` es una clase **genérica**: el tipo entre `< >` indica la clase del **cuerpo**.
+`ResponseEntity` es una clase genérica: el tipo entre `< >` indica la clase del cuerpo.
 
 | Declaración | Significado |
 |---|---|
@@ -127,7 +126,7 @@ Los atajos más habituales:
 | `ResponseEntity.notFound().build()` | `404 Not Found` | `build` | Recurso inexistente |
 | `ResponseEntity.status(codigo).body(cuerpo)` | El indicado | `body` | Cualquier otro código (`409`, `410`...) |
 
-La diferencia entre `build()` y `body(...)`: **`body(x)`** cierra la respuesta incluyendo un cuerpo; **`build()`** la cierra sin cuerpo. Por eso `notFound()` y `noContent()` solo admiten `build()` (no tienen cuerpo), mientras que `badRequest()` y `status(...)` permiten `body(...)`. `HttpStatus` es la enumeración con los códigos (`HttpStatus.CREATED`, `HttpStatus.CONFLICT`...).
+La diferencia entre `build()` y `body(...)`: `body(x)` cierra la respuesta incluyendo un cuerpo; `build()` la cierra sin cuerpo. Por eso `notFound()` y `noContent()` solo admiten `build()` (no tienen cuerpo), mientras que `badRequest()` y `status(...)` permiten `body(...)`. `HttpStatus` es la enumeración con los códigos (`HttpStatus.CREATED`, `HttpStatus.CONFLICT`...).
 
 #### `Optional<T>` y respuestas `200`/`404`
 
@@ -185,7 +184,7 @@ ReservaDto reserva = reservaService.ultima()
 
 #### El comodín `?`: `ResponseEntity<?>`
 
-Un método declarado como `ResponseEntity<ReservaDto>` solo puede devolver un `ReservaDto` en el cuerpo. Pero a veces la misma operación devuelve cuerpos de **clases distintas**: un DTO si todo va bien y un `ErrorDto` si falla.
+Un método declarado como `ResponseEntity<ReservaDto>` solo puede devolver un `ReservaDto` en el cuerpo. Pero a veces la misma operación devuelve cuerpos de clases distintas: un DTO si todo va bien y un `ErrorDto` si falla.
 
 ```java
 @PostMapping
@@ -199,7 +198,7 @@ public ResponseEntity<?> crear(@RequestBody ReservaCrearDto entrada) {
 }
 ```
 
-`?` es el **comodín** de los genéricos: significa «cualquier tipo». Así, `ResponseEntity<?>` admite un cuerpo de cualquier clase. Tiene un coste: se pierde la comprobación de tipos en compilación y la firma ya no documenta qué devuelve la API. Por eso:
+`?` es el comodín de los genéricos: significa «cualquier tipo». Así, `ResponseEntity<?>` admite un cuerpo de cualquier clase. Tiene un coste: se pierde la comprobación de tipos en compilación y la firma ya no documenta qué devuelve la API. Por eso:
 
 - Úsalo solo cuando el cuerpo realmente pueda tener tipos distintos.
 - Para errores es preferible lanzar una excepción (apartado 7) y mantener el tipo preciso `ResponseEntity<ReservaDto>`.
@@ -311,10 +310,10 @@ Observa tres detalles:
 
 ### 2.1. Dos tipos de clases con propósitos distintos
 
-En una aplicación Spring hay clases que sirven para **representar datos**. A primera vista pueden parecerse mucho (ambas tienen un nombre, una hora, una duración...), pero cumplen funciones diferentes y conviene no confundirlas:
+En una aplicación Spring hay clases que sirven para representar datos. A primera vista pueden parecerse mucho (ambas tienen un nombre, una hora, una duración...), pero cumplen funciones diferentes y conviene no confundirlas:
 
-- El **modelo** representa un elemento **dentro** de la aplicación: una reserva, un producto, un usuario. Es lo que utilizan el servicio y las reglas de negocio.
-- El **DTO** (*Data Transfer Object*) representa los datos **tal como viajan por la API**: lo que el cliente envía y lo que recibe.
+- El modelo representa un elemento dentro de la aplicación: una reserva, un producto, un usuario. Es lo que utilizan el servicio y las reglas de negocio.
+- El DTO (*Data Transfer Object*) representa los datos tal como viajan por la API: lo que el cliente envía y lo que recibe.
 
 ```text
 Cliente  <--JSON-->  [ DTO ]  <-- Controlador / Servicio -->  [ Modelo ]  <-->  Base de datos
@@ -329,13 +328,13 @@ El modelo vive en el interior y el DTO en la frontera. Todo lo que sigue desarro
 
 #### ¿Qué es?
 
-El **modelo** (también llamado *dominio*) agrupa las clases que representan los conceptos con los que trabaja la aplicación. Si estás construyendo un sistema de reservas de salas, tu modelo contendrá la clase `Reserva`; si es una tienda, `Producto`, `Pedido`, `Cliente`...
+El modelo (también llamado *dominio*) agrupa las clases que representan los conceptos con los que trabaja la aplicación. Si estás construyendo un sistema de reservas de salas, tu modelo contendrá la clase `Reserva`; si es una tienda, `Producto`, `Pedido`, `Cliente`...
 
 #### Características
 
-- Contiene **todos los datos que la aplicación necesita**, incluidos los internos que el cliente nunca debería ver.
-- Puede incluir **lógica y reglas de negocio** propias del concepto (comprobaciones, cálculos).
-- Está pensado para **cómo trabaja la aplicación**, no para cómo se comunica con el exterior.
+- Contiene todos los datos que la aplicación necesita, incluidos los internos que el cliente nunca debería ver.
+- Puede incluir lógica y reglas de negocio propias del concepto (comprobaciones, cálculos).
+- Está pensado para cómo trabaja la aplicación, no para cómo se comunica con el exterior.
 - Cambia cuando cambia el negocio o la forma de almacenar los datos.
 - Suele ubicarse en el paquete `model`.
 
@@ -400,7 +399,7 @@ Observa qué hace de `Reserva` un modelo:
 
 #### Modelo y entidad de base de datos
 
-Cuando la aplicación guarda datos en una base de datos con JPA, el modelo suele ser una **entidad**: una clase anotada con `@Entity` y ligada a una tabla. Sigue siendo parte del interior de la aplicación y, además de representar el dominio, define cómo se almacena. Todo lo dicho sobre el modelo se aplica también a las entidades.
+Cuando la aplicación guarda datos en una base de datos con JPA, el modelo suele ser una entidad: una clase anotada con `@Entity` y ligada a una tabla. Sigue siendo parte del interior de la aplicación y, además de representar el dominio, define cómo se almacena. Todo lo dicho sobre el modelo se aplica también a las entidades.
 
 ---
 
@@ -408,15 +407,15 @@ Cuando la aplicación guarda datos en una base de datos con JPA, el modelo suele
 
 #### ¿Qué es?
 
-Un **DTO** (*Data Transfer Object*, objeto de transferencia de datos) es una clase sencilla que representa los datos que **cruzan el límite de la API**: lo que entra en la petición y lo que sale en la respuesta.
+Un DTO (*Data Transfer Object*, objeto de transferencia de datos) es una clase sencilla que representa los datos que cruzan el límite de la API: lo que entra en la petición y lo que sale en la respuesta.
 
 Separa el contrato HTTP de las clases internas de negocio y permite controlar qué información se expone.
 
 #### Características
 
-- Contiene **solo los datos necesarios** para esa operación concreta.
+- Contiene solo los datos necesarios para esa operación concreta.
 - **No tiene lógica de negocio**: es un contenedor de datos.
-- Define el **contrato de la API**: qué campos acepta y qué campos devuelve.
+- Define el contrato de la API: qué campos acepta y qué campos devuelve.
 - Cambia cuando cambia lo que la API ofrece, no cuando cambia el interior de la aplicación.
 - Suele ubicarse en el paquete `dto`.
 - Se define como una clase Java normal, con atributos privados, constructores, *getters* y *setters*. Spring (mediante Jackson) los utiliza para convertirla a JSON y desde JSON.
@@ -584,7 +583,7 @@ Los nombres de los *getters* y *setters* determinan los nombres de las claves de
 
 Una forma sencilla de recordarlo:
 
-> El **modelo** es cómo *piensa* la aplicación sobre un dato. El **DTO** es cómo *habla* la aplicación con el exterior sobre ese dato.
+> El modelo es cómo *piensa* la aplicación sobre un dato. El DTO es cómo *habla* la aplicación con el exterior sobre ese dato.
 
 ---
 
@@ -594,7 +593,7 @@ Parece más cómodo recibir y devolver `Reserva` directamente, sin crear más cl
 
 #### 1. Se exponen datos internos
 
-Si el controlador devuelve un `Reserva`, el JSON incluirá **todos** sus campos, también los internos:
+Si el controlador devuelve un `Reserva`, el JSON incluirá todos sus campos, también los internos:
 
 ```json
 {
@@ -622,7 +621,7 @@ Si la API acepta `Reserva` como entrada, un cliente podría enviar:
 }
 ```
 
-y estaría decidiendo el `id` y las notas internas. Con `ReservaCrearDto`, esos campos ni siquiera existen: aunque el cliente los envíe, se ignoran. Este problema se conoce como ***mass assignment*** (asignación masiva) y es una fuente habitual de fallos de seguridad.
+y estaría decidiendo el `id` y las notas internas. Con `ReservaCrearDto`, esos campos ni siquiera existen: aunque el cliente los envíe, se ignoran. Este problema se conoce como *mass assignment* (asignación masiva) y es una fuente habitual de fallos de seguridad.
 
 #### 3. Los cambios internos rompen la API
 
@@ -630,10 +629,10 @@ Si renombras un campo del modelo o lo divides en dos, los clientes que dependía
 
 #### 4. Una misma clase no sirve para todas las situaciones
 
-- Al **crear** no hay `id`.
-- Al **consultar** sí hay `id`.
-- En un **listado** basta con un resumen.
-- Al **actualizar** puede que solo se permitan ciertos campos.
+- Al crear no hay `id`.
+- Al consultar sí hay `id`.
+- En un listado basta con un resumen.
+- Al actualizar puede que solo se permitan ciertos campos.
 
 Intentar cubrirlo todo con una única clase obliga a campos opcionales y a comprobaciones confusas.
 
@@ -643,13 +642,13 @@ El modelo quedaría contaminado con detalles de la comunicación (nombres de cam
 
 #### 6. Problemas adicionales con entidades de base de datos
 
-Si el modelo es una entidad JPA, exponerla directamente añade más riesgos: relaciones con otras entidades que provocan **bucles infinitos** al convertir a JSON, o consultas innecesarias a la base de datos al acceder a datos relacionados.
+Si el modelo es una entidad JPA, exponerla directamente añade más riesgos: relaciones con otras entidades que provocan bucles infinitos al convertir a JSON, o consultas innecesarias a la base de datos al acceder a datos relacionados.
 
 ---
 
 ### 2.6. ¿Cuántos DTOs necesito?
 
-No hay un número fijo. La regla práctica es **un DTO por cada forma distinta de comunicar el dato**:
+No hay un número fijo. La regla práctica es un DTO por cada forma distinta de comunicar el dato:
 
 | Operación | DTO de entrada | DTO de salida |
 |---|---|---|
@@ -695,14 +694,14 @@ src/
 
 ### 3.1. ¿Por qué organizar el código en capas?
 
-Cuando una aplicación crece, lo más peligroso no es la cantidad de código, sino que **todo esté mezclado**. Imagina un único método que recibe la petición HTTP, valida los datos, aplica las reglas de la aplicación, consulta la base de datos y construye la respuesta. Funcionaría, pero:
+Cuando una aplicación crece, lo más peligroso no es la cantidad de código, sino que todo esté mezclado. Imagina un único método que recibe la petición HTTP, valida los datos, aplica las reglas de la aplicación, consulta la base de datos y construye la respuesta. Funcionaría, pero:
 
 - Sería difícil de leer: ¿dónde termina lo que es HTTP y empieza la lógica?
 - Sería difícil de modificar: cambiar una regla obligaría a tocar código web.
 - Sería difícil de probar: para comprobar una regla tendrías que simular una petición completa.
 - No se podría reutilizar: si otra parte de la aplicación necesita esa regla, habría que copiarla.
 
-La solución es **dividir la aplicación en capas**, de forma que cada una tenga una única responsabilidad. Este principio se conoce como **separación de responsabilidades**.
+La solución es dividir la aplicación en capas, de forma que cada una tenga una única responsabilidad. Este principio se conoce como separación de responsabilidades.
 
 ---
 
@@ -726,7 +725,7 @@ Cada capa tiene su papel:
 - **Controller (`@RestController`):** es la puerta de entrada. Recibe la petición, extrae los datos, llama al servicio y prepara la respuesta HTTP.
 - **Service (`@Service`):** es el "cerebro". Ejecuta las operaciones y las reglas propias de la aplicación.
 
-> En aplicaciones con base de datos suele añadirse una tercera capa, el **repositorio** (`@Repository`), encargada de leer y guardar datos. El flujo pasa a ser `Controller -> Service -> Repository -> base de datos`. Por ahora trabajamos solo con controlador y servicio.
+> En aplicaciones con base de datos suele añadirse una tercera capa, el repositorio (`@Repository`), encargada de leer y guardar datos. El flujo pasa a ser `Controller -> Service -> Repository -> base de datos`. Por ahora trabajamos solo con controlador y servicio.
 
 #### Qué debe y qué no debe hacer cada capa
 
@@ -735,7 +734,7 @@ Cada capa tiene su papel:
 | **Controller** | Recibir la petición, leer el cuerpo, parámetros y rutas, llamar al servicio, devolver la respuesta y el código HTTP. | Contener reglas de negocio, cálculos o decisiones sobre los datos. |
 | **Service** | Aplicar reglas, hacer comprobaciones y cálculos, coordinar operaciones. | Conocer detalles de HTTP (rutas, códigos de estado, cabeceras). |
 
-Una buena pregunta para saber dónde va un fragmento de código es: *"¿esto cambiaría si en lugar de una API web tuviera una aplicación de consola?"*. Si la respuesta es **no**, probablemente pertenece al servicio.
+Una buena pregunta para saber dónde va un fragmento de código es: *"¿esto cambiaría si en lugar de una API web tuviera una aplicación de consola?"*. Si la respuesta es no, probablemente pertenece al servicio.
 
 ---
 
@@ -770,7 +769,7 @@ Qué contiene cada elemento:
 
 Los DTO permiten definir qué datos acepta y devuelve la API sin exponer directamente el modelo del dominio. Los nombres de los paquetes pueden variar (`controllers`, `services`, `domain`, `entity`...), pero mantener cada responsabilidad en su lugar ayuda a encontrar y entender el código.
 
-> **Importante:** `controller`, `dto`, `service` y `model` deben quedar **dentro** del paquete de la clase principal. Spring escanea ese paquete y sus subpaquetes para encontrar las clases anotadas; si una clase queda fuera, no se registrará.
+> **Importante:** `controller`, `dto`, `service` y `model` deben quedar dentro del paquete de la clase principal. Spring escanea ese paquete y sus subpaquetes para encontrar las clases anotadas; si una clase queda fuera, no se registrará.
 
 #### Ejemplo de clase del modelo
 
@@ -787,12 +786,12 @@ No tiene lógica de la aplicación ni sabe nada de HTTP: simplemente describe qu
 
 ### 3.4. ¿Qué es un servicio?
 
-En este contexto, un **servicio** es una clase Java que reúne operaciones relacionadas con una tarea de la aplicación.
+En este contexto, un servicio es una clase Java que reúne operaciones relacionadas con una tarea de la aplicación.
 
 Ejemplos:
 
-- Un servicio de **inventario** puede comprobar si hay unidades suficientes, calcular el stock restante o registrar una entrada de mercancía.
-- Un servicio de **reservas** puede comprobar si una reserva cumple las reglas: fechas válidas, plazas disponibles, antelación mínima...
+- Un servicio de inventario puede comprobar si hay unidades suficientes, calcular el stock restante o registrar una entrada de mercancía.
+- Un servicio de reservas puede comprobar si una reserva cumple las reglas: fechas válidas, plazas disponibles, antelación mínima...
 
 Algunas características importantes:
 
@@ -857,7 +856,7 @@ public class InventarioService {
 }
 ```
 
-Este método devuelve `true` solo si se piden unidades (más de 0) y hay suficientes disponibles. Esa es una **regla de negocio**, y por eso vive en el servicio.
+Este método devuelve `true` solo si se piden unidades (más de 0) y hay suficientes disponibles. Esa es una regla de negocio, y por eso vive en el servicio.
 
 #### Paso 2: recibir los datos de la petición
 
@@ -943,11 +942,11 @@ El controlador recibe la petición; la comprobación sigue estando en el servici
 
 ### 3.7. `@Service` y `@Component`
 
-La anotación `@Service` permite que Spring detecte y gestione esa clase para poder proporcionársela al controlador. Al arrancar, Spring la registra como **bean** (un objeto que él crea y administra).
+La anotación `@Service` permite que Spring detecte y gestione esa clase para poder proporcionársela al controlador. Al arrancar, Spring la registra como bean (un objeto que él crea y administra).
 
 Hay otra anotación en Spring: `@Component`, que también registra una clase, pero es más general. `@Service` expresa que la clase contiene operaciones de negocio.
 
-En realidad, `@Service`, `@Repository` y `@RestController` son **especializaciones** de `@Component`: Spring las trata igual a la hora de registrarlas, pero cada una comunica un propósito distinto.
+En realidad, `@Service`, `@Repository` y `@RestController` son especializaciones de `@Component`: Spring las trata igual a la hora de registrarlas, pero cada una comunica un propósito distinto.
 
 | Anotación | Se usa en | Significado |
 |---|---|---|
@@ -956,7 +955,7 @@ En realidad, `@Service`, `@Repository` y `@RestController` son **especializacion
 | `@Repository` | Clases de acceso a datos | Lee y guarda información. |
 | `@RestController` | Clases de la capa web | Atiende peticiones HTTP y devuelve datos. |
 
-¿Por qué usar `@Service` si `@Component` también funcionaría? Porque **el código se lee mejor**: al ver `@Service`, cualquiera sabe en qué capa está la clase y qué se espera de ella. Además, algunas herramientas y funciones de Spring pueden tratar de forma especial ciertas anotaciones.
+¿Por qué usar `@Service` si `@Component` también funcionaría? Porque el código se lee mejor: al ver `@Service`, cualquiera sabe en qué capa está la clase y qué se espera de ella. Además, algunas herramientas y funciones de Spring pueden tratar de forma especial ciertas anotaciones.
 
 ---
 
@@ -964,14 +963,14 @@ En realidad, `@Service`, `@Repository` y `@RestController` son **especializacion
 
 ### 4.1. ¿Qué es una dependencia?
 
-Casi ninguna clase trabaja sola. Lo normal es que, para hacer su trabajo, necesite apoyarse en otras clases. Esa clase que se necesita se llama **dependencia**.
+Casi ninguna clase trabaja sola. Lo normal es que, para hacer su trabajo, necesite apoyarse en otras clases. Esa clase que se necesita se llama dependencia.
 
 En nuestro ejemplo:
 
 - `InventarioController` recibe las peticiones HTTP y devuelve respuestas.
 - `InventarioService` contiene la lógica para decidir si hay unidades suficientes.
 
-El controlador **depende** del servicio: sin él no podría responder a la petición. Por tanto, `InventarioService` es una dependencia de `InventarioController`.
+El controlador depende del servicio: sin él no podría responder a la petición. Por tanto, `InventarioService` es una dependencia de `InventarioController`.
 
 ```
 Cliente HTTP ──► InventarioController ──► InventarioService
@@ -1011,26 +1010,26 @@ Funciona, pero tiene varios inconvenientes:
 
 ### 4.3. La solución: inversión de control
 
-La idea clave es **invertir el control**: en lugar de que cada clase fabrique lo que necesita, **otra pieza se encarga de crear los objetos y entregárselos**.
+La idea clave es invertir el control: en lugar de que cada clase fabrique lo que necesita, otra pieza se encarga de crear los objetos y entregárselos.
 
-En Spring, esa pieza es el **contenedor de Spring** (también llamado *contexto de aplicación* o `ApplicationContext`). Este contenedor:
+En Spring, esa pieza es el contenedor de Spring (también llamado *contexto de aplicación* o `ApplicationContext`). Este contenedor:
 
 1. Crea los objetos de tu aplicación.
 2. Los configura.
 3. Resuelve qué objeto necesita cada clase.
 4. Se los entrega cuando los necesitan.
 
-Esto se conoce como **inversión de control (IoC)**, y la técnica concreta para entregar los objetos es la **inyección de dependencias (DI)**.
+Esto se conoce como inversión de control (IoC), y la técnica concreta para entregar los objetos es la inyección de dependencias (DI).
 
-> **Definición:** la inyección de dependencias consiste en que una clase **recibe** de fuera los objetos que necesita, en lugar de crearlos ella misma.
+> **Definición:** la inyección de dependencias consiste en que una clase recibe de fuera los objetos que necesita, en lugar de crearlos ella misma.
 
 ---
 
 ### 4.4. Beans: los objetos que gestiona Spring
 
-Un **bean** es un objeto que Spring crea, configura y administra durante la ejecución de la aplicación. No es un tipo especial de objeto: es una clase normal de Java cuyo ciclo de vida controla Spring.
+Un bean es un objeto que Spring crea, configura y administra durante la ejecución de la aplicación. No es un tipo especial de objeto: es una clase normal de Java cuyo ciclo de vida controla Spring.
 
-Para que Spring registre una clase como bean, se utilizan **anotaciones de estereotipo**:
+Para que Spring registre una clase como bean, se utilizan anotaciones de estereotipo:
 
 | Anotación | Uso habitual |
 |---|---|
@@ -1060,7 +1059,7 @@ Tanto `InventarioService` (por `@Service`) como `InventarioController` (por `@Re
 
 #### ¿Cómo los encuentra Spring?
 
-Spring Boot realiza un **escaneo de componentes** (*component scan*). Al arrancar, recorre el paquete de la clase principal (la anotada con `@SpringBootApplication`) y todos sus subpaquetes, buscando clases con anotaciones de estereotipo.
+Spring Boot realiza un escaneo de componentes (*component scan*). Al arrancar, recorre el paquete de la clase principal (la anotada con `@SpringBootApplication`) y todos sus subpaquetes, buscando clases con anotaciones de estereotipo.
 
 ```
 com.ejemplo.tienda
@@ -1071,7 +1070,7 @@ com.ejemplo.tienda
     └── InventarioService.java    ← se detecta
 ```
 
-> **Importante:** si una clase con `@Service` está **fuera** del paquete de la clase principal, Spring no la encontrará y la aplicación fallará al arrancar.
+> **Importante:** si una clase con `@Service` está fuera del paquete de la clase principal, Spring no la encontrará y la aplicación fallará al arrancar.
 
 ---
 
@@ -1095,14 +1094,14 @@ public class InventarioController {
 }
 ```
 
-Esta forma se llama **inyección por campo**, porque la anotación se coloca directamente sobre el atributo.
+Esta forma se llama inyección por campo, porque la anotación se coloca directamente sobre el atributo.
 
 #### ¿Qué ocurre al arrancar la aplicación?
 
 1. Spring escanea los paquetes y encuentra `InventarioService` (`@Service`) y `InventarioController` (`@RestController`).
 2. Crea primero el `InventarioService`, porque el controlador lo necesita.
 3. Crea el `InventarioController`.
-4. Ve el `@Autowired` sobre el campo `inventarioService`, busca un bean de tipo `InventarioService` y lo **asigna** al campo.
+4. Ve el `@Autowired` sobre el campo `inventarioService`, busca un bean de tipo `InventarioService` y lo asigna al campo.
 5. Cuando llega una petición a `POST /inventario/disponibilidad`, el controlador ya tiene el servicio listo y puede llamar a `inventarioService.hayUnidades(...)`.
 
 Fíjate en que en ningún momento escribimos `new InventarioService()`. Esa tarea la hace Spring.
@@ -1114,9 +1113,9 @@ Fíjate en que en ningún momento escribimos `new InventarioService()`. Esa tare
 
 #### Inconvenientes
 
-- El campo **no puede ser `final`**, así que el objeto no es inmutable.
+- El campo no puede ser `final`, así que el objeto no es inmutable.
 - Para hacer tests unitarios sin Spring hay que usar reflexión o herramientas especiales para inyectar el mock.
-- Las dependencias quedan **ocultas**: mirando el constructor (que no existe) no sabes qué necesita la clase.
+- Las dependencias quedan ocultas: mirando el constructor (que no existe) no sabes qué necesita la clase.
 - Es muy fácil acumular muchas dependencias sin darte cuenta de que la clase hace demasiadas cosas.
 
 ---
@@ -1148,12 +1147,12 @@ public class InventarioController {
 
 Spring llama al constructor y le pasa el bean `InventarioService`.
 
-- Desde Spring 4.3, si la clase tiene **un único constructor**, `@Autowired` es opcional (y suele omitirse).
-- Si la clase tiene **varios constructores**, hay que marcar con `@Autowired` el que Spring debe usar.
+- Desde Spring 4.3, si la clase tiene un único constructor, `@Autowired` es opcional (y suele omitirse).
+- Si la clase tiene varios constructores, hay que marcar con `@Autowired` el que Spring debe usar.
 
 **Ventajas:**
 
-- Las dependencias son **obligatorias y visibles**: no se puede crear el objeto sin ellas.
+- Las dependencias son obligatorias y visibles: no se puede crear el objeto sin ellas.
 - El campo puede ser `final`, lo que garantiza que no cambia.
 - Es sencillo hacer tests: `new InventarioController(servicioFalso)`.
 - Si una clase necesita demasiadas dependencias, el constructor se vuelve enorme y es una señal de que hay que dividirla.
@@ -1197,7 +1196,7 @@ public class InventarioController {
 }
 ```
 
-Se usa para dependencias **opcionales** o que pueden cambiar después de crear el objeto. Es poco frecuente.
+Se usa para dependencias opcionales o que pueden cambiar después de crear el objeto. Es poco frecuente.
 
 #### Comparativa
 
@@ -1215,9 +1214,9 @@ Se usa para dependencias **opcionales** o que pueden cambiar después de crear e
 
 ### 4.7. ¿Cómo decide Spring qué bean inyectar?
 
-Spring busca primero por **tipo**. Si pides un `InventarioService`, buscará un bean de ese tipo.
+Spring busca primero por tipo. Si pides un `InventarioService`, buscará un bean de ese tipo.
 
-Normalmente solo hay uno y no hay problema. Pero si el tipo es una **interfaz** con varias implementaciones, aparece la ambigüedad:
+Normalmente solo hay uno y no hay problema. Pero si el tipo es una interfaz con varias implementaciones, aparece la ambigüedad:
 
 ```java
 public interface NotificadorService {
@@ -1255,9 +1254,9 @@ El nombre por defecto de un bean es el nombre de la clase con la primera letra e
 
 ### 4.8. Ciclo de vida y *scope* de los beans
 
-Por defecto, Spring crea **una única instancia** de cada bean y la comparte en toda la aplicación. Esto se llama *scope* **singleton**.
+Por defecto, Spring crea una única instancia de cada bean y la comparte en toda la aplicación. Esto se llama *scope* singleton.
 
-Por eso, todas las clases que inyecten `InventarioService` reciben **el mismo objeto**. Es una de las razones por las que los servicios no deberían guardar datos mutables de una petición concreta en sus atributos: al compartirse entre todas las peticiones, podrían mezclarse datos de distintos usuarios.
+Por eso, todas las clases que inyecten `InventarioService` reciben el mismo objeto. Es una de las razones por las que los servicios no deberían guardar datos mutables de una petición concreta en sus atributos: al compartirse entre todas las peticiones, podrían mezclarse datos de distintos usuarios.
 
 Existen otros *scopes* (como `prototype`, que crea una instancia nueva cada vez, o `request`/`session` en aplicaciones web), pero el singleton es el que usarás casi siempre.
 
@@ -1265,10 +1264,10 @@ Existen otros *scopes* (como `prototype`, que crea una instancia nueva cada vez,
 
 ## 5. Parámetros de ruta y de consulta
 
-Hasta ahora, la información que el cliente enviaba al servidor viajaba en el **cuerpo** de la petición (`@RequestBody`). Pero muchas peticiones, sobre todo las `GET` y `DELETE`, no tienen cuerpo: toda la información va en la propia **URL**. Spring ofrece dos anotaciones para leerla:
+Hasta ahora, la información que el cliente enviaba al servidor viajaba en el cuerpo de la petición (`@RequestBody`). Pero muchas peticiones, sobre todo las `GET` y `DELETE`, no tienen cuerpo: toda la información va en la propia URL. Spring ofrece dos anotaciones para leerla:
 
-- `@PathVariable`: lee un trozo del **camino** de la URL.
-- `@RequestParam`: lee un parámetro de la **cadena de consulta** (lo que va después del `?`).
+- `@PathVariable`: lee un trozo del camino de la URL.
+- `@RequestParam`: lee un parámetro de la cadena de consulta (lo que va después del `?`).
 
 ---
 
@@ -1330,7 +1329,7 @@ public ReservaDto buscar(@PathVariable("id") long idReserva) { ... }
 
 #### Varias variables en la misma ruta
 
-Una ruta puede tener tantas variables como necesite. Es habitual cuando un recurso pertenece a otro (recursos **anidados**):
+Una ruta puede tener tantas variables como necesite. Es habitual cuando un recurso pertenece a otro (recursos anidados):
 
 ```java
 @GetMapping("/salas/{salaId}/reservas/{reservaId}")
@@ -1345,9 +1344,9 @@ public ReservaDto buscarEnSala(
 
 #### Conversión de tipos
 
-Todo lo que llega en la URL es texto. Spring **convierte automáticamente** ese texto al tipo del parámetro: `int`, `long`, `boolean`, `UUID`, enumerados, etc.
+Todo lo que llega en la URL es texto. Spring convierte automáticamente ese texto al tipo del parámetro: `int`, `long`, `boolean`, `UUID`, enumerados, etc.
 
-Si la conversión no es posible, el método **no se ejecuta** y Spring responde `400 Bad Request`:
+Si la conversión no es posible, el método no se ejecuta y Spring responde `400 Bad Request`:
 
 | Petición | Resultado |
 |---|---|
@@ -1388,7 +1387,7 @@ Igual que con `@PathVariable`, el nombre se puede indicar explícitamente cuando
 
 #### Parámetros obligatorios y opcionales
 
-Por defecto, un `@RequestParam` es **obligatorio**. Si el cliente no lo envía, Spring responde `400 Bad Request` sin ejecutar el método. Hay tres formas de hacerlo opcional:
+Por defecto, un `@RequestParam` es obligatorio. Si el cliente no lo envía, Spring responde `400 Bad Request` sin ejecutar el método. Hay tres formas de hacerlo opcional:
 
 **a) `required = false`**: si no llega, el valor es `null`.
 
@@ -1466,7 +1465,7 @@ GET /reservas/por-salas?sala=1,3,5
 
 #### Enumerados y fechas
 
-Spring convierte el texto a un `enum` usando el **nombre exacto** de la constante (distingue mayúsculas y minúsculas):
+Spring convierte el texto a un `enum` usando el nombre exacto de la constante (distingue mayúsculas y minúsculas):
 
 ```java
 public enum EstadoReserva { PENDIENTE, CONFIRMADA, CANCELADA }
@@ -1493,7 +1492,7 @@ public List<ReservaDto> listarPorFecha(
 
 #### Caracteres especiales
 
-Los espacios y algunos símbolos (`&`, `=`, `?`, `#`...) tienen un significado especial en la URL, por lo que el cliente debe **codificarlos** (*URL encoding*). Spring los decodifica antes de pasarlos al método:
+Los espacios y algunos símbolos (`&`, `=`, `?`, `#`...) tienen un significado especial en la URL, por lo que el cliente debe codificarlos (*URL encoding*). Spring los decodifica antes de pasarlos al método:
 
 ```
 GET /reservas?nombre=Luc%C3%ADa%20P%C3%A9rez   →   nombre = "Lucía Pérez"
@@ -1505,7 +1504,7 @@ Postman y los navegadores hacen esta codificación automáticamente.
 
 ### 5.4. Combinar ambos tipos de parámetros
 
-Lo habitual es usar los dos a la vez: la ruta indica **qué** colección o recurso, y los parámetros de consulta **cómo** se quiere el resultado.
+Lo habitual es usar los dos a la vez: la ruta indica qué colección o recurso, y los parámetros de consulta cómo se quiere el resultado.
 
 ```java
 @RestController
@@ -1532,13 +1531,13 @@ public class SalaReservaController {
 | `GET /salas/3/reservas?fecha=2026-11-04` | Reservas de la sala 3 de ese día |
 | `GET /salas/3/reservas?fecha=2026-11-04&orden=nombre` | Las mismas, ordenadas por nombre |
 
-Fíjate en que el controlador **no filtra ni ordena**: solo recoge los parámetros y se los pasa al servicio, que es quien aplica la lógica (apartado 3).
+Fíjate en que el controlador no filtra ni ordena: solo recoge los parámetros y se los pasa al servicio, que es quien aplica la lógica (apartado 3).
 
 ---
 
 ### 5.5. ¿Qué responde Spring si algo falla?
 
-Spring comprueba los parámetros **antes** de ejecutar el método. Si algo no encaja, responde él directamente:
+Spring comprueba los parámetros antes de ejecutar el método. Si algo no encaja, responde él directamente:
 
 | Situación | Ejemplo | Respuesta |
 |---|---|---|
@@ -1549,21 +1548,6 @@ Spring comprueba los parámetros **antes** de ejecutar el método. Si algo no en
 | El recurso no existe (el id es válido pero no está) | `GET /reservas/999` | Lo decide **tu código** (normalmente `404`, apartado 7) |
 
 La última fila es importante: Spring solo sabe si el `id` *tiene el formato correcto*; saber si la reserva *existe* es responsabilidad del servicio.
-
-#### Validar los valores de los parámetros
-
-También se pueden poner restricciones de Bean Validation directamente sobre los parámetros (en Spring Boot 3.2 o superior, con la dependencia `spring-boot-starter-validation`). Si no se cumplen, Spring responde `400 Bad Request`:
-
-```java
-@GetMapping
-public List<ReservaDto> listar(
-        @RequestParam(defaultValue = "0") @Min(0) int pagina,
-        @RequestParam(defaultValue = "10") @Min(1) @Max(100) int tamano) {
-    return reservaService.listar(pagina, tamano);
-}
-```
-
-`GET /reservas?tamano=500` → `400 Bad Request`, porque `tamano` debe estar entre 1 y 100. La validación se explica con más detalle en el apartado 7.
 
 ---
 
@@ -1623,7 +1607,7 @@ public class ReservaController {
 }
 ```
 
-> **Cuidado con el orden de las rutas:** `/reservas/dia` y `/reservas/{id}` podrían parecer ambiguas, pero Spring elige siempre la ruta **más específica** (la que tiene menos variables), así que `/reservas/dia` va al método `delDia`. Aun así, como `id` es `long`, si `/dia` no existiera la petición acabaría en `buscar` con un `400` por no poder convertir `"dia"`. Para evitar confusiones puedes usar `/{id:\\d+}`.
+> **Cuidado con el orden de las rutas:** `/reservas/dia` y `/reservas/{id}` podrían parecer ambiguas, pero Spring elige siempre la ruta más específica (la que tiene menos variables), así que `/reservas/dia` va al método `delDia`. Aun así, como `id` es `long`, si `/dia` no existiera la petición acabaría en `buscar` con un `400` por no poder convertir `"dia"`. Para evitar confusiones puedes usar `/{id:\\d+}`.
 
 Prueba estas peticiones en Postman y comprueba qué valor recibe cada parámetro y qué código de estado se devuelve:
 
@@ -1667,7 +1651,7 @@ Para los errores esperados también se pueden lanzar excepciones que extienden `
 
 ### Actualizar (PUT)
 
-`PUT` actualiza o reemplaza un recurso identificado por su URL. Habitualmente, el cliente envía la representación completa que quiere guardar. Es **idempotente**: repetir la misma petición deja el recurso en el mismo estado final.
+`PUT` actualiza o reemplaza un recurso identificado por su URL. Habitualmente, el cliente envía la representación completa que quiere guardar. Es idempotente: repetir la misma petición deja el recurso en el mismo estado final.
 
 ```java
 @PutMapping("/{id}")
@@ -1701,35 +1685,91 @@ public ResponseEntity<Void> eliminar(@PathVariable long id) {
 
 `204 No Content` es una respuesta adecuada cuando el borrado se completa y no hace falta devolver un cuerpo.
 
-## 7. Validación y manejo de excepciones
+## 7. Manejo de excepciones
 
-### Validación de los datos de entrada
+### 7.1. Flujo de una excepción
 
-Para que los datos inválidos no lleguen a la lógica de negocio, se pueden añadir restricciones de Bean Validation a los DTOs (requiere la dependencia `spring-boot-starter-validation`), por ejemplo `@NotBlank`, `@Min` o `@Max`, y validar el cuerpo con `@Valid`:
+#### ¿Qué es una excepción?
+
+Una excepción es un objeto de Java que representa un error que impide continuar con la ejecución normal de un método. Se lanza con `throw`:
 
 ```java
-public record ReservaCrearDto(
-        @NotBlank String nombre,
-        @Min(9) @Max(19) int horaInicio,
-        @Min(1) int duracionHoras) {
+throw new IllegalArgumentException("La duración debe ser mayor que 0");
+```
+
+En el momento en que se lanza, el método se detiene (las líneas siguientes no se ejecutan) y la excepción sube al método que lo llamó, y de ahí al siguiente, hasta que alguno la captura con `try/catch`. Si ninguno la captura, llega hasta Spring.
+
+#### ¿Y qué es `ResponseEntity`?
+
+`ResponseEntity` ([apartado 1.1](#11-responseentity)) es la respuesta HTTP que recibe el cliente: código de estado, cabeceras y cuerpo. Una excepción y un `ResponseEntity` son cosas distintas:
+
+| | Excepción | `ResponseEntity` |
+|---|---|---|
+| Qué es | Un error dentro de la aplicación (Java) | La respuesta que sale hacia el cliente (HTTP) |
+| Quién la crea | Normalmente el servicio, con `throw` | El controlador, con `return` |
+| Quién la ve | El código Java de la aplicación | El cliente |
+
+El cliente nunca recibe una excepción: siempre recibe una respuesta HTTP. Por eso, cuando ocurre un error, hay que convertir la excepción en una respuesta con el código adecuado, sin exponer trazas, consultas internas ni detalles sensibles.
+
+#### El recorrido de una excepción
+
+<img src="assets/img/flujo-excepciones.svg" alt="Flujo de una excepción en una API Spring Boot" width="100%">
+
+1. El cliente envía la petición y el controlador la recibe.
+2. El controlador llama al servicio.
+3. El servicio comprueba las reglas y, si algo falla, lanza una excepción. El método del servicio se detiene y la excepción sube al controlador.
+4. La excepción se convierte en una respuesta HTTP de una de estas dos formas:
+   - A. El controlador la captura con `try/catch` y devuelve un `ResponseEntity` con el código que corresponda.
+   - B. Nadie la captura y llega a Spring. Si es una `ResponseStatusException` (o una clase que hereda de ella), Spring responde con el código que lleva; si es cualquier otra excepción, responde `500 Internal Server Error`.
+
+#### Qué hace cada capa
+
+| Capa | Qué hace | Qué no hace |
+|---|---|---|
+| Servicio | Comprueba las reglas de negocio y, si se incumple alguna, lanza la excepción que describe el problema (`throw`). | No construye `ResponseEntity` ni conoce los detalles de la petición HTTP. |
+| Controlador | Recibe la petición, llama al servicio y devuelve la respuesta. En la opción A, captura la excepción (`try/catch`) y la traduce a un `ResponseEntity`. | No comprueba reglas de negocio. |
+| Spring | Convierte en respuesta HTTP las excepciones que nadie ha capturado (opción B). | No sabe qué código corresponde a una excepción cualquiera: si no lo lleva, responde `500`. |
+
+#### Opción A: capturar la excepción en el controlador
+
+El servicio lanza una excepción normal de Java cuando no encuentra la reserva:
+
+```java
+public ReservaDto buscar(long id) {
+    ReservaDto reserva = reservas.get(id);
+    if (reserva == null) {
+        throw new NoSuchElementException("No existe la reserva " + id);
+    }
+    return reserva;
 }
 ```
 
+El controlador la captura y decide qué respuesta enviar:
+
 ```java
-@PostMapping
-public ResponseEntity<ReservaDto> crear(@Valid @RequestBody ReservaCrearDto entrada) {
-    return ResponseEntity.status(HttpStatus.CREATED)
-            .body(reservaService.crear(entrada));
+@GetMapping("/{id}")
+public ResponseEntity<ReservaDto> buscar(@PathVariable long id) {
+    try {
+        return ResponseEntity.ok(reservaService.buscar(id));
+    } catch (NoSuchElementException e) {
+        return ResponseEntity.notFound().build();
+    }
 }
 ```
 
-Si el cuerpo incumple alguna restricción, Spring responde automáticamente `400 Bad Request` sin ejecutar el método.
+Si el servicio devuelve la reserva, se ejecuta el `return` del `try` y el cliente recibe `200 OK`. Si lanza la excepción, el resto del `try` no se ejecuta, se pasa al `catch` y el cliente recibe `404 Not Found`.
 
-### Excepciones
+Funciona, pero cada método del controlador necesita un `try/catch` por cada tipo de error que pueda producirse.
 
-Las excepciones representan situaciones que impiden completar una operación. En una API, el servidor debe convertirlas en respuestas HTTP con el código adecuado, sin exponer trazas, consultas internas ni detalles sensibles.
+#### Opción B: dejar que Spring convierta la excepción
 
-Spring ofrece `ResponseStatusException`, una excepción que lleva asociado un código de estado HTTP. Si se lanza desde un controlador o un servicio, Spring responde directamente con ese código, sin necesidad de escribir ningún manejador. Para no repetir el código y el mensaje en cada punto, se crean excepciones propias que **extienden** `ResponseStatusException`:
+Si la excepción que lanza el servicio ya lleva asociado su código HTTP, el controlador no necesita ningún `try/catch`: Spring construye la respuesta con ese código. Es lo que se consigue con `ResponseStatusException` y con las excepciones propias que heredan de ella, que se explican en el siguiente apartado.
+
+> No captures `Exception` de forma genérica para ocultar los errores. Los errores inesperados (por ejemplo, un `NullPointerException`) deben terminar como `500 Internal Server Error` y corregirse en el código.
+
+### 7.2. Excepciones propias con `ResponseStatusException`
+
+Spring ofrece `ResponseStatusException`, una excepción que lleva asociado un código de estado HTTP. Si se lanza desde un controlador o un servicio, Spring responde directamente con ese código, sin necesidad de escribir ningún manejador. Para no repetir el código y el mensaje en cada punto, se crean excepciones propias que extienden `ResponseStatusException`:
 
 ```java
 public class RecursoNoEncontradoException extends ResponseStatusException {
@@ -1778,92 +1818,7 @@ Si `GET /reservas/99` no encuentra el recurso, la respuesta será `404 Not Found
 
 Asigna un código adecuado a cada error esperado (`400` para datos inválidos, `404` para recursos inexistentes, `409` para conflictos) y deja que los errores inesperados terminen como `500 Internal Server Error`.
 
-## 8. Inicio de sesión con Firebase Authentication
-
-Firebase Authentication permite que el cliente inicie sesión mediante los proveedores configurados (correo, Google u otros). El flujo recomendado para una API Spring es:
-
-1. El cliente autentica al usuario mediante el SDK de Firebase.
-2. Firebase devuelve un **ID token** firmado y de duración limitada.
-3. El cliente envía el token a Spring por HTTPS, normalmente en la cabecera `Authorization: Bearer <idToken>`.
-4. El backend verifica la firma, el emisor, el proyecto destinatario y la caducidad mediante **Firebase Admin SDK**.
-5. Solo después de validar el token se utiliza el UID o las reclamaciones verificadas para identificar al usuario y autorizar la operación.
-
-El backend **no** debe recibir ni almacenar la contraseña de Firebase. Un UID enviado en el cuerpo de la petición tampoco demuestra la identidad del usuario: la identidad se obtiene de las reclamaciones del token verificado.
-
-### DTO y servicio de verificación
-
-Para una demostración didáctica se puede enviar el ID token en el cuerpo. En una API protegida de producción es preferible validarlo en un filtro de seguridad desde la cabecera `Authorization`.
-
-```java
-public record LoginFirebaseDto(String idToken) {
-}
-
-public record UsuarioAutenticadoDto(String uid, String email) {
-}
-```
-
-El servicio encapsula la llamada al SDK:
-
-```java
-@Service
-public class FirebaseAuthService {
-    private final FirebaseAuth firebaseAuth;
-
-    @Autowired
-    public FirebaseAuthService(FirebaseAuth firebaseAuth) {
-        this.firebaseAuth = firebaseAuth;
-    }
-
-    public UsuarioAutenticadoDto verificar(String idToken) {
-        try {
-            FirebaseToken token = firebaseAuth.verifyIdToken(idToken);
-            return new UsuarioAutenticadoDto(token.getUid(), token.getEmail());
-        } catch (FirebaseAuthException e) {
-            throw new TokenInvalidoException();
-        }
-    }
-}
-```
-
-El bean `FirebaseAuth` debe inicializarse una sola vez al arrancar Spring y configurarse con credenciales de servidor. En local se pueden usar las credenciales de aplicación predeterminadas; en despliegues, utiliza la identidad de servicio del entorno. No incluyas archivos JSON de cuentas de servicio, claves privadas ni tokens en el repositorio.
-
-### Endpoint de ejemplo
-
-```java
-@RestController
-@RequestMapping("/auth")
-public class AuthController {
-    private final FirebaseAuthService firebaseAuthService;
-
-    @Autowired
-    public AuthController(FirebaseAuthService firebaseAuthService) {
-        this.firebaseAuthService = firebaseAuthService;
-    }
-
-    @PostMapping("/login")
-    public ResponseEntity<UsuarioAutenticadoDto> login(
-            @RequestBody LoginFirebaseDto entrada) {
-        return ResponseEntity.ok(
-                firebaseAuthService.verificar(entrada.idToken()));
-    }
-}
-```
-
-El servicio convierte los errores de verificación en una excepción propia que extiende `ResponseStatusException` con `401 Unauthorized`, sin exponer detalles internos del SDK:
-
-```java
-public class TokenInvalidoException extends ResponseStatusException {
-    public TokenInvalidoException() {
-        super(HttpStatus.UNAUTHORIZED, "El token de Firebase no es válido");
-    }
-}
-```
-
-El cliente obtiene el token con Firebase y lo envía a `POST /auth/login`. Si no se puede verificar, la aplicación responde con `401 Unauthorized`, no con un usuario vacío ni con `200 OK`. En una aplicación real también se protegen las rutas con Spring Security.
-
-La verificación del token autentica al usuario, pero no concede automáticamente todos los permisos. La autorización (por ejemplo, roles o acceso a un recurso propio) se decide en el backend utilizando reclamaciones verificadas y reglas de negocio. Usa siempre HTTPS y no registres tokens completos.
-
-## 9. Actividades
+## 8. Actividades
 
 ### Actividad 1: catálogo de productos con ResponseEntity
 
@@ -1929,21 +1884,21 @@ Debes crear la clase del modelo con todos los datos de la tabla anterior. Debe c
 - Un libro recién creado nunca está prestado.
 - Un libro solo puede prestarse si no está prestado, y solo puede devolverse si lo está.
 
-Piensa **dónde** debe vivir cada una de estas reglas.
+Piensa dónde debe vivir cada una de estas reglas.
 
 Diseña los DTOs que necesites. Como mínimo, la API debe tener:
 
-- Un DTO para **crear** un libro.
-- Un DTO para **mostrar** un libro con todos sus datos visibles.
-- Un DTO para los **listados**, más reducido que el anterior (solo `id` y `titulo`).
-- Un DTO para los **errores**, con un mensaje.
+- Un DTO para crear un libro.
+- Un DTO para mostrar un libro con todos sus datos visibles.
+- Un DTO para los listados, más reducido que el anterior (solo `id` y `titulo`).
+- Un DTO para los errores, con un mensaje.
 
 Condiciones:
 
 - El cliente no puede decidir el `id`, el estado de préstamo ni las notas internas al crear un libro.
 - `notasInternas` no debe aparecer en ninguna respuesta.
 
-Los libros se guardan **en memoria**. Los identificadores son numéricos, incrementales y empiezan en 1. Operaciones y reglas:
+Los libros se guardan en memoria. Los identificadores son numéricos, incrementales y empiezan en 1. Operaciones y reglas:
 
 | Operación | Regla |
 |---|---|
@@ -1953,7 +1908,7 @@ Los libros se guardan **en memoria**. Los identificadores son numéricos, increm
 | Prestar libro | El libro debe existir y no estar ya prestado. |
 | Devolver libro | El libro debe existir y estar prestado. |
 
-Ruta base `/libros`. El controlador **nunca recibe ni devuelve el modelo**: solo DTOs.
+Ruta base `/libros`. El controlador nunca recibe ni devuelve el modelo: solo DTOs.
 
 | Método | Ruta | Cuerpo | Respuesta correcta |
 |---|---|---|---|
@@ -2056,17 +2011,33 @@ Content-Type: application/json
 }
 ```
 
+### Actividad 3: calculadora con PathVariable y excepciones
+
+Crea un controlador con una única ruta que reciba dos números y una operación, y devuelva el resultado:
+
+`GET /calculadora/{operacion}/{numero1}/{numero2}`
+
+La operación puede ser `suma`, `resta`, `multiplicacion` o `division`. Por ejemplo, `GET /calculadora/suma/8/5` devuelve 13 y `GET /calculadora/division/9/2` devuelve 4.5.
+
+Reglas:
+
+- Los números no pueden ser negativos.
+- Los números deben estar entre 0 y 100.
+- No se puede dividir entre cero.
+
+Para cada uno de estos casos crea una excepción personalizada que devuelva `400 Bad Request` con un mensaje que explique el error.
+
 ---
 
-{% comment %}
+## 9. Actividades de ampliación
 
-## 10. Práctica 1: reservas de una sala
+### Ampliación 1: reservas de una sala
 
-### Objetivo
+#### Objetivo
 
 Construye una API REST para administrar las reservas de una única sala durante el día actual. Los datos permanecen en memoria; no hace falta conectar una base de datos.
 
-### Modelo y reglas
+#### Modelo y reglas
 
 Cada reserva incluye un identificador generado por el sistema, el nombre de quien reserva, una hora de inicio expresada como hora entera (por ejemplo, `9`, `14` o `18`) y una duración en horas.
 
@@ -2083,7 +2054,7 @@ y
 nuevoFin > reservaExistenteInicio
 ```
 
-### API solicitada
+#### API solicitada
 
 | Operación | Resultado esperado |
 |---|---|
@@ -2099,15 +2070,15 @@ Las horas disponibles se calculan sobre el intervalo de apertura (11 horas). Si 
 
 **Ampliación:** añade `PUT /reservas/{id}` para modificar una reserva y vuelve a comprobar las reglas de horario y solapamiento sin considerar la reserva que se está editando como conflicto consigo misma.
 
-## 11. Práctica 2: estrategias de facturación
+### Ampliación 2: estrategias de facturación
 
-### Objetivo
+#### Objetivo
 
 Crea `POST /compra` para recibir un carrito JSON, calcular su factura y devolverla como JSON. No se guarda el carrito. El periodo promocional selecciona una política de cálculo.
 
 Diseña al menos un `CarritoDto`, un DTO de línea de producto y un `FacturaDto`. La factura debe incluir los importes necesarios para justificar el total, como subtotal, descuentos, coste de envío y total final. Define una interfaz de estrategia, por ejemplo `PromocionStrategy`, con un código de periodo y una operación que calcule la factura a partir del carrito.
 
-### Periodos y reglas
+#### Periodos y reglas
 
 - **STANDARD:** sin descuento por categoría. Cuando el subtotal supera los 1.000 €, se aplica un 5 % al total de productos. El envío cuesta 10 €, o 20 € si el peso total supera los 20 kg.
 - **SUMMER:** 20 % de descuento en ropa y 15 % en juguetes. Si hay al menos dos unidades de comida, la unidad de menor valor se ofrece gratis. El envío cuesta 5 €.
@@ -2115,7 +2086,7 @@ Diseña al menos un `CarritoDto`, un DTO de línea de producto y un `FacturaDto`
 
 Define y documenta claramente cómo se combinan los descuentos, el envío y el redondeo monetario; utiliza `BigDecimal` para representar importes en vez de `float` o `double`.
 
-### Selección de la estrategia
+#### Selección de la estrategia
 
 El controlador no debe contener un `if/else` o `switch` para escoger las reglas. Cada estrategia se registra como bean Spring y el servicio recibe todas las implementaciones por inyección. El servicio localiza la que corresponde al periodo y ejecuta su cálculo.
 
@@ -2137,20 +2108,20 @@ POST /compra?periodo=BLACK_FRIDAY
 
 El cuerpo JSON representa el carrito. El controlador delega el cálculo en un servicio, que selecciona e invoca la estrategia. Así, añadir un nuevo periodo no requiere añadir ramas condicionales al controlador.
 
-## 12. Práctica 3: telemetría de un rover
+### Ampliación 3: telemetría de un rover
 
-### Objetivo y configuración
+#### Objetivo y configuración
 
-Implementa una API para desplegar un rover, recibir órdenes de movimiento y consultar su estado. En esta práctica no se usa una base de datos externa: cada operador mantiene el estado temporal en su sesión HTTP.
+Implementa una API para desplegar un rover, recibir órdenes de movimiento y consultar su estado. En esta ampliación no se usa una base de datos externa: cada operador mantiene el estado temporal en su sesión HTTP.
 
 Al iniciar la aplicación, carga `config.json` desde `src/main/resources`. La configuración incluye:
 
 - `tamanoMapa`: lado del terreno cuadrado, con coordenadas válidas entre 0 y 50.
 - `zonasRestringidas`: posiciones de cráteres en las que no puede entrar el rover.
 - `tokenSeguridad`: valor que debe presentar una orden de movimiento.
-- Batería inicial y coste de cada movimiento, según los campos que se definan para la práctica.
+- Batería inicial y coste de cada movimiento, según los campos que se definan para la ampliación.
 
-### Operaciones y comprobaciones
+#### Operaciones y comprobaciones
 
 **Despliegue:** reinicia la sesión del operador, coloca el rover en `(0, 0)` y asigna la batería inicial. Devuelve `200 OK` y el estado inicial.
 
@@ -2167,12 +2138,3 @@ Al iniciar la aplicación, carga `config.json` desde `src/main/resources`. La co
 **Consulta:** devuelve `200 OK` con la telemetría actual o `404 Not Found` si todavía no hay rover desplegado en esa sesión.
 
 El DTO de telemetría puede incluir posición, batería y estado de destrucción. El servicio debe aplicar las reglas de movimiento; el controlador se limita a traducir la petición en una llamada y a elegir la respuesta HTTP correspondiente.
-
-## Actividades de ampliación
-
-1. Usa Postman o el cliente HTTP del IDE para probar cada endpoint. Registra el método, URL, cuerpo, estado HTTP y respuesta.
-2. Añade validación de entrada a los DTOs y respuestas consistentes para los errores.
-3. Crea excepciones propias que extiendan `ResponseStatusException` para los errores de las prácticas.
-4. Protege una ruta con Firebase Authentication y comprueba que las peticiones con token inválido reciben `401`.
-5. Escribe pruebas unitarias para servicios y estrategias, y pruebas de integración para los estados HTTP.
-{% endcomment %}

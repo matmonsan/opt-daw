@@ -151,8 +151,6 @@ Añadid la dependencia Validation (`spring-boot-starter-validation`) para que la
 
 Bean Validation comprueba el formato de los datos; las reglas de negocio (SKU único, stock suficiente, transiciones de estado...) siguen en los servicios.
 
-Material de referencia: [apartado 7 de los apuntes](../../aplicaciones.md#validación-de-los-datos-de-entrada).
-
 ### 9. Investigación: importar pedidos desde Google Sheets
 {: .investigacion}
 
