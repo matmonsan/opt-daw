@@ -17,8 +17,6 @@ description: "<strong>Módulo: </strong>Programación Web Avanzada <br> <strong>
 5. [Parámetros de ruta y de consulta](#5-parámetros-de-ruta-y-de-consulta)
 6. [Operaciones CRUD](#6-operaciones-crud)
 7. [Manejo de excepciones](#7-manejo-de-excepciones)
-    - [7.1 Flujo de una excepción](#71-flujo-de-una-excepción)
-    - [7.2 Excepciones propias con `ResponseStatusException`](#72-excepciones-propias-con-responsestatusexception)
 8. [Actividades](#8-actividades)
     - [Actividad 1: catálogo de productos con ResponseEntity](#actividad-1-catálogo-de-productos-con-responseentity)
     - [Actividad 2: API de biblioteca con DTOs y modelos](#actividad-2-api-de-biblioteca-con-dtos-y-modelos)
@@ -1795,7 +1793,7 @@ public class DatosNoValidosException extends ResponseStatusException {
 }
 ```
 
-El servicio lanza la excepción cuando se incumple una regla de negocio y el controlador no necesita ningún `if` ni `try/catch`:
+El servicio lanza la excepción cuando se incumple una regla de negocio. El controlador devuelve siempre un `ResponseEntity` con la respuesta correcta y no necesita ningún `if` ni `try/catch`: si el servicio lanza la excepción, el `return` no llega a ejecutarse y Spring responde con el código de la excepción.
 
 ```java
 public ReservaDto buscar(long id) {
@@ -1809,12 +1807,31 @@ public ReservaDto buscar(long id) {
 
 ```java
 @GetMapping("/{id}")
-public ReservaDto buscar(@PathVariable long id) {
-    return reservaService.buscar(id);
+public ResponseEntity<ReservaDto> buscar(@PathVariable long id) {
+    return ResponseEntity.ok(reservaService.buscar(id));
 }
 ```
 
-Si `GET /reservas/99` no encuentra el recurso, la respuesta será `404 Not Found`. El mensaje de la excepción queda disponible como motivo del error; según la configuración de Spring Boot (`server.error.include-message`) puede no incluirse en el cuerpo de la respuesta, lo cual es lo recomendable para no exponer información interna.
+Si `GET /reservas/1` existe, la respuesta será `200 OK` con la reserva. Si `GET /reservas/99` no encuentra el recurso, la respuesta será `404 Not Found`. El mensaje de la excepción queda disponible como motivo del error; según la configuración de Spring Boot (`server.error.include-message`) puede no incluirse en el cuerpo de la respuesta, lo cual es lo recomendable para no exponer información interna.
+
+#### ¿Por qué no hace falta `try/catch`?
+
+Porque la excepción sí se captura, pero no lo hace nuestro código, sino Spring:
+
+<img src="assets/img/flujo-excepciones-propias.svg" alt="Flujo de una excepción personalizada que hereda de ResponseStatusException" width="100%">
+
+1. El servicio lanza la excepción y esta sube al controlador.
+2. Como el controlador no la captura, el método del controlador también se interrumpe y la excepción sale de él.
+3. Quien había llamado al método del controlador es Spring, que ejecuta cada petición dentro de su propio `try/catch`. Ahí la recibe.
+4. Spring comprueba de qué tipo es la excepción. Si es una `ResponseStatusException` (o hereda de ella), lee el código de estado y el mensaje que lleva dentro y construye con ellos la respuesta HTTP. Si es cualquier otra excepción, no sabe qué código corresponde y responde `500 Internal Server Error`.
+
+Por eso es importante que las excepciones personalizadas hereden de `ResponseStatusException`: el código HTTP viaja dentro de la propia excepción, y Spring ya sabe convertirla en respuesta. En el controlador solo se escribe el caso correcto (`return ResponseEntity.ok(...)`), y los errores se resuelven solos.
+
+| Excepción lanzada | ¿Necesita `try/catch` en el controlador? | Respuesta |
+|---|---|---|
+| Excepción propia que hereda de `ResponseStatusException` | No | El código que lleva la excepción (`404`, `409`...) |
+| Excepción de Java sin código HTTP (por ejemplo, `NoSuchElementException`) | Sí, si queremos un código distinto de `500` | La que devuelva el `catch` (opción A del [apartado 7.1](#71-flujo-de-una-excepción)) |
+| Error inesperado (por ejemplo, `NullPointerException`) | No: no se debe capturar | `500 Internal Server Error` |
 
 Asigna un código adecuado a cada error esperado (`400` para datos inválidos, `404` para recursos inexistentes, `409` para conflictos) y deja que los errores inesperados terminen como `500 Internal Server Error`.
 
