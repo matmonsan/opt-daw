@@ -23,8 +23,7 @@ description: "<strong>Módulo: </strong>Programación Web Avanzada <br> <strong>
     - [Actividad 3: calculadora con PathVariable y excepciones](#actividad-3-calculadora-con-pathvariable-y-excepciones)
 9. [Actividades de ampliación](#9-actividades-de-ampliación)
     - [Ampliación 1: reservas de una sala](#ampliación-1-reservas-de-una-sala)
-    - [Ampliación 2: estrategias de facturación](#ampliación-2-estrategias-de-facturación)
-    - [Ampliación 3: telemetría de un rover](#ampliación-3-telemetría-de-un-rover)
+    - [Ampliación 2: telemetría de un rover](#ampliación-2-telemetría-de-un-rover)
 
 ## 1. HTTP y APIs REST
 
@@ -2087,45 +2086,7 @@ Las horas disponibles se calculan sobre el intervalo de apertura (11 horas). Si 
 
 **Ampliación:** añade `PUT /reservas/{id}` para modificar una reserva y vuelve a comprobar las reglas de horario y solapamiento sin considerar la reserva que se está editando como conflicto consigo misma.
 
-### Ampliación 2: estrategias de facturación
-
-#### Objetivo
-
-Crea `POST /compra` para recibir un carrito JSON, calcular su factura y devolverla como JSON. No se guarda el carrito. El periodo promocional selecciona una política de cálculo.
-
-Diseña al menos un `CarritoDto`, un DTO de línea de producto y un `FacturaDto`. La factura debe incluir los importes necesarios para justificar el total, como subtotal, descuentos, coste de envío y total final. Define una interfaz de estrategia, por ejemplo `PromocionStrategy`, con un código de periodo y una operación que calcule la factura a partir del carrito.
-
-#### Periodos y reglas
-
-- **STANDARD:** sin descuento por categoría. Cuando el subtotal supera los 1.000 €, se aplica un 5 % al total de productos. El envío cuesta 10 €, o 20 € si el peso total supera los 20 kg.
-- **SUMMER:** 20 % de descuento en ropa y 15 % en juguetes. Si hay al menos dos unidades de comida, la unidad de menor valor se ofrece gratis. El envío cuesta 5 €.
-- **BLACK_FRIDAY:** por cada pareja de unidades de un mismo producto, una se cobra a precio completo y la otra tiene un 50 % de descuento; en grupos impares, la unidad sobrante se cobra completa. Si hay más de cinco productos distintos, aplica un 10 % adicional al total de productos. El envío es gratuito.
-
-Define y documenta claramente cómo se combinan los descuentos, el envío y el redondeo monetario; utiliza `BigDecimal` para representar importes en vez de `float` o `double`.
-
-#### Selección de la estrategia
-
-El controlador no debe contener un `if/else` o `switch` para escoger las reglas. Cada estrategia se registra como bean Spring y el servicio recibe todas las implementaciones por inyección. El servicio localiza la que corresponde al periodo y ejecuta su cálculo.
-
-Una opción es asociar cada estrategia a un código (`STANDARD`, `SUMMER`, `BLACK_FRIDAY`) y construir un mapa al inicializar el servicio. Si el código no existe, la API debe devolver `400 Bad Request` con un error claro.
-
-```java
-public interface PromocionStrategy {
-    String codigo();
-    FacturaDto calcular(CarritoDto carrito);
-}
-```
-
-El endpoint puede recibir el periodo como parámetro de consulta:
-
-```text
-POST /compra?periodo=SUMMER
-POST /compra?periodo=BLACK_FRIDAY
-```
-
-El cuerpo JSON representa el carrito. El controlador delega el cálculo en un servicio, que selecciona e invoca la estrategia. Así, añadir un nuevo periodo no requiere añadir ramas condicionales al controlador.
-
-### Ampliación 3: telemetría de un rover
+### Ampliación 2: telemetría de un rover
 
 #### Objetivo y configuración
 
