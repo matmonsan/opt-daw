@@ -13,3 +13,4 @@ description: "<strong>Profesor:</strong> Matías Montávez Sánchez"
 - [Introducción a la programación web del lado del servidor](introduccion.md)
 - [Arquitecturas y tecnologías en la programación Web](arquitecturas.md)
 - [Aplicaciones Spring Boot: HTTP, API REST, servicios, DTOs y excepciones](aplicaciones.md)
+- [Gestión de datos con Spring Data JPA](spring-data-jpa.md)
