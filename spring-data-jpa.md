@@ -23,7 +23,7 @@ description: "<strong>Módulo: </strong>Programación Web Avanzada <br> <strong>
     - [Actividad 3: calificaciones con clave compuesta](#actividad-3-calificaciones-con-clave-compuesta)
     - [Actividad 4: contratos con Lombok](#actividad-4-contratos-con-lombok)
     - [Actividad 5: entidades completas de la tienda](#actividad-5-entidades-completas-de-la-tienda)
-    - [Actividad 6: repositorios y controladores CRUD](#actividad-6-repositorios-y-controladores-crud)
+    - [Actividad 6: repositorios, servicios y controladores CRUD](#actividad-6-repositorios-servicios-y-controladores-crud)
     - [Actividad 7: nombres de Query Methods](#actividad-7-nombres-de-query-methods)
     - [Actividad 8: consultas personalizadas de la tienda](#actividad-8-consultas-personalizadas-de-la-tienda)
     - [Actividad 9: relaciones entre entidades](#actividad-9-relaciones-entre-entidades)
@@ -31,32 +31,32 @@ description: "<strong>Módulo: </strong>Programación Web Avanzada <br> <strong>
 
 ## 1. Introducción
 
-**Spring Data JPA** es un módulo de Spring que simplifica el acceso y la gestión de datos en aplicaciones Java. Proporciona una capa de abstracción sobre **JPA** (*Java Persistence API*) que permite trabajar con bases de datos relacionales sin escribir código repetitivo.
+Spring Data JPA es un módulo de Spring que simplifica el acceso y la gestión de datos en aplicaciones Java. Proporciona una capa de abstracción sobre JPA (*Java Persistence API*) que permite trabajar con bases de datos relacionales sin escribir código repetitivo.
 
 Hasta ahora, en las APIs de las unidades anteriores, los datos se guardaban en memoria (en una `List` o un `Map` dentro del servicio) y se perdían al reiniciar la aplicación. Con Spring Data JPA los datos se guardan en una base de datos real.
 
 ### 1.1. ¿Qué es JPA?
 
-JPA es una **especificación** de Java que define cómo manejar datos relacionales utilizando objetos. Permite mapear clases Java a tablas de bases de datos y facilita las operaciones de persistencia (guardar, leer, actualizar y borrar).
+JPA es una especificación de Java que define cómo manejar datos relacionales utilizando objetos. Permite mapear clases Java a tablas de bases de datos y facilita las operaciones de persistencia (guardar, leer, actualizar y borrar).
 
 Conviene distinguir tres piezas que suelen confundirse:
 
 | Pieza | Qué es | Papel |
 |---|---|---|
-| **JPA** | Especificación (un conjunto de interfaces y anotaciones) | Define *qué* se puede hacer: `@Entity`, `@Id`, `@Column`... |
-| **Hibernate** | Implementación de JPA (el motor) | Hace el trabajo real: genera el SQL, lo ejecuta y convierte filas en objetos |
-| **Spring Data JPA** | Módulo de Spring sobre JPA | Genera automáticamente los repositorios y las consultas |
+| JPA | Especificación (un conjunto de interfaces y anotaciones) | Define *qué* se puede hacer: `@Entity`, `@Id`, `@Column`... |
+| Hibernate | Implementación de JPA (el motor) | Hace el trabajo real: genera el SQL, lo ejecuta y convierte filas en objetos |
+| Spring Data JPA | Módulo de Spring sobre JPA | Genera automáticamente los repositorios y las consultas |
 
 Spring Boot usa Hibernate como implementación por defecto, por eso en la consola verás mensajes que empiezan por `Hibernate:`.
 
 ### 1.2. ORM: del modelo relacional al orientado a objetos
 
-JPA es un **ORM** (*Object-Relational Mapping*, mapeo objeto-relacional). Resuelve un problema conocido como *impedance mismatch* (desajuste de impedancia):
+JPA es un ORM (*Object-Relational Mapping*, mapeo objeto-relacional). Resuelve un problema conocido como *impedance mismatch* (desajuste de impedancia):
 
-- Las bases de datos trabajan con **tablas, filas y claves foráneas**.
-- Java trabaja con **clases, objetos y referencias**.
+- Las bases de datos trabajan con tablas, filas y claves foráneas.
+- Java trabaja con clases, objetos y referencias.
 
-Una **entidad** es el puente entre ambos mundos: cada objeto de la clase representa una fila de la tabla.
+Una entidad es el puente entre ambos mundos: cada objeto de la clase representa una fila de la tabla.
 
 | Modelo relacional | Modelo orientado a objetos |
 |---|---|
@@ -85,11 +85,11 @@ Al crear el proyecto con [Spring Initializr](https://start.spring.io/) añade es
 
 | Dependencia | Para qué sirve |
 |---|---|
-| **Spring Web** | Crear controladores REST |
-| **Spring Data JPA** | Persistencia con JPA y Hibernate |
-| **MySQL Driver** | Conectar con MySQL o MariaDB (también hay drivers para PostgreSQL, Oracle, SQL Server, H2...) |
-| **Validation** | Validar los datos de los objetos (Bean Validation) |
-| **Lombok** | Opcional, pero recomendado para no escribir getters, setters y constructores |
+| Spring Web | Crear controladores REST |
+| Spring Data JPA | Persistencia con JPA y Hibernate |
+| MySQL Driver | Conectar con MySQL o MariaDB (también hay drivers para PostgreSQL, Oracle, SQL Server, H2...) |
+| Validation | Validar los datos de los objetos (Bean Validation) |
+| Lombok | Opcional, pero recomendado para no escribir getters, setters y constructores |
 
 Si el proyecto ya existe, se pueden añadir a mano en el `pom.xml`:
 
@@ -127,17 +127,31 @@ Si el proyecto ya existe, se pueden añadir a mano en el `pom.xml`:
 
 ### 2.2. Crear la base de datos
 
-Trabajaremos con **XAMPP**, que incluye MariaDB (compatible con MySQL) y phpMyAdmin.
+Trabajaremos con XAMPP, que incluye MariaDB (compatible con MySQL) y phpMyAdmin. Se descarga desde la web oficial de Apache Friends: [https://www.apachefriends.org/download.html](https://www.apachefriends.org/download.html). Para Windows basta con el instalador de la versión más reciente; durante la instalación se pueden dejar marcados los componentes por defecto (al menos Apache, MySQL y phpMyAdmin).
 
-1. Abre el **XAMPP Control Panel** y pulsa **Start** en los módulos **Apache** (necesario para phpMyAdmin) y **MySQL**. MySQL debe quedar en verde escuchando en el puerto **3306**.
+Al terminar la instalación, si abres `http://localhost` con Apache arrancado aparece la página de bienvenida de XAMPP, que confirma que todo funciona:
+
+![Página de inicio de XAMPP](./assets/img/xampp-inicio.jpg)
+
+*Página de inicio de XAMPP. Fuente: [documentación oficial de Apache Friends](https://www.apachefriends.org/faq_windows.html).*
+
+Para crear la base de datos:
+
+1. Abre el XAMPP Control Panel y pulsa Start en los módulos Apache (necesario para phpMyAdmin) y MySQL. MySQL debe quedar en verde escuchando en el puerto 3306.
 2. Abre `http://localhost/phpmyadmin`.
-3. En la pestaña **Bases de datos**, escribe `tienda_db`, elige el cotejamiento `utf8mb4_general_ci` y pulsa **Crear**.
+3. En la pestaña Bases de datos, escribe `tienda_db`, elige el cotejamiento `utf8mb4_general_ci` y pulsa Crear.
 
-También se puede crear desde la pestaña **SQL** de phpMyAdmin:
+También se puede crear desde la pestaña SQL de phpMyAdmin:
 
 ```sql
 CREATE DATABASE tienda_db CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
 ```
+
+En phpMyAdmin, el panel izquierdo muestra las bases de datos y sus tablas. Al seleccionar una tabla, la pestaña Estructura enseña sus columnas, tipos, claves e índices. Es la vista que usaremos para comprobar qué tablas ha creado Hibernate a partir de las entidades:
+
+![Estructura de una tabla en phpMyAdmin](./assets/img/phpmyadmin-estructura.png)
+
+*Vista de la estructura de una tabla en phpMyAdmin. Fuente: [web oficial de phpMyAdmin](https://www.phpmyadmin.net/try/).*
 
 > MariaDB es compatible con MySQL, así que el driver de MySQL sirve para conectarse a la base de datos de XAMPP.
 
@@ -168,14 +182,14 @@ spring.mvc.problemdetails.enabled=true
 
 - `createDatabaseIfNotExist=true` crea la base de datos si no existe, así que crearla en phpMyAdmin es opcional.
 - `serverTimezone=Europe/Madrid` evita desfases de hora al guardar fechas.
-- En XAMPP el usuario es `root` y **no tiene contraseña** por defecto, por eso `spring.datasource.password` se deja vacío. Si se la has puesto, escríbela ahí.
+- En XAMPP el usuario es `root` y no tiene contraseña por defecto, por eso `spring.datasource.password` se deja vacío. Si se la has puesto, escríbela ahí.
 - Si cambiaste el puerto de MySQL en XAMPP (por ejemplo, a 3307 porque el 3306 estaba ocupado), cámbialo también en la URL.
 
 #### Errores habituales con XAMPP
 
 | Error al arrancar | Causa | Solución |
 |---|---|---|
-| `Communications link failure` | MySQL no está arrancado en XAMPP | Pulsa **Start** en el módulo MySQL |
+| `Communications link failure` | MySQL no está arrancado en XAMPP | Pulsa Start en el módulo MySQL |
 | `Access denied for user 'root'@'localhost'` | Contraseña incorrecta | Revisa `spring.datasource.password` |
 | `Unknown database 'tienda_db'` | La base de datos no existe | Créala en phpMyAdmin o añade `createDatabaseIfNotExist=true` |
 | MySQL no arranca en XAMPP (puerto 3306 en uso) | Hay otro MySQL instalado en el equipo | Detén el otro servicio o cambia el puerto en XAMPP y en la URL |
@@ -194,7 +208,22 @@ La propiedad `spring.jpa.hibernate.ddl-auto` decide qué hace Hibernate con las 
 
 ## 3. Primer ejemplo completo
 
-Vamos a crear una API mínima que guarde y liste usuarios. Necesitamos tres piezas: entidad, repositorio y controlador.
+Vamos a crear una API mínima que guarde y liste usuarios. Trabajaremos con la arquitectura en tres capas vista en [Aplicaciones Spring Boot](aplicaciones.md), ahora completa con el repositorio:
+
+```text
+Cliente ──► Controlador ──► Servicio ──► Repositorio ──► Base de datos
+            (@RestController) (@Service)  (@Repository)
+```
+
+| Capa | Responsabilidad |
+|---|---|
+| Controlador | Recibe las peticiones HTTP, llama al servicio y devuelve la respuesta |
+| Servicio | Contiene la lógica de negocio y usa el repositorio para acceder a los datos |
+| Repositorio | Lee y guarda las entidades en la base de datos |
+
+Cada capa solo habla con la siguiente: el controlador nunca usa el repositorio directamente. Spring crea un objeto de cada capa y lo inyecta en la capa anterior con `@Autowired`.
+
+Además de las tres capas necesitamos la entidad, que representa los datos que viajan entre ellas.
 
 ### 3.1. La entidad
 
@@ -253,35 +282,89 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
 }
 ```
 
-`JpaRepository<Usuario, Long>` recibe dos tipos: la **entidad** que gestiona y el **tipo de su clave primaria**. No hay que implementar la interfaz: Spring crea la implementación al arrancar.
+`JpaRepository<Usuario, Long>` recibe dos tipos: la entidad que gestiona y el tipo de su clave primaria. No hay que implementar la interfaz: Spring crea la implementación al arrancar.
 
-### 3.3. El controlador
+### 3.3. El servicio
 
-Crea `controller/UsuarioController.java`:
+El servicio recibe el repositorio con `@Autowired` y ofrece las operaciones que necesita la aplicación. Crea el paquete `service` y la clase `UsuarioService`:
 
 ```java
-@RestController
-@RequestMapping("/api/usuarios")
-public class UsuarioController {
+package com.example.tienda.service;
+
+import com.example.tienda.model.Usuario;
+import com.example.tienda.repository.UsuarioRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
+
+@Service
+public class UsuarioService {
 
     @Autowired
     private UsuarioRepository usuarioRepository;
 
-    @GetMapping
-    public List<Usuario> obtenerTodos() {
+    public List<Usuario> listarTodos() {
         return usuarioRepository.findAll();
     }
 
-    @PostMapping
-    public Usuario guardarUsuario(@RequestBody Usuario usuario) {
+    public Usuario guardar(Usuario usuario) {
         return usuarioRepository.save(usuario);
     }
 }
 ```
 
-> Para simplificar, este primer ejemplo usa la entidad directamente en el controlador y sin capa de servicio. En un proyecto real se aplica lo visto en [Aplicaciones Spring Boot](aplicaciones.md): **controlador → servicio → repositorio**, y DTOs en la API.
+De momento el servicio solo pasa las llamadas al repositorio. Más adelante es donde se añaden las comprobaciones y reglas de negocio (por ejemplo, no permitir dos usuarios con el mismo email), sin tocar el controlador.
 
-### 3.4. Prueba
+### 3.4. El controlador
+
+El controlador recibe el servicio con `@Autowired`. Crea el paquete `controller` y la clase `UsuarioController`:
+
+```java
+package com.example.tienda.controller;
+
+import com.example.tienda.model.Usuario;
+import com.example.tienda.service.UsuarioService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+
+@RestController
+@RequestMapping("/api/usuarios")
+public class UsuarioController {
+
+    @Autowired
+    private UsuarioService usuarioService;
+
+    @GetMapping
+    public List<Usuario> obtenerTodos() {
+        return usuarioService.listarTodos();
+    }
+
+    @PostMapping
+    public Usuario guardarUsuario(@RequestBody Usuario usuario) {
+        return usuarioService.guardar(usuario);
+    }
+}
+```
+
+La estructura de paquetes queda así:
+
+```text
+com.example.tienda
+├── TiendaApplication.java
+├── model
+│   └── Usuario.java
+├── repository
+│   └── UsuarioRepository.java
+├── service
+│   └── UsuarioService.java
+└── controller
+    └── UsuarioController.java
+```
+
+### 3.5. Prueba
 
 1. **Ejecuta la aplicación.** Como la tabla no existe, Hibernate la crea y lo muestra en la consola:
 
@@ -329,7 +412,7 @@ public class UsuarioController {
 
 - Marca la clase como una entidad gestionada por el contexto de persistencia.
 - Su atributo `name` es el nombre de la entidad; por defecto, el nombre de la clase.
-- La clase **debe tener un constructor vacío** (`public` o `protected`) para que Hibernate pueda instanciarla mediante reflexión.
+- La clase debe tener un constructor vacío (`public` o `protected`) para que Hibernate pueda instanciarla mediante reflexión.
 
 #### @Table
 
@@ -375,7 +458,7 @@ public class Usuario {
 
 #### Otras anotaciones útiles
 
-- `@Transient`: el atributo **no** se guarda en la base de datos (por ejemplo, un dato calculado o temporal).
+- `@Transient`: el atributo no se guarda en la base de datos (por ejemplo, un dato calculado o temporal).
 - `@Enumerated(EnumType.STRING)`: guarda un `enum` como texto (`"ACTIVO"`). Sin ella se guarda su posición (`0`, `1`...), y añadir o reordenar valores del `enum` corrompería los datos existentes.
 - `@Lob`: para textos o binarios muy largos (`TEXT`, `BLOB`).
 
@@ -466,7 +549,7 @@ public enum EstadoEmpleado {
 
 ### 4.4. Claves primarias compuestas
 
-Una clave primaria compuesta está formada por varias columnas. No basta con poner `@Id` dos veces: hay que crear una **clase auxiliar** que represente la combinación. Esta clase debe:
+Una clave primaria compuesta está formada por varias columnas. No basta con poner `@Id` dos veces: hay que crear una clase auxiliar que represente la combinación. Esta clase debe:
 
 - Estar anotada con `@Embeddable`.
 - Implementar `Serializable`.
@@ -530,8 +613,8 @@ Hay dos niveles de validación que se complementan:
 
 | Nivel | Dónde actúa | Herramienta | Ejemplo |
 |---|---|---|---|
-| **Físico** | En la estructura de la base de datos | `@Column`, `@Check` | `NOT NULL`, `VARCHAR(50)`, `UNIQUE` |
-| **Lógico** | En Java, antes de llegar a la base de datos | Bean Validation (`@NotBlank`, `@Email`...) | «El email debe tener un formato válido» |
+| Físico | En la estructura de la base de datos | `@Column`, `@Check` | `NOT NULL`, `VARCHAR(50)`, `UNIQUE` |
+| Lógico | En Java, antes de llegar a la base de datos | Bean Validation (`@NotBlank`, `@Email`...) | «El email debe tener un formato válido» |
 
 ### 5.1. Restricciones físicas con @Column
 
@@ -593,7 +676,7 @@ Genera en el DDL algo como `CHECK (precio > 0 AND stock >= 0)`. Si se intenta in
 
 ### 5.3. Validación lógica con Bean Validation
 
-Con la dependencia **Validation** se pueden anotar los atributos con reglas que se comprueban en Java:
+Con la dependencia Validation se pueden anotar los atributos con reglas que se comprueban en Java:
 
 | Anotación | Regla |
 |---|---|
@@ -629,12 +712,12 @@ private String email;
 private String password;
 ```
 
-Para que el controlador valide el cuerpo de la petición se añade `@Valid`. Si alguna regla falla, Spring responde `400 Bad Request` automáticamente:
+Para que el controlador valide el cuerpo de la petición se añade `@Valid`. Si alguna regla falla, Spring responde `400 Bad Request` automáticamente y la petición no llega al servicio:
 
 ```java
 @PostMapping
 public ResponseEntity<Usuario> crear(@Valid @RequestBody Usuario usuario) {
-    return ResponseEntity.status(HttpStatus.CREATED).body(usuarioRepository.save(usuario));
+    return ResponseEntity.status(HttpStatus.CREATED).body(usuarioService.guardar(usuario));
 }
 ```
 
@@ -675,7 +758,10 @@ El objeto está sincronizado con una fila de la base de datos.
 - **Comportamiento:** si modificas un atributo (`setNombre(...)`) dentro de una transacción, Hibernate detecta el cambio y, al terminar la transacción, ejecuta automáticamente el `UPDATE`. No hace falta volver a llamar a `save()`. Esto se conoce como *dirty checking*.
 - **Código:** `usuarioRepository.save(u);` o `usuarioRepository.findById(1L);`
 
+Las transacciones se gestionan en la capa de servicio, anotando el método con `@Transactional`:
+
 ```java
+// Método de UsuarioService
 @Transactional
 public void renombrar(Long id, String nuevoNombre) {
     Usuario u = usuarioRepository.findById(id).orElseThrow();
@@ -711,11 +797,11 @@ Lombok es una librería que elimina el código repetitivo. Con JPA es especialme
 
 #### ¿Cómo funciona?
 
-Lombok actúa **en tiempo de compilación**: a partir de sus anotaciones genera los métodos directamente en los archivos `.class`. El código fuente queda limpio, pero el compilado contiene todo lo que Java y JPA necesitan.
+Lombok actúa en tiempo de compilación: a partir de sus anotaciones genera los métodos directamente en los archivos `.class`. El código fuente queda limpio, pero el compilado contiene todo lo que Java y JPA necesitan.
 
 #### Dependencia
 
-Se añade desde Spring Initializr (**Lombok**, en *Developer Tools*) o en el `pom.xml`:
+Se añade desde Spring Initializr (Lombok, en *Developer Tools*) o en el `pom.xml`:
 
 ```xml
 <dependency>
@@ -823,7 +909,7 @@ public class Categoria {
 }
 ```
 
-Lombok no sustituye a JPA ni a la validación: **limpia el ruido**. De un vistazo se ven las restricciones de la base de datos y las reglas de validación, sin hacer *scroll* entre decenas de métodos generados.
+Lombok no sustituye a JPA ni a la validación: limpia el ruido. De un vistazo se ven las restricciones de la base de datos y las reglas de validación, sin hacer *scroll* entre decenas de métodos generados.
 
 ---
 
@@ -853,6 +939,8 @@ public interface ProductoRepository extends JpaRepository<Producto, Long> {
 }
 ```
 
+En la arquitectura en tres capas, el repositorio solo se usa desde el servicio.
+
 #### Ventajas de los repositorios
 
 - **Abstracción:** separa la lógica de negocio del acceso físico a los datos.
@@ -862,70 +950,82 @@ public interface ProductoRepository extends JpaRepository<Producto, Long> {
 - **Testabilidad:** se puede simular (*mock*) la capa de persistencia en pruebas unitarias.
 - **Mantenibilidad:** centraliza el acceso a cada entidad en un solo lugar.
 
-#### Uso desde un servicio
+Otros métodos heredados útiles: `existsById(id)`, `count()`, `saveAll(lista)`, `delete(entity)` y `findAll(Sort.by("precio"))`.
+
+### 8.3. El servicio
+
+El servicio es la única clase que usa el repositorio. Lo recibe con `@Autowired` y ofrece una operación por cada caso de uso:
 
 ```java
 @Service
 public class ProductoService {
 
-    private final ProductoRepository repository;
+    @Autowired
+    private ProductoRepository productoRepository;
 
-    public ProductoService(ProductoRepository repository) {
-        this.repository = repository;
+    // Crear
+    public Producto crear(Producto producto) {
+        return productoRepository.save(producto);
     }
 
-    // Crear o actualizar (si el ID existe)
-    public Producto guardar(Producto p) {
-        return repository.save(p);
-    }
-
-    // Obtener una entidad
-    public Optional<Producto> buscarPorId(Long id) {
-        return repository.findById(id);
-    }
-
-    // Obtener todas
+    // Obtener todos
     public List<Producto> listarTodos() {
-        return repository.findAll();
+        return productoRepository.findAll();
     }
 
-    // Borrar
-    public void eliminar(Long id) {
-        repository.deleteById(id);
+    // Obtener uno: Optional vacío si no existe
+    public Optional<Producto> buscarPorId(Long id) {
+        return productoRepository.findById(id);
+    }
+
+    // Actualizar: Optional vacío si no existe
+    public Optional<Producto> actualizar(Long id, Producto detalles) {
+        return productoRepository.findById(id)
+                .map(producto -> {
+                    producto.setNombre(detalles.getNombre());
+                    producto.setPrecio(detalles.getPrecio());
+                    return productoRepository.save(producto);
+                });
+    }
+
+    // Borrar: devuelve false si no existía
+    public boolean eliminar(Long id) {
+        if (!productoRepository.existsById(id)) {
+            return false;
+        }
+        productoRepository.deleteById(id);
+        return true;
     }
 }
 ```
 
-Otros métodos heredados útiles: `existsById(id)`, `count()`, `saveAll(lista)`, `delete(entity)` y `findAll(Sort.by("precio"))`.
+Fíjate en `actualizar`: primero se busca la entidad existente y se copian los campos que se pueden modificar. Así el cliente no puede cambiar el ID ni campos que no le corresponden. Esta decisión es lógica de negocio, por eso está en el servicio y no en el controlador.
 
-### 8.3. Controlador CRUD completo
+### 8.4. Controlador CRUD completo
 
-Uniendo lo visto en [Aplicaciones Spring Boot](aplicaciones.md) (`ResponseEntity`, `Optional`) con el repositorio:
+El controlador recibe el servicio con `@Autowired` y se limita a traducir el resultado a una respuesta HTTP con `ResponseEntity`, como en [Aplicaciones Spring Boot](aplicaciones.md):
 
 ```java
 @RestController
 @RequestMapping("/api/productos")
 public class ProductoController {
 
-    private final ProductoRepository repository;
-
-    public ProductoController(ProductoRepository repository) {
-        this.repository = repository;
-    }
+    @Autowired
+    private ProductoService productoService;
 
     @PostMapping
     public ResponseEntity<Producto> crear(@Valid @RequestBody Producto producto) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(repository.save(producto));
+        return ResponseEntity.status(HttpStatus.CREATED).body(productoService.crear(producto));
     }
 
     @GetMapping
     public List<Producto> listar() {
-        return repository.findAll();
+        return productoService.listarTodos();
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<Producto> obtener(@PathVariable Long id) {
-        return repository.findById(id)
+        return productoService.buscarPorId(id)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
@@ -933,27 +1033,22 @@ public class ProductoController {
     @PutMapping("/{id}")
     public ResponseEntity<Producto> actualizar(@PathVariable Long id,
                                                @Valid @RequestBody Producto detalles) {
-        return repository.findById(id)
-                .map(producto -> {
-                    producto.setNombre(detalles.getNombre());
-                    producto.setPrecio(detalles.getPrecio());
-                    return ResponseEntity.ok(repository.save(producto));
-                })
+        return productoService.actualizar(id, detalles)
+                .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> eliminar(@PathVariable Long id) {
-        if (!repository.existsById(id)) {
+        if (!productoService.eliminar(id)) {
             return ResponseEntity.notFound().build();
         }
-        repository.deleteById(id);
         return ResponseEntity.noContent().build();
     }
 }
 ```
 
-Fíjate en el `PUT`: primero se busca la entidad existente y se copian los campos que se pueden modificar. Así el cliente no puede cambiar el ID ni campos que no le corresponden.
+El controlador no conoce el repositorio: si mañana cambia la forma de guardar los productos, solo hay que tocar el servicio.
 
 ---
 
@@ -963,9 +1058,9 @@ Spring Data JPA funciona como un traductor: tú le pides cosas en Java y él las
 
 | Forma | Cómo se escribe | Cuándo usarla |
 |---|---|---|
-| **Query Methods** | Nombre del método | Consultas sencillas |
-| **@Query con JPQL** | Consulta orientada a objetos | Consultas largas o con lógica que no cabe en un nombre |
-| **Consulta nativa** | SQL puro | Funciones propias de la BD u optimizaciones |
+| Query Methods | Nombre del método | Consultas sencillas |
+| @Query con JPQL | Consulta orientada a objetos | Consultas largas o con lógica que no cabe en un nombre |
+| Consulta nativa | SQL puro | Funciones propias de la BD u optimizaciones |
 
 ### 9.1. Query Methods
 
@@ -989,7 +1084,7 @@ List<Producto> findByNombre(String nombre);
 
 #### Operadores de comparación
 
-Después de `By` va el **nombre del atributo** de la clase (no de la columna) seguido de un operador. Si no se pone operador, se asume igualdad (`=`).
+Después de `By` va el nombre del atributo de la clase (no de la columna) seguido de un operador. Si no se pone operador, se asume igualdad (`=`).
 
 | Operador | Significado | Ejemplo |
 |---|---|---|
@@ -1051,14 +1146,35 @@ public interface ProductoRepository extends JpaRepository<Producto, Long> {
 }
 ```
 
-> Si el nombre del método no coincide con un atributo real, la aplicación **no arranca** y el error indica qué propiedad no se encontró. Es una ventaja: el fallo aparece al iniciar, no en producción.
+> Si el nombre del método no coincide con un atributo real, la aplicación no arranca y el error indica qué propiedad no se encontró. Es una ventaja: el fallo aparece al iniciar, no en producción.
+
+#### Uso de las consultas desde las capas
+
+Las consultas se declaran en el repositorio, pero se usan desde el servicio, y el controlador las expone a través de un endpoint:
+
+```java
+// ProductoService
+public List<Producto> buscarPorNombre(String texto) {
+    return productoRepository.findByNombreContainingIgnoreCase(texto);
+}
+```
+
+```java
+// ProductoController
+@GetMapping("/buscar")
+public List<Producto> buscar(@RequestParam String texto) {
+    return productoService.buscarPorNombre(texto);
+}
+```
+
+Con esto, `GET /api/productos/buscar?texto=raton` devuelve los productos cuyo nombre contiene «raton».
 
 ### 9.2. @Query con JPQL
 
-Cuando la consulta es demasiado larga para un nombre de método, se escribe con `@Query`. Se usa **JPQL** (*Java Persistence Query Language*), un lenguaje parecido a SQL pero orientado a objetos:
+Cuando la consulta es demasiado larga para un nombre de método, se escribe con `@Query`. Se usa JPQL (*Java Persistence Query Language*), un lenguaje parecido a SQL pero orientado a objetos:
 
-- No se consulta la tabla `productos`, sino la **clase** `Producto`.
-- No se usa la columna `nom_prod`, sino el **atributo** `nombre`.
+- No se consulta la tabla `productos`, sino la clase `Producto`.
+- No se usa la columna `nom_prod`, sino el atributo `nombre`.
 
 ```java
 @Query("SELECT p FROM Producto p WHERE p.precio > :minimo")
@@ -1084,7 +1200,7 @@ int subirPrecios(@Param("cat") String categoria, @Param("factor") Double factor)
 
 Es el último recurso: se escribe SQL puro, igual que en la consola de la base de datos. La consulta habla directamente con el motor de la BD y salta la abstracción de JPA.
 
-**Cuándo usarlas:** cuando necesitas funciones que solo existen en tu base de datos o para optimizar una consulta muy compleja.
+Se usan cuando necesitas funciones que solo existen en tu base de datos o para optimizar una consulta muy compleja.
 
 ```java
 @Query(value = "SELECT * FROM productos WHERE fecha_registro > NOW() - INTERVAL 7 DAY",
@@ -1092,26 +1208,26 @@ Es el último recurso: se escribe SQL puro, igual que en la consola de la base d
 List<Producto> buscarRecientesNativo();
 ```
 
-Aquí sí se usan nombres de **tablas y columnas**. El inconveniente es que la consulta queda atada a un motor concreto: si se cambia de MySQL a PostgreSQL, puede dejar de funcionar.
+Aquí sí se usan nombres de tablas y columnas. El inconveniente es que la consulta queda atada a un motor concreto: si se cambia de MySQL a PostgreSQL, puede dejar de funcionar.
 
 ---
 
 ## 10. Relaciones entre entidades
 
-Las relaciones se definen con anotaciones que indican la **cardinalidad**: cuántos registros de una entidad se relacionan con cuántos de la otra. Recordemos los tipos del modelo E/R:
+Las relaciones se definen con anotaciones que indican la cardinalidad: cuántos registros de una entidad se relacionan con cuántos de la otra. Recordemos los tipos del modelo E/R:
 
 | Tipo | Relación | Cómo se representa en tablas | Ejemplo |
 |---|---|---|---|
-| **1:1** | Uno a uno: la cardinalidad máxima es 1 en ambos sentidos | Clave foránea con restricción `UNIQUE` en una de las tablas | Usuario y DNI |
-| **1:N** | Uno a muchos: 1 en un sentido y N en el otro | La tabla del lado «muchos» guarda la clave foránea del «uno» | Hospital y médicos |
-| **N:M** | Muchos a muchos: N en ambos sentidos | Tabla intermedia con los pares de claves | Autores y libros |
+| 1:1 | Uno a uno: la cardinalidad máxima es 1 en ambos sentidos | Clave foránea con restricción `UNIQUE` en una de las tablas | Usuario y DNI |
+| 1:N | Uno a muchos: 1 en un sentido y N en el otro | La tabla del lado «muchos» guarda la clave foránea del «uno» | Hospital y médicos |
+| N:M | Muchos a muchos: N en ambos sentidos | Tabla intermedia con los pares de claves | Autores y libros |
 
 Dos conceptos aparecen en todas las relaciones:
 
 - **Lado propietario:** la entidad cuya tabla contiene la clave foránea. Se configura con `@JoinColumn` (o `@JoinTable`).
-- **Lado inverso:** la entidad que «mira» la relación desde el otro lado. Se configura con `mappedBy`, cuyo valor es el **nombre del atributo** en la clase propietaria.
+- **Lado inverso:** la entidad que «mira» la relación desde el otro lado. Se configura con `mappedBy`, cuyo valor es el nombre del atributo en la clase propietaria.
 
-Una relación es **unidireccional** si solo una entidad conoce a la otra, y **bidireccional** si ambas tienen un atributo que apunta a la otra.
+Una relación es unidireccional si solo una entidad conoce a la otra, y bidireccional si ambas tienen un atributo que apunta a la otra.
 
 ### 10.1. @OneToOne (uno a uno)
 
@@ -1193,7 +1309,7 @@ Con `nullable = false` en `@JoinColumn` se obliga a que todo empleado tenga depa
 
 ### 10.3. @ManyToMany (muchos a muchos)
 
-Varios registros de la entidad A se relacionan con varios de la entidad B. En la base de datos esto exige una **tabla intermedia**.
+Varios registros de la entidad A se relacionan con varios de la entidad B. En la base de datos esto exige una tabla intermedia.
 
 - **`@JoinTable`:** define el nombre de la tabla de unión y sus columnas.
     - `joinColumns`: clave foránea hacia la entidad propietaria.
@@ -1236,7 +1352,7 @@ public class Cientifico {
 
 #### Relación N:M con atributos propios
 
-`@ManyToMany` solo sirve si la tabla intermedia contiene **únicamente** las dos claves. Si la relación tiene datos propios (por ejemplo, la *cantidad* de un artículo en un pedido), la tabla intermedia se convierte en una **entidad** con clave compuesta y dos relaciones `@ManyToOne`:
+`@ManyToMany` solo sirve si la tabla intermedia contiene únicamente las dos claves. Si la relación tiene datos propios (por ejemplo, la *cantidad* de un artículo en un pedido), la tabla intermedia se convierte en una entidad con clave compuesta y dos relaciones `@ManyToOne`:
 
 ```java
 @Entity
@@ -1291,7 +1407,7 @@ public class Equipo {
 
 ### 10.5. Fetch (carga)
 
-`fetch` define **cuándo** se traen de la base de datos los datos relacionados:
+`fetch` define cuándo se traen de la base de datos los datos relacionados:
 
 - **`EAGER` (ansiosa):** al pedir el objeto A, JPA trae también los objetos B relacionados en la misma consulta (con un `JOIN`). Si un objeto tiene muchas relaciones `EAGER`, la aplicación se vuelve lenta.
 - **`LAZY` (perezosa):** al pedir el objeto A, JPA solo trae A. Los datos de B se consultan únicamente cuando se accede a ellos (`a.getListaB()`).
@@ -1320,7 +1436,7 @@ public class Usuario {
 
 Cuando una relación es bidireccional y se devuelve la entidad en una API REST, Jackson entra en un bucle infinito al convertirla a JSON: el cliente tiene pedidos, cada pedido tiene su cliente, que tiene pedidos...
 
-`@JsonIgnoreProperties` le indica a Jackson qué atributo **no** debe serializar en ese sentido:
+`@JsonIgnoreProperties` le indica a Jackson qué atributo no debe serializar en ese sentido:
 
 ```java
 @Entity
@@ -1364,10 +1480,12 @@ public class Pedido {
 
 ### Resumen de conceptos clave
 
-- **`mappedBy`:** siempre en el lado que **no** tiene la clave foránea. Su valor es el nombre del atributo en la clase opuesta.
+- **`mappedBy`:** siempre en el lado que no tiene la clave foránea. Su valor es el nombre del atributo en la clase opuesta.
 - **`@JoinColumn`:** en el lado propietario; define el nombre de la columna de la clave foránea.
-- **`FetchType.LAZY`:** ideal para `@OneToMany` y `@ManyToMany`. **`FetchType.EAGER`:** habitual en `@ManyToOne`.
-- **`CascadeType.PERSIST`:** al guardar el padre se guardan los hijos. **`CascadeType.REMOVE`:** al borrar el padre se borran los hijos.
+- **`FetchType.LAZY`:** ideal para `@OneToMany` y `@ManyToMany`.
+- **`FetchType.EAGER`:** habitual en `@ManyToOne`.
+- **`CascadeType.PERSIST`:** al guardar el padre se guardan los hijos.
+- **`CascadeType.REMOVE`:** al borrar el padre se borran los hijos.
 
 ---
 
@@ -1387,7 +1505,7 @@ Modela la entidad `Libro` con esta estructura estricta:
 | `isbn` | Texto, único en la base de datos |
 | `paginas` | Número entero |
 
-Implementa un controlador REST con ruta base `/api/libros` que ofrezca:
+Organiza la aplicación en tres capas: `LibroRepository`, `LibroService` y `LibroController`, cada una inyectada en la siguiente con `@Autowired`. El controlador, con ruta base `/api/libros`, debe ofrecer:
 
 | Método | Ruta | Resultado |
 |---|---|---|
@@ -1415,9 +1533,9 @@ Transforma este modelo E/R en entidades Java:
  ( Núm. Serie )
 ```
 
-- **Cliente** (clave: DNI) realiza muchos **pedidos** (relación 1:N).
-- **Pedido** tiene una fecha.
-- **Pedido** se compone de muchos **artículos** (clave: número de serie), y un artículo puede estar en muchos pedidos (relación N:M con el atributo *cantidad*).
+- Cliente (clave: DNI) realiza muchos pedidos (relación 1:N).
+- Pedido tiene una fecha.
+- Pedido se compone de muchos artículos (clave: número de serie), y un artículo puede estar en muchos pedidos (relación N:M con el atributo *cantidad*).
 
 No te preocupes todavía por las relaciones entre entidades: céntrate en definir las entidades necesarias con sus atributos y claves primarias.
 
@@ -1483,15 +1601,19 @@ Completa las entidades de la [Actividad 2](#actividad-2-del-modelo-er-a-entidade
 - **Cantidad:** número entero obligatorio. Como mínimo se debe pedir 1 unidad.
 - **Precio de compra aplicado:** obligatorio, con 2 decimales y mayor que cero.
 
-### Actividad 6: repositorios y controladores CRUD
+### Actividad 6: repositorios, servicios y controladores CRUD
 
-Partiendo de las entidades de la actividad anterior, crea el paquete `repository` y añade:
+Partiendo de las entidades de la actividad anterior, completa las tres capas de la aplicación:
 
-- `ClienteRepository`
-- `PedidoRepository`
-- `ArticuloRepository`
+| Paquete | Clases |
+|---|---|
+| `repository` | `ClienteRepository`, `PedidoRepository`, `ArticuloRepository` |
+| `service` | `ClienteService`, `PedidoService`, `ArticuloService` |
+| `controller` | `ClienteController`, `PedidoController`, `ArticuloController` |
 
-Crea también tres controladores (`/api/clientes`, `/api/pedidos` y `/api/articulos`) que permitan probar con Postman todas las operaciones CRUD: crear, listar, obtener por ID, actualizar y borrar. Usa `ResponseEntity` para devolver `201 Created`, `204 No Content` o `404 Not Found` cuando corresponda.
+- Cada servicio recibe su repositorio con `@Autowired` y ofrece las operaciones CRUD: crear, listar, obtener por ID, actualizar y borrar.
+- Cada controlador recibe su servicio con `@Autowired` y nunca usa el repositorio directamente.
+- Los controladores (`/api/clientes`, `/api/pedidos` y `/api/articulos`) deben permitir probar con Postman todas las operaciones. Usa `ResponseEntity` para devolver `201 Created`, `204 No Content` o `404 Not Found` cuando corresponda.
 
 ### Actividad 7: nombres de Query Methods
 
@@ -1504,7 +1626,7 @@ Escribe la firma del método del repositorio para cada caso, sobre una entidad `
 
 ### Actividad 8: consultas personalizadas de la tienda
 
-Añade estas consultas a los repositorios de la tienda. Usa la forma que consideres más adecuada (Query Method, JPQL o SQL nativo) y añade endpoints en los controladores para probarlas.
+Añade estas consultas a los repositorios de la tienda. Usa la forma que consideres más adecuada (Query Method, JPQL o SQL nativo). Para cada consulta, añade un método en el servicio correspondiente que la use y un endpoint en el controlador que llame a ese método, para poder probarla con Postman.
 
 #### ClienteRepository
 
