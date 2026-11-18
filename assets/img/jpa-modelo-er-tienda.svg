@@ -1,0 +1,69 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 400" width="100%" role="img" aria-label="Modelo E/R de la tienda: Cliente realiza Pedido (1:N); Pedido se compone de Artículo (N:M) con atributo cantidad">
+<title>Modelo E/R de la tienda</title>
+<g font-family="'Segoe UI', Helvetica, Arial, sans-serif" text-anchor="middle">
+<rect x="1" y="1" width="998" height="398" rx="12" fill="#f3f6fa" stroke="#c9d4e2"/>
+
+<!-- Líneas (debajo de las figuras) -->
+<g stroke="#1b355a" stroke-width="2">
+<path d="M220 90 H305"/>          <!-- Cliente - Realiza -->
+<path d="M455 90 H560"/>          <!-- Realiza - Pedido -->
+<path d="M640 120 V200"/>         <!-- Pedido - Se compone -->
+<path d="M460 240 H565"/>         <!-- Artículo - Se compone -->
+</g>
+<g stroke="#5b6b7f" stroke-width="1.5">
+<path d="M140 120 V165"/>         <!-- Cliente - DNI -->
+<path d="M720 90 H795"/>          <!-- Pedido - Fecha -->
+<path d="M715 240 H795"/>         <!-- Se compone - Cantidad -->
+<path d="M380 270 V315"/>         <!-- Artículo - Núm. serie -->
+</g>
+
+<!-- Entidades -->
+<g fill="#ffffff" stroke="#1b355a" stroke-width="2.5">
+<rect x="60" y="60" width="160" height="60" rx="4"/>
+<rect x="560" y="60" width="160" height="60" rx="4"/>
+<rect x="300" y="210" width="160" height="60" rx="4"/>
+</g>
+<g font-size="19" font-weight="600" fill="#1b355a">
+<text x="140" y="97">Cliente</text>
+<text x="640" y="97">Pedido</text>
+<text x="380" y="247">Artículo</text>
+</g>
+
+<!-- Relaciones -->
+<g fill="#e6f2f2" stroke="#157878" stroke-width="2.5">
+<polygon points="380,50 455,90 380,130 305,90"/>
+<polygon points="640,200 715,240 640,280 565,240"/>
+</g>
+<g font-size="16" font-weight="600" fill="#157878">
+<text x="380" y="96">Realiza</text>
+<text x="640" y="246">Se compone</text>
+</g>
+
+<!-- Atributos -->
+<g fill="#ffffff" stroke="#5b6b7f" stroke-width="1.5">
+<ellipse cx="140" cy="190" rx="55" ry="25"/>
+<ellipse cx="860" cy="90" rx="65" ry="25"/>
+<ellipse cx="860" cy="240" rx="65" ry="25"/>
+<ellipse cx="380" cy="340" rx="75" ry="25"/>
+</g>
+<g font-size="15" fill="#333333">
+<text x="140" y="195">DNI</text>
+<text x="860" y="95">Fecha</text>
+<text x="860" y="245">Cantidad</text>
+<text x="380" y="345">Núm. serie</text>
+</g>
+<path d="M124 199 H156 M341 354 H419" stroke="#333333" stroke-width="1.2"/>
+
+<!-- Cardinalidades -->
+<g font-size="16" font-weight="600" fill="#b03a2e">
+<text x="238" y="82">1</text>
+<text x="542" y="82">N</text>
+<text x="655" y="145">N</text>
+<text x="478" y="232">M</text>
+</g>
+<g font-size="15" fill="#5b6b7f">
+<text x="380" y="35">1:N</text>
+<text x="640" y="305">N:M</text>
+</g>
+</g>
+</svg>

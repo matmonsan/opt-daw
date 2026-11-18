@@ -202,10 +202,7 @@ La propiedad `spring.jpa.hibernate.ddl-auto` decide qué hace Hibernate con las 
 
 Vamos a crear una API mínima que guarde y liste usuarios. Trabajaremos con la arquitectura en tres capas vista en [Aplicaciones Spring Boot](aplicaciones.md), ahora completa con el repositorio:
 
-```text
-Cliente ──► Controlador ──► Servicio ──► Repositorio ──► Base de datos
-            (@RestController) (@Service)  (@Repository)
-```
+<img src="assets/img/jpa-capas.svg" alt="Arquitectura en tres capas: cliente, controlador, servicio, repositorio y base de datos" width="100%">
 
 | Capa | Responsabilidad |
 |---|---|
@@ -721,15 +718,7 @@ public ResponseEntity<Usuario> crear(@Valid @RequestBody Usuario usuario) {
 
 El ciclo de vida define la relación entre un objeto Java y una fila de la base de datos. Una entidad pasa por cuatro estados:
 
-```text
-                 persist / save                    flush / commit
-  new ──► TRANSIENT ──────────────► MANAGED ─────────────────────────► Base de datos
-                                    ▲  │  │  ◄── find / query ──────
-                                    │  │  │
-                          persist   │  │  └── clear / close ──► DETACHED
-                                    │  ▼
-                                   REMOVED ── commit ──► DELETE en la BD
-```
+<img src="assets/img/jpa-ciclo-vida.svg" alt="Ciclo de vida de una entidad JPA: transient, managed, detached y removed" width="100%">
 
 #### Transient (nuevo)
 
@@ -1510,20 +1499,7 @@ Comprueba en phpMyAdmin que la tabla se ha creado con las restricciones correcta
 
 Transforma este modelo E/R en entidades Java:
 
-```text
-              1:N                                    ┌───────┐
- ┌─────────┐ 1      ┌─────────┐      * ┌──────────┐──│ Fecha │
- │ Cliente │────────│ Realiza │────────│  Pedido  │  └───────┘
- └─────────┘        └─────────┘        └──────────┘
-      │                                      │ *
-   ( DNI )                            ┌─────────────┐
-                                      │ Se compone  │── ( Cantidad )      N:M
- ┌──────────┐ *                       │             │
- │ Artículo │─────────────────────────└─────────────┘
- └──────────┘
-      │
- ( Núm. Serie )
-```
+<img src="assets/img/jpa-modelo-er-tienda.svg" alt="Modelo E/R de la tienda: Cliente realiza Pedido (1:N); Pedido se compone de Artículo (N:M) con el atributo cantidad" width="100%">
 
 - Cliente (clave: DNI) realiza muchos pedidos (relación 1:N).
 - Pedido tiene una fecha.

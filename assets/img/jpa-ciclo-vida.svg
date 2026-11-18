@@ -1,0 +1,66 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 400" width="100%" role="img" aria-label="Ciclo de vida de una entidad JPA: transient, managed, detached y removed">
+<title>Ciclo de vida de una entidad JPA</title>
+<defs>
+<marker id="vAzul" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#1b355a"/></marker>
+<marker id="vVerde" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#157878"/></marker>
+<marker id="vRojo" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#b03a2e"/></marker>
+<marker id="vGris" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#5b6b7f"/></marker>
+</defs>
+<g font-family="'Segoe UI', Helvetica, Arial, sans-serif" text-anchor="middle">
+<rect x="1" y="1" width="998" height="398" rx="12" fill="#f3f6fa" stroke="#c9d4e2"/>
+
+<!-- new -->
+<circle cx="45" cy="115" r="9" fill="#1b355a"/>
+<text x="45" y="95" font-size="14" fill="#5b6b7f">new</text>
+<path d="M56 115 H92" stroke="#1b355a" stroke-width="2.5" marker-end="url(#vAzul)"/>
+
+<!-- Transient -->
+<rect x="100" y="75" width="180" height="80" rx="10" fill="#ffffff" stroke="#5b6b7f" stroke-width="2.5"/>
+<text x="190" y="110" font-size="19" font-weight="600" fill="#1b355a">Transient</text>
+<text x="190" y="133" font-size="14" fill="#5b6b7f">nuevo · id = null</text>
+
+<!-- Managed -->
+<rect x="420" y="75" width="180" height="80" rx="10" fill="#ffffff" stroke="#1b355a" stroke-width="2.5"/>
+<rect x="420" y="75" width="180" height="8" rx="4" fill="#1b355a"/>
+<text x="510" y="110" font-size="19" font-weight="600" fill="#1b355a">Managed</text>
+<text x="510" y="133" font-size="14" fill="#5b6b7f">gestionado</text>
+
+<!-- Base de datos -->
+<rect x="780" y="75" width="190" height="80" rx="10" fill="#e6f2f2" stroke="#157878" stroke-width="2.5"/>
+<text x="875" y="121" font-size="19" font-weight="600" fill="#157878">Base de datos</text>
+
+<!-- Removed -->
+<rect x="200" y="265" width="180" height="80" rx="10" fill="#ffffff" stroke="#b03a2e" stroke-width="2.5"/>
+<text x="290" y="300" font-size="19" font-weight="600" fill="#b03a2e">Removed</text>
+<text x="290" y="323" font-size="14" fill="#5b6b7f">eliminado</text>
+<text x="290" y="372" font-size="14" fill="#b03a2e">DELETE en la BD al hacer commit</text>
+
+<!-- Detached -->
+<rect x="640" y="265" width="180" height="80" rx="10" fill="#ffffff" stroke="#5b6b7f" stroke-width="2.5" stroke-dasharray="7 5"/>
+<text x="730" y="300" font-size="19" font-weight="600" fill="#1b355a">Detached</text>
+<text x="730" y="323" font-size="14" fill="#5b6b7f">desconectado</text>
+<text x="730" y="372" font-size="14" fill="#5b6b7f">sus cambios no se guardan</text>
+
+<!-- Transient -> Managed -->
+<path d="M282 115 H412" stroke="#1b355a" stroke-width="2.5" marker-end="url(#vAzul)"/>
+<text x="350" y="103" font-size="15" fill="#1b355a">persist / save</text>
+
+<!-- Managed <-> BD -->
+<path d="M602 100 H772" stroke="#157878" stroke-width="2.5" marker-end="url(#vVerde)"/>
+<text x="690" y="88" font-size="15" fill="#157878">flush / commit</text>
+<path d="M778 132 H608" stroke="#157878" stroke-width="2" stroke-dasharray="5 4" marker-end="url(#vVerde)"/>
+<text x="690" y="152" font-size="15" fill="#157878">find / query</text>
+
+<!-- Managed <-> Removed -->
+<path d="M455 157 L335 261" stroke="#b03a2e" stroke-width="2.5" marker-end="url(#vRojo)"/>
+<path d="M370 263 L488 160" stroke="#5b6b7f" stroke-width="2" stroke-dasharray="5 4" marker-end="url(#vGris)"/>
+<text x="380" y="200" font-size="15" fill="#b03a2e" text-anchor="end">delete</text>
+<text x="400" y="257" font-size="15" fill="#5b6b7f" text-anchor="start">persist</text>
+
+<!-- Managed <-> Detached -->
+<path d="M565 157 L685 261" stroke="#5b6b7f" stroke-width="2.5" marker-end="url(#vGris)"/>
+<path d="M650 263 L532 160" stroke="#1b355a" stroke-width="2" stroke-dasharray="5 4" marker-end="url(#vAzul)"/>
+<text x="640" y="200" font-size="15" fill="#5b6b7f" text-anchor="start">clear / close</text>
+<text x="568" y="206" font-size="15" fill="#1b355a" text-anchor="end">save (merge)</text>
+</g>
+</svg>
