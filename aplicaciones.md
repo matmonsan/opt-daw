@@ -1811,7 +1811,31 @@ public ResponseEntity<ReservaDto> buscar(@PathVariable long id) {
 }
 ```
 
-Si `GET /reservas/1` existe, la respuesta será `200 OK` con la reserva. Si `GET /reservas/99` no encuentra el recurso, la respuesta será `404 Not Found`. El mensaje de la excepción queda disponible como motivo del error; según la configuración de Spring Boot (`server.error.include-message`) puede no incluirse en el cuerpo de la respuesta, lo cual es lo recomendable para no exponer información interna.
+Si `GET /reservas/1` existe, la respuesta será `200 OK` con la reserva. Si `GET /reservas/99` no encuentra el recurso, la respuesta será `404 Not Found`.
+
+#### Ver el mensaje de la excepción en la respuesta
+
+Por defecto, Spring Boot no incluye el mensaje de la excepción en el cuerpo de la respuesta, para no exponer información interna. El cliente recibe el código `404`, pero no el texto «No existe la reserva 99».
+
+Para que el mensaje aparezca, hay que activar en `src/main/resources/application.properties` el formato estándar de errores Problem Details (RFC 9457):
+
+```properties
+spring.mvc.problemdetails.enabled=true
+```
+
+Con esta propiedad, la respuesta a `GET /reservas/99` incluye el mensaje en el campo `detail`:
+
+```http
+HTTP/1.1 404 Not Found
+Content-Type: application/problem+json
+
+{
+  "detail": "No existe la reserva 99",
+  "instance": "/reservas/99",
+  "status": 404,
+  "title": "Not Found"
+}
+```
 
 #### ¿Por qué no hace falta `try/catch`?
 
