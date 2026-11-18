@@ -20,14 +20,13 @@ description: "<strong>Módulo: </strong>Programación Web Avanzada <br> <strong>
 11. [Actividades](#11-actividades)
     - [Actividad 1: catálogo de una biblioteca](#actividad-1-catálogo-de-una-biblioteca)
     - [Actividad 2: del modelo E/R a entidades](#actividad-2-del-modelo-er-a-entidades)
-    - [Actividad 3: calificaciones con clave compuesta](#actividad-3-calificaciones-con-clave-compuesta)
-    - [Actividad 4: contratos con Lombok](#actividad-4-contratos-con-lombok)
-    - [Actividad 5: entidades completas de la tienda](#actividad-5-entidades-completas-de-la-tienda)
-    - [Actividad 6: repositorios, servicios y controladores CRUD](#actividad-6-repositorios-servicios-y-controladores-crud)
-    - [Actividad 7: nombres de Query Methods](#actividad-7-nombres-de-query-methods)
-    - [Actividad 8: consultas personalizadas de la tienda](#actividad-8-consultas-personalizadas-de-la-tienda)
-    - [Actividad 9: relaciones entre entidades](#actividad-9-relaciones-entre-entidades)
-    - [Actividad 10: relaciones de la tienda](#actividad-10-relaciones-de-la-tienda)
+    - [Actividad 3: contratos con Lombok](#actividad-3-contratos-con-lombok)
+    - [Actividad 4: entidades completas de la tienda](#actividad-4-entidades-completas-de-la-tienda)
+    - [Actividad 5: repositorios, servicios y controladores CRUD](#actividad-5-repositorios-servicios-y-controladores-crud)
+    - [Actividad 6: nombres de Query Methods](#actividad-6-nombres-de-query-methods)
+    - [Actividad 7: consultas personalizadas de la tienda](#actividad-7-consultas-personalizadas-de-la-tienda)
+    - [Actividad 8: relaciones entre entidades](#actividad-8-relaciones-entre-entidades)
+    - [Actividad 9: relaciones de la tienda](#actividad-9-relaciones-de-la-tienda)
 
 ## 1. Introducción
 
@@ -535,64 +534,6 @@ public enum EstadoEmpleado {
     ACTIVO, BAJA, VACACIONES
 }
 ```
-
-### 4.4. Claves primarias compuestas
-
-Una clave primaria compuesta está formada por varias columnas. No basta con poner `@Id` dos veces: hay que crear una clase auxiliar que represente la combinación. Esta clase debe:
-
-- Estar anotada con `@Embeddable`.
-- Implementar `Serializable`.
-- Tener un constructor vacío.
-- Implementar `equals()` y `hashCode()`. Es vital: Hibernate los usa para localizar el objeto en su caché.
-
-```java
-@Embeddable
-public class ArticuloFechaId implements Serializable {
-
-    private String nArticulo;
-    private LocalDate fecha;
-
-    public ArticuloFechaId() {
-    }
-
-    public ArticuloFechaId(String nArticulo, LocalDate fecha) {
-        this.nArticulo = nArticulo;
-        this.fecha = fecha;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        ArticuloFechaId that = (ArticuloFechaId) o;
-        return Objects.equals(nArticulo, that.nArticulo) &&
-               Objects.equals(fecha, that.fecha);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(nArticulo, fecha);
-    }
-
-    // Getters y setters
-}
-```
-
-En la entidad se usa `@EmbeddedId` en lugar de `@Id`:
-
-```java
-@Entity
-public class PrecioHistorico {
-
-    // Inyectamos la clave compuesta
-    @EmbeddedId
-    private ArticuloFechaId id;
-
-    private BigDecimal precio;
-}
-```
-
-El repositorio usa la clase de la clave como tipo del ID: `JpaRepository<PrecioHistorico, ArticuloFechaId>`.
 
 ---
 
@@ -1333,30 +1274,29 @@ public class Cientifico {
 
 #### Relación N:M con atributos propios
 
-`@ManyToMany` solo sirve si la tabla intermedia contiene únicamente las dos claves. Si la relación tiene datos propios (por ejemplo, la *cantidad* de un artículo en un pedido), la tabla intermedia se convierte en una entidad con clave compuesta y dos relaciones `@ManyToOne`:
+`@ManyToMany` solo sirve si la tabla intermedia contiene únicamente las dos claves. Si la relación tiene datos propios (por ejemplo, la *cantidad* de un artículo en un pedido), la tabla intermedia se convierte en una entidad con su propio `id` y dos relaciones `@ManyToOne`, una hacia cada lado:
 
 ```java
 @Entity
 public class LineaPedido {
 
-    @EmbeddedId
-    private LineaPedidoId id;            // (pedidoId, numSerie)
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
     @ManyToOne
-    @MapsId("pedidoId")                  // reutiliza esa parte de la clave como FK
-    @JoinColumn(name = "pedido_id")
+    @JoinColumn(name = "pedido_id", nullable = false)
     private Pedido pedido;
 
     @ManyToOne
-    @MapsId("numSerie")
-    @JoinColumn(name = "num_serie")
+    @JoinColumn(name = "num_serie", nullable = false)
     private Articulo articulo;
 
     private Integer cantidad;
 }
 ```
 
-`@MapsId` indica que la clave foránea forma parte de la clave primaria compuesta, de modo que no se duplica la columna.
+Así, la relación N:M se convierte en dos relaciones 1:N: un pedido tiene muchas líneas y un artículo aparece en muchas líneas. En `Pedido` y `Articulo` se puede añadir la lista de líneas con `@OneToMany(mappedBy = "pedido")` y `@OneToMany(mappedBy = "articulo")`.
 
 ### 10.4. Cascade (cascada)
 
@@ -1497,31 +1437,13 @@ Comprueba en phpMyAdmin que la tabla se ha creado con las restricciones correcta
 
 ### Actividad 2: del modelo E/R a entidades
 
-Transforma este modelo E/R en entidades Java:
+Transforma este modelo E/R en entidades Java. Las claves primarias aparecen subrayadas.
 
-<img src="assets/img/jpa-modelo-er-tienda.svg" alt="Modelo E/R de la tienda: Cliente realiza Pedido (1:N); Pedido se compone de Artículo (N:M) con el atributo cantidad" width="100%">
-
-- Cliente (clave: DNI) realiza muchos pedidos (relación 1:N).
-- Pedido tiene una fecha.
-- Pedido se compone de muchos artículos (clave: número de serie), y un artículo puede estar en muchos pedidos (relación N:M con el atributo *cantidad*).
+<img src="assets/img/jpa-modelo-er-tienda.svg" alt="Modelo E/R de la tienda con entidades, relaciones y atributos" width="100%">
 
 No te preocupes todavía por las relaciones entre entidades: céntrate en definir las entidades necesarias con sus atributos y claves primarias.
 
-### Actividad 3: calificaciones con clave compuesta
-
-Crea la entidad para la tabla `calificaciones` de la base de datos de una universidad:
-
-| Campo | Regla lógica (Bean Validation) | Regla física (`@Column`) |
-|---|---|---|
-| `matricula` | Obligatorio. Formato: 3 letras mayúsculas, guion y 4 números (ej.: `EXP-2024`) | Parte de la clave primaria. Longitud exacta de 8 caracteres |
-| `codigo` | Obligatorio | Parte de la clave primaria. Longitud máxima de 10 caracteres |
-| `nota` | Obligatorio. Mínimo 0.0 y máximo 10.0 | Obligatorio. Entre 0 y 10 |
-| `comentario` | Opcional | Texto largo |
-| `fecha` | Debe ser pasada o presente | Obligatorio. Inmutable |
-
-Pistas: la clave primaria es compuesta (`@Embeddable` + `@EmbeddedId`); para un texto largo, `@Lob` o `columnDefinition = "TEXT"`; para la restricción física de la nota, `@Check`; para que un campo sea inmutable, `updatable = false`.
-
-### Actividad 4: contratos con Lombok
+### Actividad 3: contratos con Lombok
 
 Crea la entidad `Contrato` utilizando Lombok para eliminar el código repetitivo:
 
@@ -1537,7 +1459,7 @@ Crea la entidad `Contrato` utilizando Lombok para eliminar el código repetitivo
 | Categoría | `enum` | Lista cerrada: `NACIONAL`, `INTERNACIONAL`, `URGENTE` |
 | Aceptado | `Boolean` | Valor por defecto `false` en la base de datos |
 
-### Actividad 5: entidades completas de la tienda
+### Actividad 4: entidades completas de la tienda
 
 Completa las entidades de la [Actividad 2](#actividad-2-del-modelo-er-a-entidades) con todas sus restricciones, usando Lombok.
 
@@ -1561,15 +1483,15 @@ Completa las entidades de la [Actividad 2](#actividad-2-del-modelo-er-a-entidade
 - **ID:** número autogenerado por el sistema.
 - **Fecha del pedido:** obligatoria. Una vez creado el pedido, no puede modificarse en la base de datos. No se permiten fechas futuras.
 - **Estado:** obligatorio. Solo puede tomar valores de una lista cerrada (por ejemplo: `PENDIENTE`, `ENVIADO`, `CANCELADO`).
-- **Relación con cliente:** cada pedido debe estar asociado a un cliente existente (*queda pendiente hasta la Actividad 10*).
+- **Relación con cliente:** cada pedido debe estar asociado a un cliente existente (*queda pendiente hasta la Actividad 9*).
 
 #### Línea de pedido
 
-- **Clave primaria:** combinación del ID del pedido y el número de serie del artículo.
+- **ID:** número autogenerado por el sistema.
 - **Cantidad:** número entero obligatorio. Como mínimo se debe pedir 1 unidad.
 - **Precio de compra aplicado:** obligatorio, con 2 decimales y mayor que cero.
 
-### Actividad 6: repositorios, servicios y controladores CRUD
+### Actividad 5: repositorios, servicios y controladores CRUD
 
 Partiendo de las entidades de la actividad anterior, completa las tres capas de la aplicación:
 
@@ -1583,7 +1505,7 @@ Partiendo de las entidades de la actividad anterior, completa las tres capas de 
 - Cada controlador recibe su servicio con `@Autowired` y nunca usa el repositorio directamente.
 - Los controladores (`/api/clientes`, `/api/pedidos` y `/api/articulos`) deben permitir probar con Postman todas las operaciones. Usa `ResponseEntity` para devolver `201 Created`, `204 No Content` o `404 Not Found` cuando corresponda.
 
-### Actividad 7: nombres de Query Methods
+### Actividad 6: nombres de Query Methods
 
 Escribe la firma del método del repositorio para cada caso, sobre una entidad `Vehiculo` con los campos `marca`, `modelo`, `anio`, `precio` y `disponible`:
 
@@ -1592,7 +1514,7 @@ Escribe la firma del método del repositorio para cada caso, sobre una entidad `
 3. Buscar vehículos cuya marca empiece por «T» y estén disponibles.
 4. Contar cuántos vehículos cuestan menos de 10.000.
 
-### Actividad 8: consultas personalizadas de la tienda
+### Actividad 7: consultas personalizadas de la tienda
 
 Añade estas consultas a los repositorios de la tienda. Usa la forma que consideres más adecuada (Query Method, JPQL o SQL nativo). Para cada consulta, añade un método en el servicio correspondiente que la use y un endpoint en el controlador que llame a ese método, para poder probarla con Postman.
 
@@ -1620,7 +1542,7 @@ Añade estas consultas a los repositorios de la tienda. Usa la forma que conside
 - Buscar pedidos que no estén en estado `CANCELADO`.
 - Contar cuántos pedidos hay en un estado determinado.
 
-### Actividad 9: relaciones entre entidades
+### Actividad 8: relaciones entre entidades
 
 #### Ejercicio 1: uno a uno
 
@@ -1648,11 +1570,11 @@ En una universidad, un estudiante se matricula en muchas asignaturas, y cada asi
 - Las columnas de unión deben llamarse `estudiante_id` y `asignatura_id`.
 - Configura `Asignatura` como lado inverso.
 
-### Actividad 10: relaciones de la tienda
+### Actividad 9: relaciones de la tienda
 
-A partir del proyecto de la [Actividad 8](#actividad-8-consultas-personalizadas-de-la-tienda), define correctamente las relaciones entre las entidades del modelo E/R:
+A partir del proyecto de la [Actividad 7](#actividad-7-consultas-personalizadas-de-la-tienda), define correctamente las relaciones entre las entidades del modelo E/R:
 
 - **Cliente – Pedido (1:N):** cada pedido pertenece obligatoriamente a un cliente existente, y desde un cliente se pueden consultar sus pedidos.
-- **Pedido – Artículo (N:M con cantidad):** la relación se resuelve con la entidad `LineaPedido`, cuya clave compuesta contiene el ID del pedido y el número de serie del artículo (usa `@MapsId`).
+- **Pedido – Artículo (N:M con cantidad):** la relación se resuelve con la entidad `LineaPedido`, que tiene su propio ID y dos relaciones `@ManyToOne`: una hacia `Pedido` y otra hacia `Articulo`.
 
 Decide en cada relación qué `cascade` y qué `fetch` son adecuados, y evita los bucles infinitos al devolver JSON. Con esto el proyecto queda totalmente funcional y corresponde al modelo E/R trabajado.

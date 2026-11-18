@@ -1,69 +1,102 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 400" width="100%" role="img" aria-label="Modelo E/R de la tienda: Cliente realiza Pedido (1:N); Pedido se compone de Artículo (N:M) con atributo cantidad">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 450" width="100%" role="img" aria-label="Modelo E/R de la tienda: Cliente realiza Pedido (1:N); Pedido se compone de Artículo (N:M) con cantidad y precio de compra">
 <title>Modelo E/R de la tienda</title>
 <g font-family="'Segoe UI', Helvetica, Arial, sans-serif" text-anchor="middle">
-<rect x="1" y="1" width="998" height="398" rx="12" fill="#f3f6fa" stroke="#c9d4e2"/>
+<rect x="1" y="1" width="998" height="448" rx="12" fill="#f3f6fa" stroke="#c9d4e2"/>
 
-<!-- Líneas (debajo de las figuras) -->
+<!-- Líneas entidad - relación -->
 <g stroke="#1b355a" stroke-width="2">
-<path d="M220 90 H305"/>          <!-- Cliente - Realiza -->
-<path d="M455 90 H560"/>          <!-- Realiza - Pedido -->
-<path d="M640 120 V200"/>         <!-- Pedido - Se compone -->
-<path d="M460 240 H565"/>         <!-- Artículo - Se compone -->
+<path d="M260 120 H365"/>
+<path d="M515 120 H620"/>
+<path d="M700 145 V260"/>
+<path d="M520 300 H625"/>
 </g>
+
+<!-- Líneas de atributos -->
 <g stroke="#5b6b7f" stroke-width="1.5">
-<path d="M140 120 V165"/>         <!-- Cliente - DNI -->
-<path d="M720 90 H795"/>          <!-- Pedido - Fecha -->
-<path d="M715 240 H795"/>         <!-- Se compone - Cantidad -->
-<path d="M380 270 V315"/>         <!-- Artículo - Núm. serie -->
+<path d="M88 64 L140 95"/>
+<path d="M198 60 L192 95"/>
+<path d="M300 63 L240 95"/>
+<path d="M105 186 L150 145"/>
+<path d="M222 190 L208 145"/>
+<path d="M648 59 L672 95"/>
+<path d="M770 59 L740 95"/>
+<path d="M845 120 H780"/>
+<path d="M843 260 L760 291"/>
+<path d="M818 340 L760 309"/>
+<path d="M320 300 H360"/>
+<path d="M315 377 L390 325"/>
+<path d="M440 385 V325"/>
+<path d="M560 377 L495 325"/>
 </g>
 
 <!-- Entidades -->
 <g fill="#ffffff" stroke="#1b355a" stroke-width="2.5">
-<rect x="60" y="60" width="160" height="60" rx="4"/>
-<rect x="560" y="60" width="160" height="60" rx="4"/>
-<rect x="300" y="210" width="160" height="60" rx="4"/>
+<rect x="100" y="95" width="160" height="50" rx="4"/>
+<rect x="620" y="95" width="160" height="50" rx="4"/>
+<rect x="360" y="275" width="160" height="50" rx="4"/>
 </g>
 <g font-size="19" font-weight="600" fill="#1b355a">
-<text x="140" y="97">Cliente</text>
-<text x="640" y="97">Pedido</text>
-<text x="380" y="247">Artículo</text>
+<text x="180" y="127">Cliente</text>
+<text x="700" y="127">Pedido</text>
+<text x="440" y="307">Artículo</text>
 </g>
 
 <!-- Relaciones -->
 <g fill="#e6f2f2" stroke="#157878" stroke-width="2.5">
-<polygon points="380,50 455,90 380,130 305,90"/>
-<polygon points="640,200 715,240 640,280 565,240"/>
+<polygon points="440,80 515,120 440,160 365,120"/>
+<polygon points="700,260 775,300 700,340 625,300"/>
 </g>
 <g font-size="16" font-weight="600" fill="#157878">
-<text x="380" y="96">Realiza</text>
-<text x="640" y="246">Se compone</text>
+<text x="440" y="126">Realiza</text>
+<text x="700" y="306">Se compone</text>
 </g>
 
 <!-- Atributos -->
 <g fill="#ffffff" stroke="#5b6b7f" stroke-width="1.5">
-<ellipse cx="140" cy="190" rx="55" ry="25"/>
-<ellipse cx="860" cy="90" rx="65" ry="25"/>
-<ellipse cx="860" cy="240" rx="65" ry="25"/>
-<ellipse cx="380" cy="340" rx="75" ry="25"/>
+<ellipse cx="80" cy="40" rx="45" ry="24"/>
+<ellipse cx="200" cy="36" rx="55" ry="24"/>
+<ellipse cx="320" cy="40" rx="60" ry="24"/>
+<ellipse cx="90" cy="210" rx="50" ry="24"/>
+<ellipse cx="230" cy="214" rx="60" ry="24"/>
+<ellipse cx="640" cy="35" rx="40" ry="24"/>
+<ellipse cx="780" cy="35" rx="50" ry="24"/>
+<ellipse cx="900" cy="120" rx="55" ry="24"/>
+<ellipse cx="900" cy="250" rx="60" ry="24"/>
+<ellipse cx="880" cy="350" rx="85" ry="24"/>
+<ellipse cx="270" cy="300" rx="50" ry="24"/>
+<ellipse cx="290" cy="400" rx="70" ry="24"/>
+<ellipse cx="440" cy="409" rx="55" ry="24"/>
+<ellipse cx="580" cy="400" rx="50" ry="24"/>
 </g>
 <g font-size="15" fill="#333333">
-<text x="140" y="195">DNI</text>
-<text x="860" y="95">Fecha</text>
-<text x="860" y="245">Cantidad</text>
-<text x="380" y="345">Núm. serie</text>
+<text x="80" y="45">DNI</text>
+<text x="200" y="41">nombre</text>
+<text x="320" y="45">apellidos</text>
+<text x="90" y="215">email</text>
+<text x="230" y="219">dirección</text>
+<text x="640" y="40">id</text>
+<text x="780" y="40">fecha</text>
+<text x="900" y="125">estado</text>
+<text x="900" y="255">cantidad</text>
+<text x="880" y="355">precio de compra</text>
+<text x="270" y="305">stock</text>
+<text x="290" y="405">núm. serie</text>
+<text x="440" y="414">nombre</text>
+<text x="580" y="405">precio</text>
 </g>
-<path d="M124 199 H156 M341 354 H419" stroke="#333333" stroke-width="1.2"/>
+<!-- Subrayado de las claves primarias -->
+<path d="M66 49 H94 M634 44 H646 M253 409 H327" stroke="#333333" stroke-width="1.2"/>
 
 <!-- Cardinalidades -->
 <g font-size="16" font-weight="600" fill="#b03a2e">
-<text x="238" y="82">1</text>
-<text x="542" y="82">N</text>
-<text x="655" y="145">N</text>
-<text x="478" y="232">M</text>
+<text x="278" y="112">1</text>
+<text x="602" y="112">N</text>
+<text x="715" y="178">N</text>
+<text x="538" y="292">M</text>
 </g>
 <g font-size="15" fill="#5b6b7f">
-<text x="380" y="35">1:N</text>
-<text x="640" y="305">N:M</text>
+<text x="440" y="180">1:N</text>
+<text x="700" y="362">N:M</text>
 </g>
 </g>
 </svg>
