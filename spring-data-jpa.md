@@ -87,7 +87,7 @@ Al crear el proyecto con [Spring Initializr](https://start.spring.io/) añade es
 |---|---|
 | Spring Web | Crear controladores REST |
 | Spring Data JPA | Persistencia con JPA y Hibernate |
-| MySQL Driver | Conectar con MySQL o MariaDB (también hay drivers para PostgreSQL, Oracle, SQL Server, H2...) |
+| MariaDB Driver | Conectar con la base de datos MariaDB de XAMPP (también hay drivers para MySQL, PostgreSQL, Oracle, SQL Server, H2...) |
 | Validation | Validar los datos de los objetos (Bean Validation) |
 | Lombok | Opcional, pero recomendado para no escribir getters, setters y constructores |
 
@@ -101,17 +101,10 @@ Si el proyecto ya existe, se pueden añadir a mano en el `pom.xml`:
         <artifactId>spring-boot-starter-data-jpa</artifactId>
     </dependency>
 
-    <!-- Driver de MySQL / MariaDB -->
+    <!-- Driver de MariaDB -->
     <dependency>
-        <groupId>com.mysql</groupId>
-        <artifactId>mysql-connector-j</artifactId>
-        <scope>runtime</scope>
-    </dependency>
-
-    <!-- Alternativa: base de datos H2 en memoria -->
-    <dependency>
-        <groupId>com.h2database</groupId>
-        <artifactId>h2</artifactId>
+        <groupId>org.mariadb.jdbc</groupId>
+        <artifactId>mariadb-java-client</artifactId>
         <scope>runtime</scope>
     </dependency>
 
@@ -123,7 +116,7 @@ Si el proyecto ya existe, se pueden añadir a mano en el `pom.xml`:
 </dependencies>
 ```
 
-> **Nota:** en versiones antiguas el driver de MySQL se llamaba `mysql:mysql-connector-java`. Con Spring Boot 3 se usa `com.mysql:mysql-connector-j` y no hace falta indicar la versión, porque la gestiona Spring Boot.
+> **Nota:** no hace falta indicar la versión del driver, porque la gestiona Spring Boot. Si en lugar de MariaDB se usa MySQL, se elige MySQL Driver en Initializr (dependencia `com.mysql:mysql-connector-j`).
 
 ### 2.2. Crear la base de datos
 
@@ -153,8 +146,6 @@ En phpMyAdmin, el panel izquierdo muestra las bases de datos y sus tablas. Al se
 
 *Vista de la estructura de una tabla en phpMyAdmin. Fuente: [web oficial de phpMyAdmin](https://www.phpmyadmin.net/try/).*
 
-> MariaDB es compatible con MySQL, así que el driver de MySQL sirve para conectarse a la base de datos de XAMPP.
-
 ### 2.3. Archivo application.properties
 
 El archivo `src/main/resources/application.properties` define cómo se conecta Spring a la base de datos. Con la instalación por defecto de XAMPP queda así:
@@ -163,10 +154,10 @@ El archivo `src/main/resources/application.properties` define cómo se conecta S
 spring.application.name=tienda
 
 # --- Conexión con MariaDB de XAMPP ---
-spring.datasource.url=jdbc:mysql://localhost:3306/tienda_db?createDatabaseIfNotExist=true&serverTimezone=Europe/Madrid
+spring.datasource.url=jdbc:mariadb://localhost:3306/tienda_db?createDatabaseIfNotExist=true&connectionTimeZone=Europe/Madrid
 spring.datasource.username=root
 spring.datasource.password=
-spring.datasource.driver-class-name=com.mysql.cj.jdbc.Driver
+spring.datasource.driver-class-name=org.mariadb.jdbc.Driver
 
 # --- Configuración de JPA / Hibernate ---
 # Muestra en la consola el SQL que se ejecuta (útil para aprender)
@@ -180,8 +171,9 @@ spring.jpa.hibernate.ddl-auto=update
 spring.mvc.problemdetails.enabled=true
 ```
 
+- La URL empieza por `jdbc:mariadb://` porque usamos el driver de MariaDB. Con el driver de MySQL sería `jdbc:mysql://` y la clase `com.mysql.cj.jdbc.Driver`.
 - `createDatabaseIfNotExist=true` crea la base de datos si no existe, así que crearla en phpMyAdmin es opcional.
-- `serverTimezone=Europe/Madrid` evita desfases de hora al guardar fechas.
+- `connectionTimeZone=Europe/Madrid` evita desfases de hora al guardar fechas. En el driver de MySQL esta opción se llama `serverTimezone`.
 - En XAMPP el usuario es `root` y no tiene contraseña por defecto, por eso `spring.datasource.password` se deja vacío. Si se la has puesto, escríbela ahí.
 - Si cambiaste el puerto de MySQL en XAMPP (por ejemplo, a 3307 porque el 3306 estaba ocupado), cámbialo también en la URL.
 
@@ -189,7 +181,7 @@ spring.mvc.problemdetails.enabled=true
 
 | Error al arrancar | Causa | Solución |
 |---|---|---|
-| `Communications link failure` | MySQL no está arrancado en XAMPP | Pulsa Start en el módulo MySQL |
+| `Socket fail to connect to localhost` / `Connection refused` | MySQL no está arrancado en XAMPP | Pulsa Start en el módulo MySQL |
 | `Access denied for user 'root'@'localhost'` | Contraseña incorrecta | Revisa `spring.datasource.password` |
 | `Unknown database 'tienda_db'` | La base de datos no existe | Créala en phpMyAdmin o añade `createDatabaseIfNotExist=true` |
 | MySQL no arranca en XAMPP (puerto 3306 en uso) | Hay otro MySQL instalado en el equipo | Detén el otro servicio o cambia el puerto en XAMPP y en la URL |
